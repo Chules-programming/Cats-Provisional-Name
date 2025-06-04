@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.media.MediaView?>
-
 <ScrollPane fx:id="scro" fitToWidth="true" prefHeight="600.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.CatDetailController"
-            resources="@com/java/fx/Messages">
+            fx:controller="com.cats.cats.CatDetailController">
     <content>
         <AnchorPane fx:id="AnchorGeneric" prefHeight="600.0" prefWidth="800.0">
             <ImageView fx:id="catImage1" layoutX="74.0" layoutY="55.0" fitWidth="200.0" fitHeight="150.0" pickOnBounds="true" preserveRatio="true" />

@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
-
 <AnchorPane fx:id="AnchorAdopt" prefHeight="700.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.UsuarioController"
-            resources="@com/java/fx/Messages">
+            fx:controller="com.cats.cats.UsuarioController">
    <children>
       <Label fx:id="congratulations" layoutX="221.0" layoutY="41.0" text="%congratulations">
          <font>

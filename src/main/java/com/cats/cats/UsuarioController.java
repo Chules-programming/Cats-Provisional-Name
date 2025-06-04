@@ -109,11 +109,11 @@ public class UsuarioController implements Initializable {
     private List<Cat> allCats; // Lista completa de gatos
     private int currentPage = 0;
     private static final int CATS_PER_PAGE = 6;
-    private void safeSetText(Labeled component, String key) {
+    private void safeSetText(Labeled component, String key, ResourceBundle bundle) {
         if (component == null) return;
 
-        if (resources != null && resources.containsKey(key)) {
-            component.setText(resources.getString(key));
+        if (bundle != null && bundle.containsKey(key)) {
+            component.setText(bundle.getString(key));
         } else {
             // Fallback para desarrollo
             component.setText("[" + key + "]");
@@ -132,17 +132,17 @@ public class UsuarioController implements Initializable {
     private ListView<Cat> listview2;
 
     @FXML
-    private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname;
+    private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail;
 
     @FXML
-    private PasswordField textpassword, textfield2, accessfield;
+    private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword;
 
     @FXML
     private TextArea areaadd;
 
     @FXML
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
-            tituloregister, warning, congratulations,
+            tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword,
             found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningName, warningPostal, warningPhone, warningAdress, warningNameSur,
             count, theconditions,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
@@ -601,13 +601,85 @@ public class UsuarioController implements Initializable {
             }
         }
     }
+    @FXML
+    private void handleRegisterUser(MouseEvent event) {
+        String username = fieldRegisterUsername.getText();
+        String email = fieldRegisterEmail.getText();
+        String password = fieldRegisterPassword.getText();
+        String ageText = fieldRegisterAge.getText();
+
+        // Ocultar advertencias previas
+        warningUsername.setVisible(false);
+        warningAge.setVisible(false);
+        warningEmail.setVisible(false);
+        warningPassword.setVisible(false);
+
+        // Validar campos vacíos
+        boolean hasError = false;
+        if (username.isEmpty()) {
+            warningUsername.setText(resources.getString("warning.username_empty"));
+            warningUsername.setVisible(true);
+            hasError = true;
+        }
+        if (ageText.isEmpty()) {
+            warningAge.setText(resources.getString("warning.age_empty"));
+            warningAge.setVisible(true);
+            hasError = true;
+        }
+        if (email.isEmpty()) {
+            warningEmail.setText(resources.getString("warning.email_empty"));
+            warningEmail.setVisible(true);
+            hasError = true;
+        }
+        if (password.isEmpty()) {
+            warningPassword.setText(resources.getString("warning.password_empty"));
+            warningPassword.setVisible(true);
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Validar edad numérica
+        int age;
+        try {
+            age = Integer.parseInt(ageText);
+        } catch (NumberFormatException e) {
+            warningAge.setText(resources.getString("warning.age_number"));
+            warningAge.setVisible(true);
+            return;
+        }
+
+        // Crear y guardar usuario
+        Usuario newUser = new Usuario();
+        newUser.setUsername(username);
+        newUser.setEmail(email);
+        newUser.setPassword(password);
+        newUser.setAge(age);
+
+        usuarioService.save(newUser);
+
+        // Mostrar éxito
+        warning2.setText(resources.getString("warning.registration_success"));
+        warning2.setTextFill(Color.GREEN);
+        warning2.setVisible(true);
+
+        // Limpiar campos
+        fieldRegisterUsername.clear();
+        fieldRegisterAge.clear();
+        fieldRegisterEmail.clear();
+        fieldRegisterPassword.clear();
+    }
 
 
     @FXML
     private void cargarSigFXML() throws IOException {
         currentFxmlPath = "/com/java/fx/RegisterUser.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/RegisterUser.fxml"));
-        loader.setControllerFactory(Main.context::getBean);  // Usa el contexto de Spring
+
+        // Añade esta línea para cargar el ResourceBundle
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+
+        loader.setControllerFactory(Main.context::getBean);
         AnchorPane registerPane = loader.load();
         AnchorMain.getChildren().setAll(registerPane);
     }
@@ -616,9 +688,10 @@ public class UsuarioController implements Initializable {
     //New page for cats and stuff
     @FXML
     public void initialize() {
-        loadCats(); // Método que carga allCats
-        updatePage();
-        errorBornDate.setVisible(false);
+        this.resources = ResourceBundle.getBundle(
+                "Messages",  // Solo "Messages" sin paquete
+                currentLocale
+        );
     }
 
     private void loadCats() {
@@ -732,11 +805,11 @@ public class UsuarioController implements Initializable {
     private void goingback(MouseEvent event) throws IOException {
         currentFxmlPath = "/com/java/fx/main.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane mainPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
         currentRoot.getChildren().setAll(mainPane);
-
     }
 
     //Login and go to website
@@ -750,9 +823,9 @@ public class UsuarioController implements Initializable {
         for (Usuario u : usuarios) {
             if (u.getUsername() != null && u.getPassword() != null && u.getUsername().equals(enteredUsername) && u.getPassword().equals(enteredPassword)) {
                 currentUser = u;
-                // Changed to web2.fxml
                 currentFxmlPath = "/com/java/fx/web2.fxml";
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
+                loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
                 loader.setControllerFactory(Main.context::getBean);
                 Parent root = loader.load();
 
@@ -769,7 +842,6 @@ public class UsuarioController implements Initializable {
                 return;
             }
         }
-        //If theres something wrong
         Label warning = (Label) AnchorMain.lookup("#warning");
         warning.setVisible(true);
     }
@@ -779,6 +851,7 @@ public class UsuarioController implements Initializable {
     private void handleMenu(MouseEvent event) throws IOException {
         currentFxmlPath = "/com/java/fx/main.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane mainPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -787,18 +860,16 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleAdopt(MouseEvent event) throws IOException {
-        // Detener el video si está en reproducción
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
 
-        // Cargar el nuevo FXML
         currentFxmlPath = "/com/java/fx/adoptweb.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/adoptweb.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
-        // Obtener el Stage desde el botón
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
         stage.show();
@@ -1030,13 +1101,13 @@ public class UsuarioController implements Initializable {
             // Navegar a web2.fxml
             currentFxmlPath = "/com/java/fx/web2.fxml";
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root, 600, 800));
             stage.setResizable(false);
-
         } catch (Exception e) {
             e.printStackTrace();
             showErrorAlert("Error saving the cat: " + e.getMessage());
@@ -1205,6 +1276,7 @@ public class UsuarioController implements Initializable {
     private void handleGoConditionsSection(MouseEvent event) throws IOException {
         currentFxmlPath = "/com/java/fx/termsandconditions.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/termsandconditions.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane adoptPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -1218,9 +1290,9 @@ public class UsuarioController implements Initializable {
             mediaPlayer.stop();
         }
 
-        // Changed to web2.fxml
         currentFxmlPath = "/com/java/fx/web2.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -1237,14 +1309,15 @@ public class UsuarioController implements Initializable {
         updateCatStatusDisplays();
     }
 
+
     @FXML
     private void handleGoCatSection2(MouseEvent event) throws IOException {
-        // Detener la reproducción del video si está activo
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
         currentFxmlPath = "/com/java/fx/web2.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -1252,11 +1325,10 @@ public class UsuarioController implements Initializable {
         stage.setScene(new Scene(root, 600, 750));
         stage.setResizable(false);
 
-        // Asegurar que el ScrollPane comience en la parte superior
         Platform.runLater(() -> {
-            ScrollPane scroll = (ScrollPane) root.lookup("#scrol"); // Usar el ID correcto del ScrollPane en web2.fxml
+            ScrollPane scroll = (ScrollPane) root.lookup("#scrol");
             if (scroll != null) {
-                scroll.setVvalue(0.0); // Posicionar en la parte superior
+                scroll.setVvalue(0.0);
             }
         });
     }
@@ -1265,6 +1337,7 @@ public class UsuarioController implements Initializable {
     private void handleAdoptToMenu(MouseEvent event) throws IOException {
         currentFxmlPath = "/com/java/fx/main.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane adoptPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -1280,6 +1353,7 @@ public class UsuarioController implements Initializable {
             }
             currentFxmlPath = "/com/java/fx/ongmenu.fxml";
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/ongmenu.fxml"));
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
@@ -1299,24 +1373,20 @@ public class UsuarioController implements Initializable {
 
         if ("Password".equals(inputPassword)) {
             errorongpassword.setVisible(false);
-            System.out.println("Acceso concedido");
 
-            // Detener cualquier reproducción de video si está activa
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
             }
 
-            // Cargar el FXML de MenuAdd
             currentFxmlPath = "/com/java/fx/MenuAdd.fxml";
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/MenuAdd.fxml"));
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
-            // Obtener la escena actual y cambiar la vista
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root, 600, 600));
             stage.setResizable(false);
-
         } else {
             errorongpassword.setText("Wrong password");
             errorongpassword.setVisible(true);
@@ -1537,21 +1607,18 @@ public class UsuarioController implements Initializable {
     }
     public void openAdoptionScreen(Cat selectedCat) {
         try {
-            // Detener cualquier reproducción de video
             stopCurrentPlayback();
 
-            // Cargar el FXML de adopción
             currentFxmlPath = "/com/java/fx/adoptweb.fxml";
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/adoptweb.fxml"));
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
-            // Obtener el controlador y configurar el gato seleccionado
             UsuarioController controller = loader.getController();
             controller.setCurrentCat(selectedCat);
-            controller.initializeAdoptView();  // Inicializar la vista
+            controller.initializeAdoptView();
 
-            // Mostrar la nueva ventana
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 600, 800));
             stage.setResizable(false);
@@ -1563,31 +1630,29 @@ public class UsuarioController implements Initializable {
         }
     }
 
-    @FXML
     private void handleCatClick(MouseEvent event, Cat cat) {
         try {
             stopCurrentPlayback();
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Generic.fxml"));
-            loader.setControllerFactory(Main.context::getBean); // ✅ Usar Spring para crear el controlador
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setControllerFactory(Main.context::getBean);
 
             Parent root = loader.load();
-            CatDetailController controller = loader.getController(); // ✅ Obtener el controlador de Spring
+            CatDetailController controller = loader.getController();
             controller.setCurrentCat(cat);
-            controller.updateCatDetails(); // ✅ Actualizar la UI con los datos del gato
+            controller.updateCatDetails();
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle(cat.getName() + " - Details");
             stage.show();
 
-            // ✅ Limpiar recursos al cerrar la ventana
             stage.setOnCloseRequest(e -> {
                 if (controller != null) {
                     controller.cleanUp();
                 }
             });
-
         } catch (Exception e) {
             e.printStackTrace();
             showErrorAlert("Error loading cat details: " + e.getMessage());
@@ -1762,16 +1827,19 @@ public class UsuarioController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        System.out.println("Locale actual del sistema: " + Locale.getDefault());
+        System.out.println("Locale configurado: " + currentLocale);
+
         try {
-            // 1. Configuración de internacionalización
+            // 1. Configuración de internacionalización (con nombre base único)
             this.resources = ResourceBundle.getBundle(
-                    "com.java.fx.Messages",
+                    "Messages",
                     currentLocale,
                     ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT)
             );
 
             // 2. Actualizar textos de la UI
-            updateUITexts();
+            updateUITexts(this.resources);
 
             // 3. Reiniciar la paginación
             currentPage = 0;
@@ -1791,7 +1859,7 @@ public class UsuarioController implements Initializable {
             if (errorheight2 != null) errorheight2.setFont(Font.font(5));
             if (errorname1   != null) errorname1.setFont(Font.font(7));
 
-            // (Opcional) Depuración de nulos
+            //    Depuración de nulos
             System.out.println("errorage2 is null: "    + (errorage2    == null));
             System.out.println("errorwidth2 is null: "  + (errorwidth2  == null));
             System.out.println("errorheight2 is null: " + (errorheight2 == null));
@@ -1835,105 +1903,107 @@ public class UsuarioController implements Initializable {
     }
 
 
-    private void updateUITexts() {
-        if (resources == null) return;
+
+    private void updateUITexts(ResourceBundle bundle) {
+        if (bundle == null) return;
 
         // Componentes principales
-        safeSetText(welcome, "welcome");
-        safeSetText(username, "username");
-        safeSetText(password, "password");
-        safeSetText(registeredusers, "registeredusers");
-        safeSetText(addusername, "addusername");
-        safeSetText(addemail, "addemail");
-        safeSetText(addage, "addage");
-        safeSetText(addpassword, "addpassword");
-        safeSetText(statusLabel, "statusLabel");
+        safeSetText(welcome, "welcome", bundle);
+        safeSetText(username, "username", bundle);
+        safeSetText(password, "password", bundle);
+        safeSetText(registeredusers, "registeredusers", bundle);
+        safeSetText(addusername, "addusername", bundle);
+        safeSetText(addemail, "addemail", bundle);
+        safeSetText(addage, "addage", bundle);
+        safeSetText(addpassword, "addpassword", bundle);
+        safeSetText(statusLabel, "statusLabel", bundle);
 
         // Sección de registro
-        safeSetText(tituloregister, "tituloregister");
-        safeSetText(warning, "warning");
-        safeSetText(congratulations, "congratulations");
-        safeSetText(found, "found");
-        safeSetText(information, "information");
-        safeSetText(name, "name");
-        safeSetText(adress, "adress");
-        safeSetText(postal, "postal");
-        safeSetText(select, "select");
-        safeSetText(phone, "phone");
+        safeSetText(tituloregister, "tituloregister", bundle);
+        safeSetText(warning, "warning", bundle);
+        safeSetText(congratulations, "congratulations", bundle);
+        safeSetText(found, "found", bundle);
+        safeSetText(information, "information", bundle);
+        safeSetText(name, "name", bundle);
+        safeSetText(adress, "adress", bundle);
+        safeSetText(postal, "postal", bundle);
+        safeSetText(select, "select", bundle);
+        safeSetText(phone, "phone", bundle);
 
         // Advertencias
-        safeSetText(warning2, "warning2");
-        safeSetText(warning3, "warning3");
-        safeSetText(warning4, "warning4");
-        safeSetText(warningName, "warningName");
-        safeSetText(warningPostal, "warningPostal");
-        safeSetText(warningPhone, "warningPhone");
-        safeSetText(warningAdress, "warningAdress");
-        safeSetText(warningNameSur, "warningNameSur");
+        safeSetText(warning2, "warning2", bundle);
+        safeSetText(warning3, "warning3", bundle);
+        safeSetText(warning4, "warning4", bundle);
+        safeSetText(warningName, "warningName", bundle);
+        safeSetText(warningPostal, "warningPostal", bundle);
+        safeSetText(warningPhone, "warningPhone", bundle);
+        safeSetText(warningAdress, "warningAdress", bundle);
+        safeSetText(warningNameSur, "warningNameSur", bundle);
 
         // Sección ONG
-        safeSetText(theconditions, "theconditions");
-        safeSetText(label1ong, "label1ong");
-        safeSetText(label2ong, "label2ong");
-        safeSetText(label3ong, "label3ong");
-        safeSetText(label4ong, "label4ong");
-        safeSetText(label5ong, "label5ong");
-        safeSetText(label6ong, "label6ong");
-        safeSetText(label7ong, "label7ong");
-        safeSetText(label8ong, "label8ong");
-        safeSetText(label9ong, "label9ong");
-        safeSetText(errorongpassword, "errorongpassword");
-        safeSetText(errorBornDate, "error.born_date");
-        safeSetText(DateLabel, "dateLabel");
-        safeSetText(statusLabel, "statusLabel");
+        safeSetText(theconditions, "theconditions", bundle);
+        safeSetText(label1ong, "label1ong", bundle);
+        safeSetText(label2ong, "label2ong", bundle);
+        safeSetText(label3ong, "label3ong", bundle);
+        safeSetText(label4ong, "label4ong", bundle);
+        safeSetText(label5ong, "label5ong", bundle);
+        safeSetText(label6ong, "label6ong", bundle);
+        safeSetText(label7ong, "label7ong", bundle);
+        safeSetText(label8ong, "label8ong", bundle);
+        safeSetText(label9ong, "label9ong", bundle);
+        safeSetText(errorongpassword, "errorongpassword", bundle);
+        safeSetText(errorBornDate, "error.born_date", bundle);
+        safeSetText(DateLabel, "dateLabel", bundle);
+        safeSetText(statusLabel, "statusLabel", bundle);
 
         // Sección añadir gatos
-        safeSetText(breedadd, "breedadd");
-        safeSetText(ageadd, "ageadd");
-        safeSetText(coloradd, "coloradd");
-        safeSetText(sexadd, "sexadd");
-        safeSetText(heightadd, "heightadd");
-        safeSetText(widthadd, "widthadd");
-        safeSetText(image1add, "image1add");
-        safeSetText(image2add, "image2add");
-        safeSetText(image3add, "image3add");
-        safeSetText(video1add, "video1add");
-        safeSetText(friendlykidsadd, "friendlykidsadd");
-        safeSetText(friendlyanimalsadd, "friendlyanimalsadd");
-        safeSetText(descriptionadd, "descriptionadd");
-        safeSetText(labelmenuadd1, "labelmenuadd1");
+        safeSetText(breedadd, "breedadd", bundle);
+        safeSetText(ageadd, "ageadd", bundle);
+        safeSetText(coloradd, "coloradd", bundle);
+        safeSetText(sexadd, "sexadd", bundle);
+        safeSetText(heightadd, "heightadd", bundle);
+        safeSetText(widthadd, "widthadd", bundle);
+        safeSetText(image1add, "image1add", bundle);
+        safeSetText(image2add, "image2add", bundle);
+        safeSetText(image3add, "image3add", bundle);
+        safeSetText(video1add, "video1add", bundle);
+        safeSetText(friendlykidsadd, "friendlykidsadd", bundle);
+        safeSetText(friendlyanimalsadd, "friendlyanimalsadd", bundle);
+        safeSetText(descriptionadd, "descriptionadd", bundle);
+        safeSetText(labelmenuadd1, "labelmenuadd1", bundle);
 
         // Botones
-        safeSetText(register, "register");
-        safeSetText(registeruser, "registeruser");
-        safeSetText(goback, "goback");
-        safeSetText(login, "login");
-        safeSetText(adopt, "adopt");
-        safeSetText(nextpage, "nextpage");
-        safeSetText(previouspage, "previouspage");
-        safeSetText(gomenu, "gomenu");
-        safeSetText(back, "back");
-        safeSetText(back1, "back1");
-        safeSetText(confirmation, "confirmation");
-        safeSetText(notaccept, "notaccept");
-        safeSetText(aceptbutton, "aceptbutton");
-        safeSetText(ong, "ong");
-        safeSetText(accessbutton, "accessbutton");
-        safeSetText(menuaddtomenu, "menuaddtomenu");
-        safeSetText(submitadd, "submitadd");
-        safeSetText(add1button, "add1button");
-        safeSetText(add2button, "add2button");
-        safeSetText(add3button, "add3button");
-        safeSetText(add4button, "add4button");
-        safeSetText(adoptButton, "adoptButton");
-        safeSetText(returnButton, "returnButton");
-        safeSetText(playVideoButton, "playVideoButton");
-        safeSetText(goToLoginButton, "goToLoginButton");
+        safeSetText(register, "register", bundle);
+        safeSetText(registeruser, "registeruser", bundle);
+        safeSetText(goback, "goback", bundle);
+        safeSetText(login, "login", bundle);
+        safeSetText(adopt, "adopt", bundle);
+        safeSetText(nextpage, "nextpage", bundle);
+        safeSetText(previouspage, "previouspage", bundle);
+        safeSetText(gomenu, "gomenu", bundle);
+        safeSetText(back, "back", bundle);
+        safeSetText(back1, "back1", bundle);
+        safeSetText(confirmation, "confirmation", bundle);
+        safeSetText(notaccept, "notaccept", bundle);
+        safeSetText(aceptbutton, "aceptbutton", bundle);
+        safeSetText(ong, "ong", bundle);
+        safeSetText(accessbutton, "accessbutton", bundle);
+        safeSetText(menuaddtomenu, "menuaddtomenu", bundle);
+        safeSetText(submitadd, "submitadd", bundle);
+        safeSetText(add1button, "add1button", bundle);
+        safeSetText(add2button, "add2button", bundle);
+        safeSetText(add3button, "add3button", bundle);
+        safeSetText(add4button, "add4button", bundle);
+        safeSetText(adoptButton, "adoptButton", bundle);
+        safeSetText(returnButton, "returnButton", bundle);
+        safeSetText(playVideoButton, "playVideoButton", bundle);
+        safeSetText(goToLoginButton, "goToLoginButton", bundle);
 
         // CheckBoxes
-        safeSetText(accept, "accept");
-        safeSetText(pleasecheck, "pleasecheck");
+        safeSetText(accept, "accept.text", bundle); // Cambiado a "accept.text"
+        safeSetText(pleasecheck, "pleasecheck", bundle);
     }
+
     @FXML
     private void handleSpanish(MouseEvent event) {
         currentLocale = new Locale("es");
@@ -1947,25 +2017,18 @@ public class UsuarioController implements Initializable {
     }
     private void reloadCurrentView() {
         try {
-            ResourceBundle bundle = ResourceBundle.getBundle("com.java.fx.Messages", currentLocale);
-
             FXMLLoader loader = new FXMLLoader(getClass().getResource(currentFxmlPath));
-            loader.setResources(bundle);
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
             loader.setControllerFactory(Main.context::getBean);
 
             Parent root = loader.load();
             Stage stage = (Stage) spanish.getScene().getWindow();
             stage.setScene(new Scene(root));
-
-            // Actualizar referencia al controlador
-            UsuarioController newController = loader.getController();
-            newController.setCurrentFxmlPath(currentFxmlPath);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showErrorAlert("Error al recargar vista: " + e.getMessage());
+        } catch (Exception e) {
+            // Manejo de errores
         }
     }
+
 
 
 
@@ -1997,7 +2060,7 @@ public class UsuarioController implements Initializable {
 
     public void updateResourcesForCurrentView() {
         // 1. Actualizar textos estáticos
-        updateUITexts();
+        updateUITexts(resources);
 
         // 2. Actualizar ChoiceBoxes
         initializeChoiceBoxes();
@@ -2399,14 +2462,13 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleGoToLogin(MouseEvent event) throws IOException {
-        // Detener la reproducción de video si está activa
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
 
-        // Cargar la pantalla de inicio de sesión
         currentFxmlPath = "/com/java/fx/main.fxml";
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -2420,11 +2482,12 @@ public class UsuarioController implements Initializable {
         try {
             currentFxmlPath = "/com/java/fx/web2.fxml";
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
+            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
             loader.setControllerFactory(Main.context::getBean);
 
             Parent root = loader.load();
             UsuarioController controller = loader.getController();
-            controller.currentPage = 0; // Reset pagination
+            controller.currentPage = 0;
             controller.loadCatsIntoView();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

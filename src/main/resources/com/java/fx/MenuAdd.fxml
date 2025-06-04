@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.media.MediaView?>
+
+<?import javafx.scene.text.Font?>
+<AnchorPane fx:id="AnchorMenuAdd" prefHeight="600.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cats.cats.UsuarioController"
+            resources="@com/java/fx/Messages">
+   <children>
+      <!-- Header -->
+      <Label fx:id="labelmenuadd1" layoutX="173.0" layoutY="47.0" text="%labelmenuadd1" />
+
+      <!-- Basic cat info fields -->
+      <Label fx:id="breedadd" layoutX="71.0" layoutY="80.0" text="%breedadd" />
+      <TextField fx:id="fieldaddbreed" layoutX="113.0" layoutY="76.0" />
+      <Label fx:id="errorbreed" layoutX="55.0" layoutY="56.0" text="%errorbreed" textFill="red" visible="false" />
+
+      <Label fx:id="ageadd" layoutX="77.0" layoutY="106.0" text="%ageadd" />
+      <TextField fx:id="fieldaddage" layoutX="113.0" layoutY="102.0" />
+      <Label fx:id="errorage" layoutX="6.0" layoutY="106.0" text="%errorage" textFill="red" visible="false" />
+      <Label fx:id="errorage2" layoutX="6.0" layoutY="106.0" text="%errorage2" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <Label fx:id="sexadd" layoutX="78.0" layoutY="137.0" text="%sexadd" />
+      <TextField fx:id="fieldaddsex" layoutX="114.0" layoutY="133.0" />
+      <Label fx:id="errorsex" layoutX="6.0" layoutY="137.0" text="%errorsex" textFill="red" visible="false" />
+
+      <Label fx:id="coloradd" layoutX="73.0" layoutY="164.0" text="%coloradd" />
+      <TextField fx:id="fieldaddcolor" layoutX="115.0" layoutY="160.0" />
+      <Label fx:id="errorcolor" layoutX="6.0" layoutY="164.0" text="%errorcolor" textFill="red" visible="false" />
+
+      <Label fx:id="heightadd" layoutX="71.0" layoutY="191.0" text="%heightadd" />
+      <TextField fx:id="fieldaddheight" layoutX="113.0" layoutY="187.0" />
+      <Label fx:id="errorheight" layoutX="52.0" layoutY="212.0" text="%errorheight" textFill="red" visible="false" />
+      <Label fx:id="errorheight2" layoutX="52.0" layoutY="212.0" text="%errorheight2" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <Label fx:id="widthadd" layoutX="388.0" layoutY="79.0" text="%widthadd" />
+      <TextField fx:id="fieldaddwidth" layoutX="436.0" layoutY="75.0" />
+      <Label fx:id="errorwidth" layoutX="475.0" layoutY="56.0" text="%errorwidth" textFill="red" visible="false" />
+      <Label fx:id="errorwidth2" layoutX="475.0" layoutY="56.0" text="%errorwidth2" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <!-- ChoiceBoxes for friendliness -->
+      <Label fx:id="friendlykidsadd" layoutX="271.0" layoutY="106.0" text="%friendlykidsadd" />
+      <ChoiceBox fx:id="choiceadd1" layoutX="436.0" layoutY="102.0" prefWidth="150.0" />
+      <Label fx:id="erroroption1" layoutX="282.0" layoutY="88.0" text="%erroroption1" textFill="red" visible="false" />
+
+      <Label fx:id="friendlyanimalsadd" layoutX="271.0" layoutY="137.0" text="%friendlyanimalsadd" />
+      <ChoiceBox fx:id="choiceadd2" layoutX="482.0" layoutY="132.0" prefHeight="26.0" prefWidth="91.0" />
+      <Label fx:id="erroroption2" layoutX="282.0" layoutY="124.0" text="%erroroption2" textFill="red" visible="false">
+         <font><Font size="11.0" /></font>
+      </Label>
+
+      <!-- Description area -->
+      <Label fx:id="descriptionadd" layoutX="271.0" layoutY="164.0" text="%descriptionadd" />
+      <TextArea fx:id="areaadd" layoutX="375.0" layoutY="160.0" prefHeight="149.0" prefWidth="200.0" />
+      <Label fx:id="errordescription" layoutX="426.0" layoutY="324.0" text="%errordescription" textFill="red" visible="false" />
+
+      <!-- Name field -->
+      <Label fx:id="nameadd1" layoutX="292.0" layoutY="406.0" text="%nameadd1" />
+      <TextField fx:id="fieldaddname" layoutX="401.0" layoutY="402.0" />
+      <Label fx:id="errorname1" layoutX="350.0" layoutY="384.0" text="%errorname1" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <!-- DatePicker for born date -->
+      <Label fx:id="DateLabel" layoutX="21.0" layoutY="470.0" text="%dateLabel" />
+      <DatePicker fx:id="fieldaddBornDate" layoutX="18.0" layoutY="493.0" />
+      <Label fx:id="errorBornDate" layoutX="320.0" layoutY="290.0" text="%error.born_date" textFill="RED" visible="false" />
+
+      <!-- Buttons to add media -->
+      <Label fx:id="image1add" layoutX="18.0" layoutY="267.0" text="%image1add" />
+      <Button fx:id="add1button"
+              layoutX="166.0" layoutY="263.0"
+              text="%add1button"
+              mnemonicParsing="false"
+              onMouseClicked="#handleAddImage1" />
+      <ImageView fx:id="addimage1" fitWidth="38.0" fitHeight="26.0" layoutX="255.0" layoutY="263.0" pickOnBounds="true" preserveRatio="true" />
+      <Label fx:id="errorimage1" layoutX="300.0" layoutY="268.0" text="%errorimage1" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <Label fx:id="image2add" layoutX="20.0" layoutY="301.0" text="%image2add" />
+      <Button fx:id="add2button"
+              layoutX="166.0" layoutY="297.0"
+              text="%add2button"
+              mnemonicParsing="false"
+              onMouseClicked="#handleAddImage2" />
+      <ImageView fx:id="addimage2" fitWidth="35.0" fitHeight="26.0" layoutX="254.0" layoutY="297.0" pickOnBounds="true" preserveRatio="true" />
+      <Label fx:id="errorimage2" layoutX="300.0" layoutY="301.0" text="%errorimage2" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <Label fx:id="image3add" layoutX="16.0" layoutY="332.0" text="%image3add" />
+      <Button fx:id="add3button"
+              layoutX="166.0" layoutY="328.0"
+              text="%add3button"
+              mnemonicParsing="false"
+              onMouseClicked="#handleAddImage3" />
+      <ImageView fx:id="addimage3" fitWidth="31.0" fitHeight="26.0" layoutX="256.0" layoutY="328.0" pickOnBounds="true" preserveRatio="true" />
+      <Label fx:id="errorimage3" layoutX="300.0" layoutY="332.0" text="%errorimage3" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <Label fx:id="video1add" layoutX="26.0" layoutY="364.0" text="%video1add" />
+      <Button fx:id="add4button"
+              layoutX="167.0" layoutY="360.0"
+              text="%add4button"
+              mnemonicParsing="false"
+              onMouseClicked="#handleAddVideo1" />
+      <MediaView fx:id="addvideo1" fitWidth="100.0" fitHeight="100.0" layoutX="59.0" layoutY="382.0" />
+      <Label fx:id="errorvideo1" layoutX="300.0" layoutY="364.0" text="%errorvideo1" textFill="red" visible="false">
+         <font><Font size="10.0" /></font>
+      </Label>
+
+      <!-- Success message -->
+      <Label fx:id="successMessage" layoutX="220.0" layoutY="450.0" text="%successMessage" textFill="green" visible="false" />
+
+      <!-- Navigation buttons -->
+      <Button fx:id="menuaddtomenu"
+              layoutX="63.0" layoutY="538.0"
+              text="%menuaddtomenu"
+              mnemonicParsing="false"
+              onMouseClicked="#handleMenu" />
+
+      <Button fx:id="submitadd"
+              layoutX="274.0" layoutY="538.0"
+              text="%submitadd"
+              mnemonicParsing="false"
+              onAction="#handleSubmitButtonAction" />
+   </children>
+</AnchorPane>
+

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="AnchorOng" prefHeight="600.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cats.cats.UsuarioController"
+            resources="@com/java/fx/Messages">
+   <children>
+      <Label fx:id="label1ong" layoutX="243.0" layoutY="51.0" text="%label1ong" />
+      <Label fx:id="label2ong" layoutX="47.0" layoutY="69.0" text="%label2ong" />
+
+      <Label fx:id="label3ong" layoutX="143.0" layoutY="119.0" text="%label3ong" />
+      <Label fx:id="label4ong" layoutX="42.0" layoutY="137.0" text="%label4ong" />
+
+      <Label fx:id="label5ong" layoutX="75.0" layoutY="275.0" text="%label5ong" />
+      <ImageView fx:id="ximage"
+                 layoutX="75.0" layoutY="293.0"
+                 fitWidth="38.0" fitHeight="43.0"
+                 pickOnBounds="true" preserveRatio="true"
+                 onMouseClicked="#handleTwitter">
+         <image>
+            <Image url="/assets/twitter.jpg" />
+         </image>
+      </ImageView>
+
+      <Label fx:id="label6ong" layoutX="254.0" layoutY="275.0" text="%label6ong" />
+      <ImageView fx:id="linkedinimage"
+                 layoutX="260.0" layoutY="293.0"
+                 fitWidth="38.0" fitHeight="43.0"
+                 pickOnBounds="true" preserveRatio="true"
+                 onMouseClicked="#handleLinkedin">
+         <image>
+            <Image url="/assets/LinkedIn.jpg" />
+         </image>
+      </ImageView>
+
+      <Label fx:id="label7ong" layoutX="460.0" layoutY="275.0" text="%label7ong" />
+      <ImageView fx:id="gmailimage"
+                 layoutX="453.0" layoutY="292.0"
+                 fitWidth="50.0" fitHeight="50.0"
+                 pickOnBounds="true" preserveRatio="true"
+                 onMouseClicked="#handlegmail">
+         <image>
+            <Image url="/assets/gmail.jpg" />
+         </image>
+      </ImageView>
+      <Label fx:id="label8ong" layoutX="434.0" layoutY="342.0" text="%label8ong" />
+
+      <Label fx:id="label9ong" layoutX="113.0" layoutY="394.0" text="%label9ong" />
+      <PasswordField fx:id="accessfield" layoutX="205.0" layoutY="390.0" />
+      <Label fx:id="errorongpassword" layoutX="235.0" layoutY="415.0" text="%errorongpassword" textFill="red" visible="false" />
+
+      <Button fx:id="accessbutton"
+              layoutX="378.0" layoutY="390.0"
+              text="%accessbutton"
+              mnemonicParsing="false"
+              onMouseClicked="#handleAccessButton" />
+
+      <Button fx:id="ongtomainbutton"
+              layoutX="64.0" layoutY="500.0"
+              text="%goback"
+              mnemonicParsing="false"
+              onMouseClicked="#handleMenu" />
+   </children>
+</AnchorPane>
+

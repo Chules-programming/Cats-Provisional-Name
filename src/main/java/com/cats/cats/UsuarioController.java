@@ -79,6 +79,8 @@ import java.util.*;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static com.cats.cats.Main.currentLocale;
+
 
 @Component
 @RestController
@@ -187,9 +189,7 @@ public class UsuarioController implements Initializable {
     private Cat currentCat;
     private MongoDatabase mongoDatabase;
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB en bytes
-    private static final long MAX_VIDEO_SIZE = 10 * 1024 * 1024; // 10MB en bytes
-    private static Locale currentLocale = Locale.getDefault();
-
+    private static final long MAX_VIDEO_SIZE = 10 * 1024 * 1024; //10MB en bytes
 
     private FileChooser fileChooser = new FileChooser();
 
@@ -673,11 +673,11 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void cargarSigFXML() throws IOException {
-        currentFxmlPath = "/com/java/fx/RegisterUser.fxml";
+        setCurrentFxmlPath("/com/java/fx/RegisterUser.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/RegisterUser.fxml"));
 
         // Añade esta línea para cargar el ResourceBundle
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
 
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane registerPane = loader.load();
@@ -688,10 +688,8 @@ public class UsuarioController implements Initializable {
     //New page for cats and stuff
     @FXML
     public void initialize() {
-        this.resources = ResourceBundle.getBundle(
-                "Messages",  // Solo "Messages" sin paquete
-                currentLocale
-        );
+        this.resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale());
+
     }
 
     private void loadCats() {
@@ -803,9 +801,9 @@ public class UsuarioController implements Initializable {
     //Go back from register to log in
     @FXML
     private void goingback(MouseEvent event) throws IOException {
-        currentFxmlPath = "/com/java/fx/main.fxml";
+        setCurrentFxmlPath("/com/java/fx/main.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane mainPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -823,9 +821,9 @@ public class UsuarioController implements Initializable {
         for (Usuario u : usuarios) {
             if (u.getUsername() != null && u.getPassword() != null && u.getUsername().equals(enteredUsername) && u.getPassword().equals(enteredPassword)) {
                 currentUser = u;
-                currentFxmlPath = "/com/java/fx/web2.fxml";
+                setCurrentFxmlPath("/com/java/fx/web2.fxml");
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-                loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+                loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
                 loader.setControllerFactory(Main.context::getBean);
                 Parent root = loader.load();
 
@@ -849,9 +847,9 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleMenu(MouseEvent event) throws IOException {
-        currentFxmlPath = "/com/java/fx/main.fxml";
+        setCurrentFxmlPath("/com/java/fx/main.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane mainPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -864,9 +862,9 @@ public class UsuarioController implements Initializable {
             mediaPlayer.stop();
         }
 
-        currentFxmlPath = "/com/java/fx/adoptweb.fxml";
+        setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/adoptweb.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -1099,9 +1097,9 @@ public class UsuarioController implements Initializable {
             clearForm();
 
             // Navegar a web2.fxml
-            currentFxmlPath = "/com/java/fx/web2.fxml";
+            setCurrentFxmlPath("/com/java/fx/web2.fxml");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
@@ -1274,9 +1272,9 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleGoConditionsSection(MouseEvent event) throws IOException {
-        currentFxmlPath = "/com/java/fx/termsandconditions.fxml";
+        setCurrentFxmlPath("/com/java/fx/termsandconditions.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/termsandconditions.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane adoptPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -1290,9 +1288,9 @@ public class UsuarioController implements Initializable {
             mediaPlayer.stop();
         }
 
-        currentFxmlPath = "/com/java/fx/web2.fxml";
+        setCurrentFxmlPath("/com/java/fx/web2.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -1315,9 +1313,9 @@ public class UsuarioController implements Initializable {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
-        currentFxmlPath = "/com/java/fx/web2.fxml";
+        setCurrentFxmlPath("/com/java/fx/web2.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -1335,9 +1333,9 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleAdoptToMenu(MouseEvent event) throws IOException {
-        currentFxmlPath = "/com/java/fx/main.fxml";
+        setCurrentFxmlPath("/com/java/fx/main.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         AnchorPane adoptPane = loader.load();
         AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
@@ -1351,9 +1349,9 @@ public class UsuarioController implements Initializable {
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
             }
-            currentFxmlPath = "/com/java/fx/ongmenu.fxml";
+            setCurrentFxmlPath("/com/java/fx/ongmenu.fxml");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/ongmenu.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
@@ -1378,9 +1376,9 @@ public class UsuarioController implements Initializable {
                 mediaPlayer.stop();
             }
 
-            currentFxmlPath = "/com/java/fx/MenuAdd.fxml";
+            setCurrentFxmlPath("/com/java/fx/MenuAdd.fxml");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/MenuAdd.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
@@ -1609,9 +1607,9 @@ public class UsuarioController implements Initializable {
         try {
             stopCurrentPlayback();
 
-            currentFxmlPath = "/com/java/fx/adoptweb.fxml";
+            setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/adoptweb.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
@@ -1635,7 +1633,7 @@ public class UsuarioController implements Initializable {
             stopCurrentPlayback();
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Generic.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
             loader.setControllerFactory(Main.context::getBean);
 
             Parent root = loader.load();
@@ -1828,50 +1826,59 @@ public class UsuarioController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("Locale actual del sistema: " + Locale.getDefault());
-        System.out.println("Locale configurado: " + currentLocale);
 
         try {
-            // 1. Configuración de internacionalización (con nombre base único)
-            this.resources = ResourceBundle.getBundle(
-                    "Messages",
-                    currentLocale,
-                    ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT)
-            );
-
-            // 2. Actualizar textos de la UI
-            updateUITexts(this.resources);
-
-            // 3. Reiniciar la paginación
-            currentPage = 0;
-
-            // 4. Inicializar componentes UI que no dependen de imágenes
-            initializeUIComponents();
-
-            // 5. Configurar cursores (maneja posibles ImageView nulos)
-            setupClickableCursors();
-
-            // 6. Configurar manejadores de clic (con protección contra nulos)
-            setupImageClickHandlers();
-
-            // 7. Configurar fuentes para etiquetas de error si existen
-            if (errorage2    != null) errorage2.setFont(Font.font(5));
-            if (errorwidth2  != null) errorwidth2.setFont(Font.font(5));
-            if (errorheight2 != null) errorheight2.setFont(Font.font(5));
-            if (errorname1   != null) errorname1.setFont(Font.font(7));
-
-            //    Depuración de nulos
-            System.out.println("errorage2 is null: "    + (errorage2    == null));
-            System.out.println("errorwidth2 is null: "  + (errorwidth2  == null));
-            System.out.println("errorheight2 is null: " + (errorheight2 == null));
-
-            // 8. Cargar imágenes sociales si el panel está visible
-            if (AnchorOng != null && AnchorOng.isVisible()) {
-                safeLoadImage(ximage,        "twitter.jpg",  true);
-                safeLoadImage(linkedinimage, "LinkedIn.jpg", true);
-                safeLoadImage(gmailimage,    "gmail.jpg",    true);
+            // 1. Usar el bundle proporcionado por FXMLLoader si está disponible
+            if (resources != null) {
+                this.resources = resources;
+            } else {
+                // Fallback si no viene del FXMLLoader
+                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                this.resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale(), classLoader);
             }
 
-            // 9. Inicializar opciones en ChoiceBoxes con traducciones
+            System.out.println("Locale actual: " + Main.getCurrentLocale());
+            System.out.println("Recursos cargados en initialize: " + this.resources.getLocale());
+
+            // 2. Actualizar textos UI traducidos
+            updateUITexts(this.resources);
+
+            // 3. Inicializar la ruta FXML actual si estamos en la vista principal
+            if (AnchorMain != null && currentFxmlPath == null) {
+                currentFxmlPath = "/com/java/fx/main.fxml";
+            }
+
+            // 4. Reiniciar la paginación
+            currentPage = 0;
+
+            // 5. Inicializar componentes UI
+            initializeUIComponents();
+
+            // 6. Configurar cursores para imágenes clicables
+            setupClickableCursors();
+
+            // 7. Configurar manejadores de clic
+            setupImageClickHandlers();
+
+            // 8. Configurar fuentes para etiquetas de error si existen
+            if (errorage2 != null) errorage2.setFont(Font.font(5));
+            if (errorwidth2 != null) errorwidth2.setFont(Font.font(5));
+            if (errorheight2 != null) errorheight2.setFont(Font.font(5));
+            if (errorname1 != null) errorname1.setFont(Font.font(7));
+
+            // 9. Depuración de campos nulos (opcional)
+            System.out.println("errorage2 is null: " + (errorage2 == null));
+            System.out.println("errorwidth2 is null: " + (errorwidth2 == null));
+            System.out.println("errorheight2 is null: " + (errorheight2 == null));
+
+            // 10. Cargar imágenes sociales si el panel está visible
+            if (AnchorOng != null && AnchorOng.isVisible()) {
+                safeLoadImage(ximage, "twitter.jpg", true);
+                safeLoadImage(linkedinimage, "LinkedIn.jpg", true);
+                safeLoadImage(gmailimage, "gmail.jpg", true);
+            }
+
+            // 11. Inicializar opciones en ChoiceBoxes con traducciones
             ObservableList<String> friendlyOptions = FXCollections.observableArrayList(
                     this.resources.getString("friendly.yes"),
                     this.resources.getString("friendly.no"),
@@ -1881,10 +1888,10 @@ public class UsuarioController implements Initializable {
             if (choiceadd1 != null) choiceadd1.setItems(friendlyOptions);
             if (choiceadd2 != null) choiceadd2.setItems(friendlyOptions);
 
-            // 10. Cargar datos de gatos
+            // 12. Cargar datos de gatos
             loadCats();
 
-            // 11. Ejecutar actualizaciones en el hilo de UI
+            // 13. Ejecutar tareas diferidas en UI thread
             Platform.runLater(() -> {
                 updateCatStatusDisplays();
                 if (catsContainer != null) {
@@ -1893,19 +1900,27 @@ public class UsuarioController implements Initializable {
                 updatePaginationButtons();
             });
 
-            // 12. Inicializar conexión a base de datos
+            // 14. Inicializar conexión a base de datos
             mongoDatabase = getMongoDatabase();
 
         } catch (Exception e) {
             System.err.println("Error durante la inicialización: " + e.getMessage());
             e.printStackTrace();
+            // Fallback si falla la carga con locale
+            this.resources = ResourceBundle.getBundle("Messages");
         }
     }
 
 
 
+
     private void updateUITexts(ResourceBundle bundle) {
-        if (bundle == null) return;
+        if (bundle == null) {
+            System.out.println("Bundle es nulo!");
+            return;
+        }
+
+        System.out.println("Actualizando textos con bundle: " + bundle.getLocale());
 
         // Componentes principales
         safeSetText(welcome, "welcome", bundle);
@@ -1917,6 +1932,17 @@ public class UsuarioController implements Initializable {
         safeSetText(addage, "addage", bundle);
         safeSetText(addpassword, "addpassword", bundle);
         safeSetText(statusLabel, "statusLabel", bundle);
+        safeSetText(catNameLabel, "cat.name", bundle);
+        safeSetText(breedLabel, "cat.breed", bundle);
+        safeSetText(ageLabel, "cat.age", bundle);
+        safeSetText(heightLabel, "cat.height", bundle);
+        safeSetText(widthLabel, "cat.width", bundle);
+        safeSetText(colorLabel, "cat.color", bundle);
+        safeSetText(sexLabel, "cat.sex", bundle);
+        safeSetText(friendlyKidsLabel, "cat.friendly.kids", bundle);
+        safeSetText(friendlyAnimalsLabel, "cat.friendly.animals", bundle);
+        safeSetText(personality1Label, "cat.personality", bundle);
+        safeSetText(DateLabel, "cat.born.date", bundle);
 
         // Sección de registro
         safeSetText(tituloregister, "tituloregister", bundle);
@@ -2000,32 +2026,85 @@ public class UsuarioController implements Initializable {
         safeSetText(goToLoginButton, "goToLoginButton", bundle);
 
         // CheckBoxes
-        safeSetText(accept, "accept.text", bundle); // Cambiado a "accept.text"
+        if (accept != null) {
+            accept.setText(bundle.getString("accept.text"));
+        }
+        //safeSetText(accept, "accept.text", bundle); // Cambiado a "accept.text"
         safeSetText(pleasecheck, "pleasecheck", bundle);
+        updateDynamicTexts(bundle);
+        if (welcome != null) {
+            System.out.println("Welcome text: " + welcome.getText());
+        }
+        if (register != null) {
+            System.out.println("Register button text: " + register.getText());
+        }
     }
 
     @FXML
     private void handleSpanish(MouseEvent event) {
-        currentLocale = new Locale("es");
-        reloadCurrentView();
+        Main.setCurrentLocale(new Locale("es"));
+        reloadCurrentView(event);
     }
 
     @FXML
     private void handleEnglish(MouseEvent event) {
-        currentLocale = Locale.ENGLISH;
-        reloadCurrentView();
+        Main.setCurrentLocale(Locale.ENGLISH);
+        reloadCurrentView(event);
     }
-    private void reloadCurrentView() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(currentFxmlPath));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
-            loader.setControllerFactory(Main.context::getBean);
 
+
+    private void reloadCurrentView(MouseEvent event) {
+        try {
+            stopCurrentPlayback();
+
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource(currentFxmlPath));
+
+            // Forzar recarga completa del bundle
+            ResourceBundle.clearCache();
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.currentLocale));
+
+            loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
-            Stage stage = (Stage) spanish.getScene().getWindow();
+
+            UsuarioController controller = loader.getController();
+            controller.setCurrentFxmlPath(this.currentFxmlPath);
+
+            // Actualizar estado interno
+            controller.currentPage = this.currentPage;
+            controller.allCats = this.allCats;
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.sizeToScene();
+
+            // Actualizar UI después de cargar
+            Platform.runLater(() -> {
+                controller.updatePaginationButtons();
+                controller.loadCatsIntoView();
+            });
         } catch (Exception e) {
-            // Manejo de errores
+            showErrorAlert("error.reloading_view");
+        }
+    }
+
+    private void updateDynamicTexts(ResourceBundle bundle) {
+        // Actualizar contador de usuarios
+        if (count != null && listview != null) {
+            count.setText(String.valueOf(listview.getItems().size()));
+        }
+
+        // Actualizar ChoiceBox si está visible
+        if (selection != null) {
+            List<Cat> availableCats = catRepository.findByAdoptedFalse();
+            ObservableList<String> catNames = FXCollections.observableArrayList();
+
+            for (Cat cat : availableCats) {
+                catNames.add(cat.getName());
+            }
+
+            selection.setItems(catNames);
+            selection.setValue(null);
         }
     }
 
@@ -2059,22 +2138,31 @@ public class UsuarioController implements Initializable {
 
 
     public void updateResourcesForCurrentView() {
-        // 1. Actualizar textos estáticos
-        updateUITexts(resources);
+        System.out.println("Actualizando recursos para vista: " + currentFxmlPath);
 
-        // 2. Actualizar ChoiceBoxes
+        // 1. Recargar ResourceBundle
+        this.resources = ResourceBundle.getBundle("Messages", Main.currentLocale);
+
+        // 2. Actualizar textos estáticos
+        updateUITexts(this.resources);
+
+        // 3. Actualizar ChoiceBoxes
         initializeChoiceBoxes();
 
-        // 3. Actualizar listas de selección
+        // 4. Actualizar lista de gatos disponibles
         if (selection != null) {
             initializeAdoptView();
         }
 
-        // 4. Actualizar mensajes de error
-        hideAllErrorMessages();
-
-        // 5. Actualizar botones de paginación
+        // 5. Actualizar paginación
         updatePaginationButtons();
+
+        // 6. Forzar actualización de UI
+        Platform.runLater(() -> {
+            if (catsContainer != null) {
+                catsContainer.requestLayout();
+            }
+        });
     }
 
     private void safeLoadImage(ImageView imageView, String imagePath, boolean debug) {
@@ -2195,14 +2283,18 @@ public class UsuarioController implements Initializable {
 
     private void initializeUIComponents() {
         try {
+            System.out.println("Inicializando componentes UI...");
+
             // Inicializar ListView
             if (listview != null && usuarioRepository != null) {
                 listview.setItems(FXCollections.observableArrayList(usuarioRepository.findAll()));
+                System.out.println("ListView actualizado con " + listview.getItems().size() + " usuarios");
             }
 
             // Inicializar contador
             if (count != null && listview != null) {
                 count.setText(String.valueOf(listview.getItems().size()));
+                System.out.println("Contador actualizado: " + count.getText());
             }
 
             // Inicializar ChoiceBox con datos de MongoDB
@@ -2217,16 +2309,19 @@ public class UsuarioController implements Initializable {
                 }
 
                 selection.setItems(catNames);
+                System.out.println("ChoiceBox cargado con " + catNames.size() + " gatos disponibles");
             }
 
             // Configurar CheckBoxes
             setupCheckBox(pleasecheck, confirmation);
             setupCheckBox(accept, aceptbutton);
+
         } catch (Exception e) {
             System.err.println("Error inicializando componentes UI: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 
     private void initializeAdoptView() {
         if (selection == null) return; // ← Prevención de NPE
@@ -2255,14 +2350,21 @@ public class UsuarioController implements Initializable {
     }
 
     private void loadCatsIntoView() {
-        if (catsContainer == null) return;
+        if (catsContainer == null) {
+            System.out.println("catsContainer es nulo!");
+            return;
+        }
+
+        System.out.println("Cargando gatos en vista...");
 
         Platform.runLater(() -> {
             updatePage();
-            updatePaginationButtons(); // Asegurar que los botones se actualicen
+            updatePaginationButtons();
 
-            if (scrol != null) {
-                scrol.setVvalue(0.0);
+            // Depuración adicional
+            System.out.println("Gatos cargados: " + catsContainer.getChildren().size());
+            if (nextpage != null) {
+                System.out.println("Botón siguiente habilitado: " + !nextpage.isDisabled());
             }
         });
     }
@@ -2466,9 +2568,9 @@ public class UsuarioController implements Initializable {
             mediaPlayer.stop();
         }
 
-        currentFxmlPath = "/com/java/fx/main.fxml";
+        setCurrentFxmlPath("/com/java/fx/main.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
@@ -2480,9 +2582,9 @@ public class UsuarioController implements Initializable {
     @FXML
     private void handleGoToWeb2(MouseEvent event) {
         try {
-            currentFxmlPath = "/com/java/fx/web2.fxml";
+            setCurrentFxmlPath("/com/java/fx/web2.fxml");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", currentLocale));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
             loader.setControllerFactory(Main.context::getBean);
 
             Parent root = loader.load();

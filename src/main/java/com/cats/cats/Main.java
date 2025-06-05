@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 public class Main extends Application {
 	static ConfigurableApplicationContext context;
 	private static CountDownLatch springLatch = new CountDownLatch(1);
-	private static Locale currentLocale = Locale.getDefault();
+	public static Locale currentLocale = Locale.getDefault();
 
 	public static void main(String[] args) {
 		// Fuerza español genérico al inicio
@@ -79,6 +79,25 @@ public class Main extends Application {
 
 	public static void setLocale(Locale locale) {
 		currentLocale = locale;
+	}
+	public static Locale getCurrentLocale() {
+		return currentLocale;
+	}
+	public static void printBundleInfo() {
+		System.out.println("Current locale: " + currentLocale);
+		ResourceBundle bundle = ResourceBundle.getBundle("Messages", currentLocale);
+		System.out.println("Bundle locale: " + bundle.getLocale());
+	}
+	// En la clase Main
+
+
+	// Llamar esto después de cambiar el locale
+	public static void setCurrentLocale(Locale locale) {
+		currentLocale = locale;
+		// Forzamos que el locale por defecto de Java cambie también
+		Locale.setDefault(locale);
+		ResourceBundle.clearCache();
+		printBundleInfo();
 	}
 
 	@Bean

@@ -27,6 +27,8 @@ public class Cat {
     private String imageId3;
     private String videoID;
     private String bornDate;
+    private String ongName;
+    private String catLocation;
     private boolean adopted = false;
 
 
@@ -36,7 +38,7 @@ public class Cat {
 
     public Cat(ObjectId id, String breed, String age, String sex, String color, double height, double width,
                String friendlyWithKids, String friendlyWithAnimals, String description,
-               String image1Path, String image2Path, String image3Path, String videoPath, String name, String imageId1, String imageId2, String imageId3, String videoID, String bornDate, boolean adopted) {
+               String image1Path, String image2Path, String image3Path, String videoPath, String name, String imageId1, String imageId2, String imageId3, String videoID, String bornDate, String ongName, String catLocation, boolean adopted) {
         this.id = id;
         this.breed = breed;
         this.age = age;
@@ -58,6 +60,8 @@ public class Cat {
         this.videoID = videoID;
         this.adopted = adopted;
         this.bornDate = bornDate;
+        this.ongName = ongName;
+        this.catLocation = catLocation;
     }
 
     public boolean isAdopted() {
@@ -229,5 +233,21 @@ public class Cat {
 
     public void setBornDate(String bornDate) {
         this.bornDate = bornDate;
+    }
+
+    public String getOngName() {
+        return ongName;
+    }
+
+    public void setOngName(String ongName) {
+        this.ongName = ongName;
+    }
+
+    public String getCatLocation() {
+        return catLocation;
+    }
+
+    public void setCatLocation(String catLocation) {
+        this.catLocation = catLocation;
     }
 }

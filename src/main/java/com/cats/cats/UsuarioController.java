@@ -134,7 +134,8 @@ public class UsuarioController implements Initializable {
     private ListView<Cat> listview2;
 
     @FXML
-    private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail;
+    private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
+    fieldaddong1, fieldaddplace1;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword;
@@ -149,7 +150,7 @@ public class UsuarioController implements Initializable {
             count, theconditions,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
             errorbreed, errorage, errorsex, errorcolor, errorheight, errorwidth, erroroption1, erroroption2, errordescription, errorimage1, errorimage2, errorimage3, errorvideo1, successMessage, nameadd1, errorname1,
-            errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate;
+            errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1;
 
     @FXML
     private DatePicker fieldaddBornDate;
@@ -330,6 +331,7 @@ public class UsuarioController implements Initializable {
                     statusLabel.setTextFill(currentCat.isAdopted() ? Color.RED : Color.GREEN);
                     bornDateLabel.setText("Born: " + currentCat.getBornDate());
                 }
+
 
 
                 // Descripción
@@ -966,6 +968,19 @@ public class UsuarioController implements Initializable {
             }
         }
 
+        // Validar nombre de ONG
+        if (fieldaddong1.getText().trim().isEmpty()) {
+            errorongname.setText(resources.getString("error.ongname"));
+            errorongname.setVisible(true);
+            isValid = false;
+        }
+        // Validar ubicación
+        if (fieldaddplace1.getText().trim().isEmpty()) {
+            errorcatplace1.setText(resources.getString("error.catplace1"));
+            errorcatplace1.setVisible(true);
+            isValid = false;
+        }
+
         // Validar Friendly with kids
         if (choiceadd1.getValue() == null || choiceadd1.getValue().isEmpty()) {
             erroroption1.setVisible(true);
@@ -1063,6 +1078,8 @@ public class UsuarioController implements Initializable {
             nuevoGato.setFriendlyWithKids(choiceadd1.getValue());
             nuevoGato.setFriendlyWithAnimals(choiceadd2.getValue());
             nuevoGato.setDescription(areaadd.getText().trim());
+            nuevoGato.setOngName(fieldaddong1.getText().trim());
+            nuevoGato.setCatLocation(fieldaddplace1.getText().trim());
 
             // Asignar fecha de nacimiento si está disponible
             if (fieldaddBornDate.getValue() != null) {
@@ -1129,6 +1146,10 @@ public class UsuarioController implements Initializable {
         errorimage3.setVisible(false);
         errorvideo1.setVisible(false);
         errorname1.setVisible(false);
+        errorongname.setVisible(false);
+        errorcatplace1.setVisible(false);
+        if (errorongname != null) errorongname.setVisible(false);
+        if (errorcatplace1 != null) errorcatplace1.setVisible(false);
 
     }
 
@@ -1147,6 +1168,8 @@ public class UsuarioController implements Initializable {
         addimage1.setImage(null);
         addimage2.setImage(null);
         addimage3.setImage(null);
+        fieldaddong1.clear();
+        fieldaddplace1.clear();
         if (addvideo1.getMediaPlayer() != null) {
             addvideo1.getMediaPlayer().stop();
             addvideo1.setMediaPlayer(null);
@@ -1510,30 +1533,30 @@ public class UsuarioController implements Initializable {
 
         // Validaciones de campos
         if (name.isEmpty()) {
-            warningNameSur.setText("Name and Surname cannot be empty");
+            warningNameSur.setText(resources.getString("error.name.empty")); // Modificado
             warningNameSur.setVisible(true);
             hasError = true;
         }
         if (adress.isEmpty()) {
-            warningAdress.setText("Address cannot be empty");
+            warningAdress.setText(resources.getString("error.address.empty")); // Modificado
             warningAdress.setVisible(true);
             hasError = true;
         }
         if (postal.isEmpty()) {
-            warningPostal.setText("Postal Code cannot be empty");
+            warningPostal.setText(resources.getString("error.postal.empty")); // Modificado
             warningPostal.setVisible(true);
             hasError = true;
         } else if (!postal.matches("\\d+")) {
-            warningPostal.setText("Postal Code must be numbers");
+            warningPostal.setText(resources.getString("error.postal.non_numeric")); // Modificado
             warningPostal.setVisible(true);
             hasError = true;
         }
         if (phone.isEmpty()) {
-            warningPhone.setText("Phone Number cannot be empty");
+            warningPhone.setText(resources.getString("error.phone.empty")); // Modificado
             warningPhone.setVisible(true);
             hasError = true;
         } else if (!phone.matches("\\d+")) {
-            warningPhone.setText("Phone Number must be numbers");
+            warningPhone.setText(resources.getString("error.phone.non_numeric")); // Modificado
             warningPhone.setVisible(true);
             hasError = true;
         }
@@ -1888,10 +1911,18 @@ public class UsuarioController implements Initializable {
             if (choiceadd1 != null) choiceadd1.setItems(friendlyOptions);
             if (choiceadd2 != null) choiceadd2.setItems(friendlyOptions);
 
-            // 12. Cargar datos de gatos
+            // 12. Configurar tooltips para campos adicionales
+            if (fieldaddong1 != null) {
+                Tooltip.install(fieldaddong1, new Tooltip(this.resources.getString("tooltip.ongname")));
+            }
+            if (fieldaddplace1 != null) {
+                Tooltip.install(fieldaddplace1, new Tooltip(this.resources.getString("tooltip.catplace")));
+            }
+
+            // 13. Cargar datos de gatos
             loadCats();
 
-            // 13. Ejecutar tareas diferidas en UI thread
+            // 14. Ejecutar tareas diferidas en UI thread
             Platform.runLater(() -> {
                 updateCatStatusDisplays();
                 if (catsContainer != null) {
@@ -1900,7 +1931,7 @@ public class UsuarioController implements Initializable {
                 updatePaginationButtons();
             });
 
-            // 14. Inicializar conexión a base de datos
+            // 15. Inicializar conexión a base de datos
             mongoDatabase = getMongoDatabase();
 
         } catch (Exception e) {
@@ -1910,6 +1941,7 @@ public class UsuarioController implements Initializable {
             this.resources = ResourceBundle.getBundle("Messages");
         }
     }
+
 
 
 

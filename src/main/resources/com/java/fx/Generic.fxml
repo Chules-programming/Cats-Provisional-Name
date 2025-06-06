@@ -24,6 +24,8 @@
             <Label fx:id="friendlyKidsLabel" layoutX="548.0" layoutY="344.0" />
             <Label fx:id="friendlyAnimalsLabel" layoutX="552.0" layoutY="396.0" />
             <Label fx:id="statusLabel" layoutX="547.0" layoutY="430.0" />
+            <Label fx:id="ongLabel" layoutX="547.0" layoutY="470.0" />
+            <Label fx:id="locationLabel" layoutX="547.0" layoutY="500.0" />
             <Label fx:id="personality1Label" layoutX="11.0" layoutY="444.0" wrapText="true" prefWidth="777.0" />
             <Label fx:id="personality2Label" layoutX="86.0" layoutY="463.0" wrapText="true" prefWidth="690.0" />
             <Button fx:id="playVideoButton" layoutX="326.0" layoutY="411.0" text="%playVideoButton" />

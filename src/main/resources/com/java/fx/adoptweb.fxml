@@ -25,11 +25,11 @@
       <TextField fx:id="fieldpostal" layoutX="335.0" layoutY="227.0" />
       <TextField fx:id="fieldphone" layoutX="334.0" layoutY="288.0" />
       <Label fx:id="warningName" layoutX="341.0" layoutY="319.0" text="%warningName" textFill="red" visible="false" />
-      <Label fx:id="warningPostal" layoutX="62.0" layoutY="231.0" text="%warningPostal" textFill="red" visible="false" />
-      <Label fx:id="warningPhone" layoutX="40.0" layoutY="292.0" text="%warningPhone" textFill="red" visible="false" />
-      <Label fx:id="warningNameSur" layoutX="-3.0" layoutY="173.0" text="%warningNameSur" textFill="red" visible="false" />
+      <Label fx:id="warningPostal" layoutX="42.0" layoutY="231.0" text="%warningPostal" textFill="red" visible="false" />
+      <Label fx:id="warningPhone" layoutX="10.0" layoutY="292.0" text="%warningPhone" textFill="red" visible="false" />
+      <Label fx:id="warningNameSur" layoutX="10.0" layoutY="173.0" text="%warningNameSur" textFill="red" visible="false" />
       <Label fx:id="warningAdress" layoutX="98.0" layoutY="203.0" text="%warningAdress" textFill="red" visible="false" />
-      <CheckBox fx:id="pleasecheck" layoutX="99.0" layoutY="419.0" text="pleasecheck" />
+      <CheckBox fx:id="pleasecheck" layoutX="218.0" layoutY="455.0" text="" />
       <Button fx:id="conditions" layoutX="250.0" layoutY="451.0" text="%theconditions" onMouseClicked="#handleGoConditionsSection" />
       <Button fx:id="confirmation" layoutX="281.0" layoutY="608.0" text="%confirmation" disable="true" style="-fx-opacity: 0.7; -fx-cursor: default;" onMouseClicked="#handleConfirmation" />
       <Button fx:id="back" layoutX="98.0" layoutY="608.0" text="%back" onMouseClicked="#handleGoCatSection" />

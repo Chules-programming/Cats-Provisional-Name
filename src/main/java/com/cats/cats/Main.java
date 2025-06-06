@@ -3,6 +3,7 @@ package com.cats.cats;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
@@ -47,11 +48,8 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		Platform.runLater(() -> {
 			try {
-				// 1. Cargar el ResourceBundle con el locale actual (CORREGIDO)
-				ResourceBundle bundle = ResourceBundle.getBundle(
-						"Messages",  // ¡Solo el nombre base!
-						currentLocale
-				);
+				// 1. Cargar el ResourceBundle con el locale actual
+				ResourceBundle bundle = getResourceBundle();
 
 				// 2. Configurar FXMLLoader con el bundle y el controllerFactory de Spring
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
@@ -77,21 +75,21 @@ public class Main extends Application {
 		Platform.exit();
 	}
 
-	public static void setLocale(Locale locale) {
-		currentLocale = locale;
+	// Bean para ResourceBundle
+	@Bean
+	public ResourceBundle resourceBundle() {
+		return ResourceBundle.getBundle("Messages", getCurrentLocale());
 	}
+
+	// Método estático para acceder al ResourceBundle
+	public static ResourceBundle getResourceBundle() {
+		return context.getBean(ResourceBundle.class);
+	}
+
 	public static Locale getCurrentLocale() {
 		return currentLocale;
 	}
-	public static void printBundleInfo() {
-		System.out.println("Current locale: " + currentLocale);
-		ResourceBundle bundle = ResourceBundle.getBundle("Messages", currentLocale);
-		System.out.println("Bundle locale: " + bundle.getLocale());
-	}
-	// En la clase Main
 
-
-	// Llamar esto después de cambiar el locale
 	public static void setCurrentLocale(Locale locale) {
 		currentLocale = locale;
 		// Forzamos que el locale por defecto de Java cambie también
@@ -100,9 +98,10 @@ public class Main extends Application {
 		printBundleInfo();
 	}
 
-	@Bean
-	public CatDetailController catDetailController() {
-		return new CatDetailController();
+	public static void printBundleInfo() {
+		System.out.println("Current locale: " + currentLocale);
+		ResourceBundle bundle = ResourceBundle.getBundle("Messages", currentLocale);
+		System.out.println("Bundle locale: " + bundle.getLocale());
 	}
 }
 

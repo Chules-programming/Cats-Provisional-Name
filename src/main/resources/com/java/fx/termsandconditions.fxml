@@ -9,9 +9,9 @@
             fx:controller="com.cats.cats.UsuarioController">
    <children>
       <!-- Texto de condiciones traducible -->
-      <Label fx:id="theconditions"
+      <Label fx:id="theconditions2"
              layoutX="193.0" layoutY="99.0"
-             text="%theconditions" />
+             text="%theconditions2" />
 
       <!-- Checkbox para aceptar -->
       <CheckBox fx:id="accept" layoutX="371.0" layoutY="600.0" text="%accept.text" />

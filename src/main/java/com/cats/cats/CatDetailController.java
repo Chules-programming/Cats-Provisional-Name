@@ -1,9 +1,6 @@
 package com.cats.cats;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -16,11 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.util.ResourceBundle;
 
 @Component
 @Scope("prototype")
@@ -30,16 +23,15 @@ public class CatDetailController {
     @FXML private MediaView catVideo;
     @FXML private Label catNameLabel, breedLabel, ageLabel, heightLabel, widthLabel,
             colorLabel, sexLabel, friendlyKidsLabel, friendlyAnimalsLabel,
-            statusLabel, personality1Label, personality2Label;
+            statusLabel, personality1Label, personality2Label, bornDateLabel, ongLabel, locationLabel;
     @FXML private Button returnButton, playVideoButton, adoptButton;
-
-    @FXML private Label bornDateLabel;
-
 
     @Autowired private CatService catService;
     @Autowired private UsuarioController usuarioController;
+    private ResourceBundle resources;
 
     private Cat currentCat;
+
 
     public void setCurrentCat(Cat cat) {
         this.currentCat = cat;
@@ -57,19 +49,29 @@ public class CatDetailController {
     public void updateCatDetails() {
         if (currentCat == null) return;
 
+        // Etiquetas traducidas con ResourceBundle
+        this.resources = Main.getResourceBundle();
         catNameLabel.setText(currentCat.getName());
-        breedLabel.setText("Breed: " + currentCat.getBreed());
-        ageLabel.setText("Age: " + currentCat.getAge());
-        heightLabel.setText("Height: " + currentCat.getHeight() + " cm");
-        widthLabel.setText("Width: " + currentCat.getWidth() + " cm");
-        colorLabel.setText("Color: " + currentCat.getColor());
-        sexLabel.setText("Sex: " + currentCat.getSex());
-        friendlyKidsLabel.setText("Friendly with kids: " + currentCat.getFriendlyWithKids());
-        friendlyAnimalsLabel.setText("Friendly with animals: " + currentCat.getFriendlyWithAnimals());
-        statusLabel.setText("Status: " + (currentCat.isAdopted() ? "Adopted" : "Not adopted"));
-        statusLabel.setTextFill(currentCat.isAdopted() ? javafx.scene.paint.Color.RED : javafx.scene.paint.Color.GREEN);
-        bornDateLabel.setText("Born Date: " + (currentCat.getBornDate() != null ? currentCat.getBornDate() : "Unknown"));
+        breedLabel.setText(resources.getString("cat.breed") + ": " + currentCat.getBreed());
+        ageLabel.setText(resources.getString("cat.age") + ": " + currentCat.getAge());
+        heightLabel.setText(resources.getString("cat.height") + ": " + currentCat.getHeight() + " " + resources.getString("cat.unit.cm"));
+        widthLabel.setText(resources.getString("cat.width") + ": " + currentCat.getWidth() + " " + resources.getString("cat.unit.cm"));
+        colorLabel.setText(resources.getString("cat.color") + ": " + currentCat.getColor());
+        sexLabel.setText(resources.getString("cat.sex") + ": " + currentCat.getSex());
+        friendlyKidsLabel.setText(resources.getString("cat.friendly.kids") + ": " + currentCat.getFriendlyWithKids());
+        friendlyAnimalsLabel.setText(resources.getString("cat.friendly.animals") + ": " + currentCat.getFriendlyWithAnimals());
 
+        // NUEVOS CAMPOS AÑADIDOS
+        ongLabel.setText(resources.getString("cat.ong") + ": " + currentCat.getOngName());
+        locationLabel.setText(resources.getString("cat.location") + ": " + currentCat.getCatLocation());
+
+        statusLabel.setText(resources.getString("cat.status") + ": " +
+                (currentCat.isAdopted() ? resources.getString("cat.adopted") : resources.getString("cat.available")));
+        statusLabel.setTextFill(currentCat.isAdopted() ? javafx.scene.paint.Color.RED : javafx.scene.paint.Color.GREEN);
+        bornDateLabel.setText(resources.getString("cat.born.date") + ": " +
+                (currentCat.getBornDate() != null ? currentCat.getBornDate() : resources.getString("cat.unknown")));
+
+        // Descripción dividida en dos partes
         String[] descParts = splitDescription(currentCat.getDescription());
         personality1Label.setText(descParts[0]);
         personality2Label.setText(descParts.length > 1 ? descParts[1] : "");
@@ -80,8 +82,8 @@ public class CatDetailController {
     }
 
     private void setupButtons() {
-        adoptButton.setText("Adopt " + currentCat.getName());
-        playVideoButton.setText("Play");
+        adoptButton.setText(resources.getString("cat.adopt.button") + " " + currentCat.getName());
+        playVideoButton.setText(resources.getString("cat.play"));
         playVideoButton.setOnAction(e -> toggleVideoPlayback());
         returnButton.setOnAction(e -> returnButton.getScene().getWindow().hide());
         adoptButton.setOnAction(e -> handleAdopt());
@@ -89,14 +91,10 @@ public class CatDetailController {
 
     private void handleAdopt() {
         try {
-            // Cerrar la ventana actual de detalles
             Stage currentStage = (Stage) adoptButton.getScene().getWindow();
             currentStage.close();
 
-            // Obtener el controlador principal desde Spring
             UsuarioController usuarioController = Main.context.getBean(UsuarioController.class);
-
-            // Abrir la pantalla de adopción
             usuarioController.openAdoptionScreen(currentCat);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -108,10 +106,10 @@ public class CatDetailController {
         if (player != null) {
             if (player.getStatus() == MediaPlayer.Status.PLAYING) {
                 player.pause();
-                playVideoButton.setText("Play");
+                playVideoButton.setText(resources.getString("cat.play"));
             } else {
                 player.play();
-                playVideoButton.setText("Pause");
+                playVideoButton.setText(resources.getString("cat.pause"));
             }
         }
     }
@@ -173,8 +171,9 @@ public class CatDetailController {
 
     @FXML
     private void initialize() {
-        // La inicialización se hace en updateCatDetails() luego de setCurrentCat()
+        // Se inicializa tras setCurrentCat()
     }
 }
+
 
 

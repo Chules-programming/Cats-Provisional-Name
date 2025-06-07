@@ -63,7 +63,7 @@
 
       <!-- Description area -->
       <Label fx:id="descriptionadd" layoutX="271.0" layoutY="164.0" text="%descriptionadd" />
-      <TextArea fx:id="areaadd" layoutX="375.0" layoutY="160.0" prefHeight="149.0" prefWidth="200.0" />
+      <TextArea fx:id="areaadd" layoutX="375.0" layoutY="160.0" prefHeight="70.0" prefWidth="200.0" />
       <Label fx:id="errordescription" layoutX="426.0" layoutY="324.0" text="%errordescription" textFill="red" visible="false" />
 
       <!-- Name field -->
@@ -128,5 +128,6 @@
             <Font size="10.0" />
          </font>
       </Label>
+      <Label fx:id="descriptionCounter" layoutX="375.0" layoutY="240.0" text="0/100" />
    </children>
 </AnchorPane>

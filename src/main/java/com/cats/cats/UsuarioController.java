@@ -7,6 +7,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import javafx.application.HostServices;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -121,6 +122,13 @@ public class UsuarioController implements Initializable {
             component.setText("[" + key + "]");
         }
     }
+    private HostServices hostServices;
+
+    public void setHostServices(HostServices hostServices) {
+        this.hostServices = hostServices;
+    }
+    private static final int MAX_DESCRIPTION_CHARS = 100;
+    private static final int MAX_DESCRIPTION_LINES = 2;
 
 
     @FXML
@@ -150,7 +158,7 @@ public class UsuarioController implements Initializable {
             count, theconditions,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
             errorbreed, errorage, errorsex, errorcolor, errorheight, errorwidth, erroroption1, erroroption2, errordescription, errorimage1, errorimage2, errorimage3, errorvideo1, successMessage, nameadd1, errorname1,
-            errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1;
+            errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1, descriptionCounter;
 
     @FXML
     private DatePicker fieldaddBornDate;
@@ -909,11 +917,40 @@ public class UsuarioController implements Initializable {
             errorbreed.setVisible(true);
             isValid = false;
         }
+
         if (fieldaddBornDate.getValue() == null) {
             errorBornDate.setText("Date of birth is required");
             errorBornDate.setVisible(true);
             isValid = false;
         }
+        // Validar Descripción
+        if (areaadd.getText().trim().isEmpty()) {
+            errordescription.setText(resources.getString("error.description_empty"));
+            errordescription.setVisible(true);
+            isValid = false;
+        } else {
+            // Validar longitud máxima de caracteres
+            if (areaadd.getText().length() > MAX_DESCRIPTION_CHARS) {
+                errordescription.setText(
+                        resources.getString("error.description_chars") +
+                                " (" + areaadd.getText().length() + "/" + MAX_DESCRIPTION_CHARS + ")"
+                );
+                errordescription.setVisible(true);
+                isValid = false;
+            }
+
+            // Validar número máximo de líneas
+            int lineCount = areaadd.getText().split("\n").length;
+            if (lineCount > MAX_DESCRIPTION_LINES) {
+                errordescription.setText(
+                        resources.getString("error.description_lines") +
+                                " (" + lineCount + "/" + MAX_DESCRIPTION_LINES + ")"
+                );
+                errordescription.setVisible(true);
+                isValid = false;
+            }
+        }
+
 
         // Validar Age
         if (fieldaddage.getText().trim().isEmpty()) {
@@ -1489,26 +1526,27 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleTwitter(MouseEvent event) {
-        try {
-            Desktop.getDesktop().browse(new URI("https://x.com/home"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        openURL("https://x.com/home");
     }
 
     @FXML
     private void handleLinkedin(MouseEvent event) {
-        try {
-            Desktop.getDesktop().browse(new URI("www.linkedin.com/feed/"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        openURL("https://www.linkedin.com/feed/");
     }
 
     @FXML
     private void handlegmail(MouseEvent event) {
+        openURL("https://www.gmail.com");
+    }
+
+    private void openURL(String url) {
         try {
-            Desktop.getDesktop().browse(new URI("https://www.gmail.com"));
+            if (hostServices != null) {
+                hostServices.showDocument(url);
+            } else {
+                // Fallback opcional
+                System.out.println("HostServices no disponible. URL: " + url);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1940,8 +1978,57 @@ public class UsuarioController implements Initializable {
             // Fallback si falla la carga con locale
             this.resources = ResourceBundle.getBundle("Messages");
         }
-    }
+        // Validación en tiempo real para la descripción
+        if (areaadd != null) {
+            areaadd.textProperty().addListener((observable, oldValue, newValue) -> {
+                // Validar longitud máxima
+                if (newValue.length() > MAX_DESCRIPTION_CHARS) {
+                    Platform.runLater(() -> {
+                        areaadd.setText(oldValue);
+                        errordescription.setText(
+                                resources.getString("error.description_chars") +
+                                        " (" + newValue.length() + "/" + MAX_DESCRIPTION_CHARS + ")"
+                        );
+                        errordescription.setVisible(true);
+                    });
+                    return;
+                }
 
+                // Validar número de líneas
+                int lineCount = newValue.split("\n").length;
+                if (lineCount > MAX_DESCRIPTION_LINES) {
+                    Platform.runLater(() -> {
+                        areaadd.setText(oldValue);
+                        errordescription.setText(
+                                resources.getString("error.description_lines") +
+                                        " (" + lineCount + "/" + MAX_DESCRIPTION_LINES + ")"
+                        );
+                        errordescription.setVisible(true);
+                    });
+                    return;
+                }
+
+                // Si pasa las validaciones, ocultar el error
+                errordescription.setVisible(false);
+
+                // ——— AÑADIDO: contador y cambio de color ———
+                if (descriptionCounter != null) {
+                    descriptionCounter.setText(
+                            newValue.length() + "/" + MAX_DESCRIPTION_CHARS +
+                                    " | Lines: " + lineCount + "/" + MAX_DESCRIPTION_LINES
+                    );
+
+                    // Cambiar color si se exceden los límites
+                    if (newValue.length() > MAX_DESCRIPTION_CHARS || lineCount > MAX_DESCRIPTION_LINES) {
+                        descriptionCounter.setTextFill(Color.RED);
+                    } else {
+                        descriptionCounter.setTextFill(Color.BLACK);
+                    }
+                }
+                // ————————————————————————————————
+            });
+        }
+    }
 
 
 

@@ -1,6 +1,7 @@
 package com.cats.cats;
 
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,6 +21,8 @@ public class Main extends Application {
 	static ConfigurableApplicationContext context;
 	private static CountDownLatch springLatch = new CountDownLatch(1);
 	public static Locale currentLocale = Locale.getDefault();
+
+	private HostServices appHostServices;
 
 	public static void main(String[] args) {
 		// Fuerza español genérico al inicio
@@ -46,6 +49,9 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
+		// Guardar referencia a HostServices
+		this.appHostServices = getHostServices();
+
 		Platform.runLater(() -> {
 			try {
 				// 1. Cargar el ResourceBundle con el locale actual
@@ -56,7 +62,13 @@ public class Main extends Application {
 				loader.setControllerFactory(context::getBean);
 				loader.setResources(bundle);
 
-				Scene scene = new Scene(loader.load());
+				Parent root = loader.load();
+				Scene scene = new Scene(root);
+
+				// 3. Configurar HostServices en el controlador principal
+				UsuarioController controller = loader.getController();
+				controller.setHostServices(this.appHostServices);
+
 				primaryStage.setScene(scene);
 				primaryStage.setTitle("Cats Application");
 				primaryStage.show();

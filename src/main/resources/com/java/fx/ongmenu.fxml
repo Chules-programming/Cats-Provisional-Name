@@ -50,7 +50,7 @@
       </ImageView>
       <Label fx:id="label8ong" layoutX="434.0" layoutY="342.0" text="%label8ong" />
 
-      <Label fx:id="label9ong" layoutX="113.0" layoutY="394.0" text="%label9ong" />
+      <Label fx:id="label9ong" layoutX="107.0" layoutY="394.0" text="%label9ong" />
       <PasswordField fx:id="accessfield" layoutX="205.0" layoutY="390.0" />
       <Label fx:id="errorongpassword" layoutX="235.0" layoutY="415.0" text="%errorongpassword" textFill="red" visible="false" />
 

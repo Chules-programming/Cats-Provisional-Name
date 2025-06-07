@@ -109,7 +109,8 @@ public class UsuarioController implements Initializable {
     }
 
     private Usuario currentUser;
-    private List<Cat> allCats; // Lista completa de gatos
+    private List<Cat> allCats;// Lista completa de gatos
+    private List<Cat> searchResults;
     private int currentPage = 0;
     private static final int CATS_PER_PAGE = 6;
     private void safeSetText(Labeled component, String key, ResourceBundle bundle) {
@@ -143,7 +144,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1;
+    fieldaddong1, fieldaddplace1, searchField;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword;
@@ -186,7 +187,7 @@ public class UsuarioController implements Initializable {
     private ChoiceBox<String> selection, choiceadd1, choiceadd2;
 
     @FXML
-    private VBox catsContainer;
+    private VBox catsContainer, searchResultsContainer;
 
     @FXML
     private MediaView currentMediaView, addvideo1, catVideo;
@@ -1165,6 +1166,60 @@ public class UsuarioController implements Initializable {
             showErrorAlert("Error saving the cat: " + e.getMessage());
         }
     }
+    @FXML
+    private void handleSearchBreed(MouseEvent event) {
+        String breed = searchField.getText().trim();
+
+        // Validar campo vacío usando clave de recursos
+        if (breed.isEmpty()) {
+            showErrorAlert("search.empty");
+            return;
+        }
+
+        List<Cat> searchResults = catRepository.findByBreedIgnoreCaseAndAdoptedFalse(breed);
+
+        // Validar resultados vacíos usando clave de recursos
+        if (searchResults.isEmpty()) {
+            // Crear mensaje personalizado con parámetro
+            String message = resources.getString("search.notfound").replace("{0}", breed);
+            showErrorAlert(message);
+            return;
+        }
+
+        // Cargar vista de resultados
+        try {
+            setCurrentFxmlPath("/com/java/fx/BreedSearch.fxml");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/BreedSearch.fxml"));
+            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+            loader.setControllerFactory(Main.context::getBean);
+
+            Parent root = loader.load();
+            UsuarioController controller = loader.getController();
+            controller.showSearchResults(searchResults);
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root, 600, 750));
+            stage.setResizable(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Error loading search view");
+        }
+    }
+
+    public void showSearchResults(List<Cat> results) {
+        this.searchResults = results;
+        searchResultsContainer.getChildren().clear();
+
+        for (Cat cat : results) {
+            Node catCard = createCatCard(cat);
+            searchResultsContainer.getChildren().add(catCard);
+        }
+    }
+
+    @FXML
+    private void handleBackFromSearch(MouseEvent event) throws IOException {
+        handleGoToWeb2(event);
+    }
 
 
 
@@ -1707,14 +1762,10 @@ public class UsuarioController implements Initializable {
             stage.setTitle(cat.getName() + " - Details");
             stage.show();
 
-            stage.setOnCloseRequest(e -> {
-                if (controller != null) {
-                    controller.cleanUp();
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            showErrorAlert("Error loading cat details: " + e.getMessage());
+            stage.setOnCloseRequest(e -> controller.cleanUp());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showErrorAlert("Error loading cat details: " + ex.getMessage());
         }
     }
 
@@ -2373,12 +2424,20 @@ public class UsuarioController implements Initializable {
         }
     }
 
-    private void showErrorAlert(String messageKey) {
+    private void showErrorAlert(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(resources.getString("alert.error.title"));
             alert.setHeaderText(null);
-            alert.setContentText(resources.getString(messageKey));
+
+            // Intentar obtener el mensaje del bundle
+            try {
+                alert.setContentText(resources.getString(message));
+            } catch (MissingResourceException e) {
+                // Si no existe la clave, usar el mensaje directamente
+                alert.setContentText(message);
+            }
+
             alert.showAndWait();
         });
     }
@@ -2508,8 +2567,8 @@ public class UsuarioController implements Initializable {
             catImage.setImage(getDefaultCatImage());
         }
 
-        // Configurar manejador de clic
-        catImage.setOnMouseClicked(e -> handleCatClick(e, cat));
+        // Configurar manejador de clic SIMPLIFICADO
+        catImage.setOnMouseClicked(ev -> handleCatClick(ev, cat));
 
         Label nameLabel = new Label(cat.getName());
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -2522,31 +2581,6 @@ public class UsuarioController implements Initializable {
         return card;
     }
 
-
-
-
-    /* private void showAllCats() {
-         if (catsContainer == null) return;
-        catsContainer.getChildren().clear();
-        catsContainer.setSpacing(20);
-        catsContainer.setPadding(new Insets(20));
-
-        List<Cat> cats = catRepository.findAll();
-        int itemsPerRow = 2;
-        HBox currentRow = null;
-
-        for (int i = 0; i < cats.size(); i++) {
-            if (i % itemsPerRow == 0) {
-                currentRow = new HBox(20);
-                currentRow.setAlignment(Pos.CENTER);
-                catsContainer.getChildren().add(currentRow);
-            }
-
-            Cat cat = cats.get(i);
-            VBox catCard = createCatBox(cat);
-            currentRow.getChildren().add(catCard);
-        }
-    } */
 
     private VBox createCatBox(Cat cat) {
         VBox card = new VBox(10);

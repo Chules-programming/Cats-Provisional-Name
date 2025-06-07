@@ -11,9 +11,7 @@ import javafx.application.HostServices;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
@@ -42,7 +40,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -166,7 +163,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private Button register, registeruser, goback, login, adopt, nextpage, previouspage, gomenu, back, back1, confirmation, play1, play2,
-             notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, goToLoginButton;
+             notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, goToLoginButton, searchButton;
 
     @FXML
     private HBox buttonContainer;
@@ -2013,12 +2010,37 @@ public class UsuarioController implements Initializable {
 
             // 14. Ejecutar tareas diferidas en UI thread
             Platform.runLater(() -> {
+                // Configuración SOLO para elementos visibles
+                if (previouspage != null && previouspage.isVisible()) {
+                    previouspage.setMinWidth(100);
+                }
+                if (nextpage != null && nextpage.isVisible()) {
+                    nextpage.setMinWidth(100);
+                }
+                if (adopt != null) {
+                    adopt.setMinWidth(80);
+                }
+                if (searchButton != null) {
+                    searchButton.setMinWidth(80);
+                }
+                if (searchField != null) {
+                    searchField.setMinWidth(120);
+                    HBox.setHgrow(searchField, Priority.ALWAYS);
+                }
+
+                // Configuración especial para "Ir a log in"
+                if (goToLoginButton != null && goToLoginButton.isVisible()) {
+                    goToLoginButton.setMinWidth(100);
+                }
+
+                // Actualizar vista
                 updateCatStatusDisplays();
                 if (catsContainer != null) {
                     loadCatsIntoView();
                 }
                 updatePaginationButtons();
             });
+
 
             // 15. Inicializar conexión a base de datos
             mongoDatabase = getMongoDatabase();
@@ -2760,23 +2782,26 @@ public class UsuarioController implements Initializable {
         if (nextpage != null) {
             nextpage.setDisable(currentPage >= totalPages - 1);
             nextpage.setVisible(!(currentPage >= totalPages - 1));
+            nextpage.setManaged(!(currentPage >= totalPages - 1));
         }
+
         if (previouspage != null) {
             previouspage.setDisable(currentPage <= 0);
             previouspage.setVisible(!(currentPage <= 0));
+            previouspage.setManaged(!(currentPage <= 0));
         }
 
-        // Mostrar "Go to Log in" solo en la primera página
+        // SOLUCIÓN DEFINITIVA PARA "Ir a log in"
         if (goToLoginButton != null) {
             boolean showGoToLogin = currentPage == 0;
             goToLoginButton.setVisible(showGoToLogin);
             goToLoginButton.setManaged(showGoToLogin);
 
-            // Ajustar margen izquierdo solo cuando está visible
+            // Solo establecer minWidth cuando sea visible
             if (showGoToLogin) {
-                HBox.setMargin(previouspage, new Insets(0, 0, 0, 20));
+                goToLoginButton.setMinWidth(100);
             } else {
-                HBox.setMargin(previouspage, new Insets(0, 0, 0, 0));
+                goToLoginButton.setMinWidth(0); // Ancho cero cuando no está visible
             }
         }
     }

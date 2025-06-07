@@ -34,29 +34,34 @@
               layoutX="0.0" layoutY="650.0"
               prefWidth="600.0" prefHeight="100.0"
               alignment="CENTER"
-              spacing="20"
+              spacing="10"
               style="-fx-background-color: #f0f0f0; -fx-padding: 10;">
             <!-- Botón para ir a login, solo visible en primera página -->
             <Button fx:id="goToLoginButton"
                     onMouseClicked="#handleGoToLogin"
                     text="%goToLoginButton"
                     visible="false"
-                    managed="false" />
+                    managed="false"/>
 
             <!-- Botones de paginación y adopción -->
             <Button fx:id="previouspage"
                     onMouseClicked="#handlePreviousPage"
-                    text="%previouspage" />
+                    text="%previouspage"
+                    minWidth="100" />
+
             <Button fx:id="adopt"
                     onMouseClicked="#handleAdopt"
-                    text="%adopt" />
+                    text="%adopt"
+                    minWidth="80" />
+
             <Button fx:id="nextpage"
                     onMouseClicked="#handleNextPage"
-                    text="%nextpage" />
+                    text="%nextpage"
+                    minWidth="100" />
 
             <!-- Nuevo buscador por raza -->
-            <TextField fx:id="searchField" promptText="%search.prompt" prefWidth="150.0" />
-            <Button fx:id="searchButton" onMouseClicked="#handleSearchBreed" text="%search.button" />
+            <TextField fx:id="searchField" promptText="%search.prompt" minWidth="120" HBox.hgrow="ALWAYS" />
+            <Button fx:id="searchButton" onMouseClicked="#handleSearchBreed" text="%search.button" minWidth="80" />
         </HBox>
     </children>
 </AnchorPane>

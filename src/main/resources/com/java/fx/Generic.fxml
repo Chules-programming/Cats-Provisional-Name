@@ -3,34 +3,74 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.media.MediaView?>
-<ScrollPane fx:id="scro" fitToWidth="true" prefHeight="600.0" prefWidth="800.0"
+<ScrollPane fx:id="scro" fitToWidth="true"
             xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.CatDetailController">
     <content>
-        <AnchorPane fx:id="AnchorGeneric" prefHeight="600.0" prefWidth="800.0">
-            <ImageView fx:id="catImage1" layoutX="74.0" layoutY="55.0" fitWidth="200.0" fitHeight="150.0" pickOnBounds="true" preserveRatio="true" />
-            <ImageView fx:id="catImage2" layoutX="318.0" layoutY="55.0" fitWidth="200.0" fitHeight="150.0" pickOnBounds="true" preserveRatio="true" />
-            <ImageView fx:id="catImage3" layoutX="85.0" layoutY="240.0" fitWidth="148.0" fitHeight="181.0" pickOnBounds="true" preserveRatio="true" />
-            <MediaView fx:id="catVideo" layoutX="274.0" layoutY="233.0" fitWidth="200.0" fitHeight="150.0" />
-            <Label fx:id="catNameLabel" layoutX="235.0" layoutY="14.0" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
-            <Label fx:id="heightLabel" layoutX="552.0" layoutY="46.0" />
-            <Label fx:id="widthLabel" layoutX="552.0" layoutY="96.0" />
-            <Label fx:id="colorLabel" layoutX="547.0" layoutY="153.0" />
-            <Label fx:id="breedLabel" layoutX="547.0" layoutY="196.0" />
-            <Label fx:id="ageLabel" layoutX="547.0" layoutY="241.0" />
-            <Label fx:id="bornDateLabel" layoutX="547.0" layoutY="271.0" text="bornDate" />
-            <Label fx:id="sexLabel" layoutX="552.0" layoutY="291.0" />
-            <Label fx:id="friendlyKidsLabel" layoutX="548.0" layoutY="344.0" />
-            <Label fx:id="friendlyAnimalsLabel" layoutX="552.0" layoutY="396.0" />
-            <Label fx:id="statusLabel" layoutX="547.0" layoutY="430.0" />
-            <Label fx:id="ongLabel" layoutX="547.0" layoutY="470.0" />
-            <Label fx:id="locationLabel" layoutX="547.0" layoutY="500.0" />
-            <Label fx:id="personality1Label" layoutX="11.0" layoutY="444.0" wrapText="true" prefWidth="777.0" />
-            <Label fx:id="personality2Label" layoutX="86.0" layoutY="463.0" wrapText="true" prefWidth="690.0" />
-            <Button fx:id="playVideoButton" layoutX="326.0" layoutY="411.0" text="%playVideoButton" />
-            <Button fx:id="returnButton" layoutX="135.0" layoutY="524.0" text="%returnButton" />
-            <Button fx:id="adoptButton" layoutX="374.0" layoutY="524.0" text="%adoptButton" />
+        <AnchorPane fx:id="AnchorGeneric" prefWidth="900" prefHeight="700">
+            <GridPane hgap="10" vgap="10"
+                      AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10"
+                      AnchorPane.bottomAnchor="10">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="30" />
+                    <ColumnConstraints percentWidth="40" />
+                    <ColumnConstraints percentWidth="30" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints percentHeight="10" />
+                    <RowConstraints percentHeight="30" />
+                    <RowConstraints percentHeight="30" />
+                    <RowConstraints percentHeight="15" />
+                    <RowConstraints percentHeight="15" />
+                </rowConstraints>
+
+                <!-- Fila 0: Nombre del gato -->
+                <Label fx:id="catNameLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"
+                       GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.rowIndex="0"/>
+
+                <!-- Fila 1: Imágenes -->
+                <HBox spacing="10" alignment="CENTER" GridPane.columnSpan="3" GridPane.rowIndex="1">
+                    <ImageView fx:id="catImage1" fitWidth="200" fitHeight="150" preserveRatio="true" pickOnBounds="true" />
+                    <ImageView fx:id="catImage2" fitWidth="200" fitHeight="150" preserveRatio="true" pickOnBounds="true" />
+                    <ImageView fx:id="catImage3" fitWidth="200" fitHeight="150" preserveRatio="true" pickOnBounds="true" />
+                </HBox>
+
+                <!-- Fila 2: Video y detalles -->
+                <VBox spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                    <MediaView fx:id="catVideo" fitWidth="400" fitHeight="200" />
+                    <Button fx:id="playVideoButton" text="%playVideoButton" maxWidth="Infinity" />
+                </VBox>
+
+                <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="2">
+                    <Label fx:id="breedLabel" />
+                    <Label fx:id="ageLabel" />
+                    <Label fx:id="sexLabel" />
+                    <Label fx:id="heightLabel" />
+                    <Label fx:id="widthLabel" />
+                    <Label fx:id="colorLabel" />
+                    <Label fx:id="bornDateLabel" />
+                    <Label fx:id="friendlyKidsLabel" />
+                    <Label fx:id="friendlyAnimalsLabel" />
+                    <Label fx:id="statusLabel" />
+                    <Label fx:id="ongLabel" />
+                    <Label fx:id="locationLabel" />
+                </VBox>
+
+                <!-- Fila 3: Descripción -->
+                <VBox spacing="5" GridPane.rowIndex="3" GridPane.columnSpan="3">
+                    <Label text="Personality:" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="personality1Label" wrapText="true" />
+                    <Label fx:id="personality2Label" wrapText="true" />
+                </VBox>
+
+                <!-- Fila 4: Botones -->
+                <HBox spacing="20" alignment="CENTER"
+                      GridPane.rowIndex="4" GridPane.columnSpan="3">
+                    <Button fx:id="returnButton" text="%returnButton" prefWidth="120" />
+                    <Button fx:id="adoptButton" text="%adoptButton" prefWidth="120" />
+                </HBox>
+            </GridPane>
         </AnchorPane>
     </content>
 </ScrollPane>

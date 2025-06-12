@@ -1,85 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ButtonBar?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
-<AnchorPane fx:id="AnchorMain" prefHeight="600.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/23.0.1"
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<?import javafx.scene.image.Image?>
+<AnchorPane fx:id="AnchorMain" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.UsuarioController">
-   <children>
-      <Label fx:id="welcome" layoutX="230.0" layoutY="34.0" text="%welcome">
-         <font>
-            <Font name="Cambria Bold" size="28.0" />
-         </font>
-      </Label>
-      <!-- Username and password fields -->
-      <TextField fx:id="textfield1" layoutX="226.0" layoutY="275.0" />
-      <PasswordField fx:id="textfield2" layoutX="226.0" layoutY="327.0" />
 
-      <Label fx:id="username" layoutX="132.0" layoutY="279.0" text="%username" />
-      <Label fx:id="password" layoutX="133.0" layoutY="331.0" text="%password" />
+   <VBox alignment="TOP_CENTER" spacing="20"
+         AnchorPane.topAnchor="40" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+      <Label fx:id="welcome" text="%welcome" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
 
-      <!-- Warning label -->
-      <Label fx:id="warning" layoutX="182.0" layoutY="373.0" text="%warning" textFill="RED" visible="false">
-         <font>
-            <Font name="System Bold" size="16.0" />
-         </font>
-      </Label>
+      <!-- Botones de idioma -->
+      <HBox spacing="5" alignment="CENTER">
+         <ImageView fx:id="spanish" fitWidth="31" fitHeight="25" pickOnBounds="true" preserveRatio="true"
+                    onMouseClicked="#handleSpanish">
+            <image>
+               <Image url="/assets/spainflag.jpg" />
+            </image>
+         </ImageView>
+         <ImageView fx:id="english" fitWidth="43" fitHeight="25" pickOnBounds="true" preserveRatio="true"
+                    onMouseClicked="#handleEnglish">
+            <image>
+               <Image url="/assets/ukflag.jpg" />
+            </image>
+         </ImageView>
+      </HBox>
 
-      <!-- Registered users list -->
-      <Label fx:id="registereduser" layoutX="448.0" layoutY="390.0" text="%registeredusers" />
-      <Label fx:id="count" layoutX="543.0" layoutY="368.0" prefHeight="50.0" prefWidth="43.0" textFill="#0084ff" />
-      <ListView fx:id="listview" layoutX="412.0" layoutY="430.0" prefHeight="143.0" prefWidth="163.0" />
+      <!-- Formulario de inicio de sesión -->
+      <GridPane hgap="10" vgap="10" alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints hgrow="NEVER" halignment="RIGHT" prefWidth="100"/>
+            <ColumnConstraints hgrow="ALWAYS" prefWidth="200"/>
+         </columnConstraints>
 
-      <!-- Invisible placeholder anchor (if needed) -->
-      <AnchorPane fx:id="AnchorMain2" layoutX="4.0" prefHeight="143.0" prefWidth="129.0" />
+         <children>
+            <Label text="%username" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="textfield1" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-      <!-- ButtonBar (optional layout helper) -->
-      <ButtonBar layoutX="82.0" layoutY="473.0" prefHeight="40.0" prefWidth="200.0" />
+            <Label text="%password" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <PasswordField fx:id="textfield2" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+         </children>
+      </GridPane>
 
-      <!-- Action buttons -->
-      <Button fx:id="register"
-              layoutX="260.0" layoutY="187.0"
-              text="%register"
-              mnemonicParsing="false"
-              onMouseClicked="#cargarSigFXML" />
+      <Label fx:id="warning" text="%warning" textFill="RED" style="-fx-font-weight: bold;" visible="false"/>
 
-      <Button fx:id="login"
-              layoutX="260.0" layoutY="237.0"
-              text="%login"
-              mnemonicParsing="false"
-              onMouseClicked="#handleLogin" />
+      <!-- Botones de acción -->
+      <HBox spacing="20" alignment="CENTER">
+         <Button fx:id="register" text="%register" onMouseClicked="#cargarSigFXML" prefWidth="100"/>
+         <Button fx:id="login" text="%login" onMouseClicked="#handleLogin" prefWidth="100"/>
+      </HBox>
 
-      <Button fx:id="ong"
-              layoutX="52.0" layoutY="500.0"
-              text="%ong"
-              mnemonicParsing="false"
-              onMouseClicked="#handleONG" />
+      <!-- Sección de usuarios registrados -->
+      <VBox alignment="CENTER" spacing="5">
+         <HBox spacing="5" alignment="CENTER">
+            <Label fx:id="registereduser" text="%registeredusers"/>
+            <Label fx:id="count" textFill="#0084ff" style="-fx-font-size: 16px;"/>
+         </HBox>
+         <ListView fx:id="listview" prefHeight="150" prefWidth="300"/>
+      </VBox>
+   </VBox>
 
-      <!-- Language toggle icons -->
-      <ImageView fx:id="spanish"
-                 layoutX="480.0" layoutY="25.0"
-                 fitWidth="31.0" fitHeight="25.0"
-                 pickOnBounds="true" preserveRatio="true" onMouseClicked="#handleSpanish">
-         <image>
-            <Image url="/assets/spainflag.jpg" />
-         </image>
-      </ImageView>
-      <ImageView fx:id="english"
-                 layoutX="519.0" layoutY="25.0"
-                 fitWidth="43.0" fitHeight="25.0"
-                 pickOnBounds="true" preserveRatio="true" onMouseClicked="#handleEnglish">
-         <image>
-            <Image url="/assets/ukflag.jpg" />
-         </image>
-      </ImageView>
-   </children>
+   <!-- Botón ONG en la parte inferior -->
+   <Button fx:id="ong" text="%ong" layoutX="20" AnchorPane.bottomAnchor="20"
+           onMouseClicked="#handleONG" prefWidth="100"/>
 </AnchorPane>
 

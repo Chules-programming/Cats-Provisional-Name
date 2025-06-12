@@ -827,41 +827,69 @@ public class UsuarioController implements Initializable {
         List<Usuario> usuarios = usuarioRepository.findAll();
 
         for (Usuario u : usuarios) {
-            if (u.getUsername() != null && u.getPassword() != null && u.getUsername().equals(enteredUsername) && u.getPassword().equals(enteredPassword)) {
+            if (u.getUsername() != null
+                    && u.getPassword() != null
+                    && u.getUsername().equals(enteredUsername)
+                    && u.getPassword().equals(enteredPassword)) {
+
                 currentUser = u;
                 setCurrentFxmlPath("/com/java/fx/web2.fxml");
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-                loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/com/java/fx/web2.fxml"),
+                        ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+                );
                 loader.setControllerFactory(Main.context::getBean);
                 Parent root = loader.load();
 
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root, 600, 800));
-                stage.setResizable(false);
+                // Crear la escena sin dimensiones fijas
+                Scene scene = new Scene(root);
 
+                // Obtener el Stage actual
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+                // Asignar la escena y permitir redimensionamiento
+                stage.setScene(scene);
+                stage.setResizable(true);
+                stage.setMinWidth(600);
+                stage.setMinHeight(700);
+
+                // Asegurarse de que el ScrollPane vuelva al inicio
                 Platform.runLater(() -> {
                     ScrollPane scroll = (ScrollPane) root.lookup("#scrol");
                     if (scroll != null) {
                         scroll.setVvalue(0.0);
                     }
                 });
+
                 return;
             }
         }
+
+        // Si no se encuentra el usuario, mostrar advertencia
         Label warning = (Label) AnchorMain.lookup("#warning");
-        warning.setVisible(true);
+        if (warning != null) {
+            warning.setVisible(true);
+        }
     }
+
 
 
     @FXML
     private void handleMenu(MouseEvent event) throws IOException {
         setCurrentFxmlPath("/com/java/fx/main.fxml");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/main.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
         loader.setControllerFactory(Main.context::getBean);
-        AnchorPane mainPane = loader.load();
-        AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
-        currentRoot.getChildren().setAll(mainPane);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setScene(new Scene(root));
+        stage.setResizable(true);
+        stage.setMinWidth(600);
+        stage.setMinHeight(700);
     }
 
     @FXML
@@ -871,15 +899,24 @@ public class UsuarioController implements Initializable {
         }
 
         setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/adoptweb.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/adoptweb.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
+        // Escena sin dimensiones fijas
+        Scene scene = new Scene(root);
+
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
+        stage.setScene(scene);
+        stage.setResizable(true);
+        stage.setMinWidth(600);
+        stage.setMinHeight(700);
+        // stage.show() no es necesario si ya está visible
     }
+
 
     @FXML
     private void onCatImageClicked(MouseEvent event) {
@@ -1150,14 +1187,20 @@ public class UsuarioController implements Initializable {
 
             // Navegar a web2.fxml
             setCurrentFxmlPath("/com/java/fx/web2.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/web2.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
+            Scene scene = new Scene(root);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 600, 800));
-            stage.setResizable(false);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(700);
+
         } catch (Exception e) {
             e.printStackTrace();
             showErrorAlert("Error saving the cat: " + e.getMessage());
@@ -1166,42 +1209,43 @@ public class UsuarioController implements Initializable {
     @FXML
     private void handleSearchBreed(MouseEvent event) {
         String breed = searchField.getText().trim();
-
-        // Validar campo vacío usando clave de recursos
         if (breed.isEmpty()) {
             showErrorAlert("search.empty");
             return;
         }
 
         List<Cat> searchResults = catRepository.findByBreedIgnoreCaseAndAdoptedFalse(breed);
-
-        // Validar resultados vacíos usando clave de recursos
         if (searchResults.isEmpty()) {
-            // Crear mensaje personalizado con parámetro
             String message = resources.getString("search.notfound").replace("{0}", breed);
             showErrorAlert(message);
             return;
         }
 
-        // Cargar vista de resultados
         try {
             setCurrentFxmlPath("/com/java/fx/BreedSearch.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/BreedSearch.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/BreedSearch.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
             loader.setControllerFactory(Main.context::getBean);
-
             Parent root = loader.load();
+
             UsuarioController controller = loader.getController();
             controller.showSearchResults(searchResults);
 
+            Scene scene = new Scene(root);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 600, 750));
-            stage.setResizable(false);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(700);
+
         } catch (IOException e) {
             e.printStackTrace();
             showErrorAlert("Error loading search view");
         }
     }
+
 
     public void showSearchResults(List<Cat> results) {
         this.searchResults = results;
@@ -1401,14 +1445,21 @@ public class UsuarioController implements Initializable {
         }
 
         setCurrentFxmlPath("/com/java/fx/web2.fxml");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/web2.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
+        // Crear escena sin dimensiones fijas
+        Scene scene = new Scene(root);
+
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root, 600, 750));
-        stage.setResizable(false);
+        stage.setScene(scene);
+        stage.setResizable(true);
+        stage.setMinWidth(600);
+        stage.setMinHeight(700);
 
         Platform.runLater(() -> {
             ScrollPane scroll = (ScrollPane) root.lookup("#scrol");
@@ -1420,20 +1471,29 @@ public class UsuarioController implements Initializable {
     }
 
 
+
     @FXML
     private void handleGoCatSection2(MouseEvent event) throws IOException {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
+
         setCurrentFxmlPath("/com/java/fx/web2.fxml");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/web2.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
+        // Crear escena sin dimensiones fijas
+        Scene scene = new Scene(root);
+
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root, 600, 750));
-        stage.setResizable(false);
+        stage.setScene(scene);
+        stage.setResizable(true);
+        stage.setMinWidth(600);
+        stage.setMinHeight(700);
 
         Platform.runLater(() -> {
             ScrollPane scroll = (ScrollPane) root.lookup("#scrol");
@@ -1443,15 +1503,19 @@ public class UsuarioController implements Initializable {
         });
     }
 
+
     @FXML
     private void handleAdoptToMenu(MouseEvent event) throws IOException {
         setCurrentFxmlPath("/com/java/fx/main.fxml");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/main.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
         loader.setControllerFactory(Main.context::getBean);
-        AnchorPane adoptPane = loader.load();
-        AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
-        currentRoot.getChildren().setAll(adoptPane);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setScene(new Scene(root));
     }
 
 
@@ -1462,14 +1526,26 @@ public class UsuarioController implements Initializable {
                 mediaPlayer.stop();
             }
             setCurrentFxmlPath("/com/java/fx/ongmenu.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/ongmenu.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/ongmenu.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
+            // 1) Crear la escena sin dimensiones fijas
+            Scene scene = new Scene(root);
+
+            // 2) Obtener el Stage actual
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 600, 600));
-            stage.setResizable(false);
+
+            // 3) Asignar escena y permitir redimensionamiento
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(700);
+
         } catch (IOException e) {
             System.err.println("Error loading ONG menu: " + e.getMessage());
             e.printStackTrace();
@@ -1489,14 +1565,22 @@ public class UsuarioController implements Initializable {
             }
 
             setCurrentFxmlPath("/com/java/fx/MenuAdd.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/MenuAdd.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/MenuAdd.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
+            // Crear escena sin dimensiones fijas
+            Scene scene = new Scene(root);
+
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 600, 600));
-            stage.setResizable(false);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(700);
+
         } else {
             errorongpassword.setText("Wrong password");
             errorongpassword.setVisible(true);
@@ -1721,8 +1805,10 @@ public class UsuarioController implements Initializable {
             stopCurrentPlayback();
 
             setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/adoptweb.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/adoptweb.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
@@ -1730,9 +1816,13 @@ public class UsuarioController implements Initializable {
             controller.setCurrentCat(selectedCat);
             controller.initializeAdoptView();
 
+            // Ventana nueva también redimensionable con mínimo
             Stage stage = new Stage();
-            stage.setScene(new Scene(root, 600, 800));
-            stage.setResizable(false);
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(700);
             stage.setTitle("Adopt " + selectedCat.getName());
             stage.show();
         } catch (IOException e) {
@@ -1740,6 +1830,7 @@ public class UsuarioController implements Initializable {
             showErrorAlert("Could not open adoption screen: " + e.getMessage());
         }
     }
+
 
     private void handleCatClick(MouseEvent event, Cat cat) {
         try {
@@ -1755,8 +1846,13 @@ public class UsuarioController implements Initializable {
             controller.updateCatDetails();
 
             Stage stage = new Stage();
-            stage.setScene(new Scene(root));
+            // Establecer tamaño inicial y mínimo
+            Scene scene = new Scene(root, 900, 700); // Tamaño inicial: 900x700
+            stage.setScene(scene);
             stage.setTitle(cat.getName() + " - Details");
+            stage.setMinWidth(800);  // Tamaño mínimo
+            stage.setMinHeight(600);
+            stage.centerOnScreen();  // Centrar en la pantalla
             stage.show();
 
             stage.setOnCloseRequest(e -> controller.cleanUp());
@@ -2041,9 +2137,18 @@ public class UsuarioController implements Initializable {
                 updatePaginationButtons();
             });
 
-
             // 15. Inicializar conexión a base de datos
             mongoDatabase = getMongoDatabase();
+
+            // 16. Asegurar que AnchorAdopt sea redimensionable al 100%
+            Platform.runLater(() -> {
+                if (AnchorAdopt != null) {
+                    AnchorPane.setTopAnchor(AnchorAdopt, 0.0);
+                    AnchorPane.setBottomAnchor(AnchorAdopt, 0.0);
+                    AnchorPane.setLeftAnchor(AnchorAdopt, 0.0);
+                    AnchorPane.setRightAnchor(AnchorAdopt, 0.0);
+                }
+            });
 
         } catch (Exception e) {
             System.err.println("Error durante la inicialización: " + e.getMessage());
@@ -2051,6 +2156,7 @@ public class UsuarioController implements Initializable {
             // Fallback si falla la carga con locale
             this.resources = ResourceBundle.getBundle("Messages");
         }
+
         // Validación en tiempo real para la descripción
         if (areaadd != null) {
             areaadd.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -2744,36 +2850,54 @@ public class UsuarioController implements Initializable {
         }
 
         setCurrentFxmlPath("/com/java/fx/main.fxml");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/main.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
+        // Crear escena sin dimensiones fijas
+        Scene scene = new Scene(root);
+
+        // Obtener el Stage actual
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root, 600, 800));
-        stage.setResizable(false);
+
+        // Asignar la escena y permitir redimensionamiento
+        stage.setScene(scene);
+        stage.setResizable(true);
+        stage.setMinWidth(600);
+        stage.setMinHeight(700);
     }
+
 
     @FXML
     private void handleGoToWeb2(MouseEvent event) {
         try {
             setCurrentFxmlPath("/com/java/fx/web2.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
-            loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/web2.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
             loader.setControllerFactory(Main.context::getBean);
-
             Parent root = loader.load();
+
             UsuarioController controller = loader.getController();
             controller.currentPage = 0;
             controller.loadCatsIntoView();
 
+            Scene scene = new Scene(root);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(700);
+            // stage.show(); // opcional
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     private void updatePaginationButtons() {
         List<Cat> cats = catRepository.findAll();

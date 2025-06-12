@@ -1,69 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<AnchorPane fx:id="anchorweb2" prefHeight="750.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/23.0.1"
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="anchorweb2" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.UsuarioController">
-    <children>
-        <!-- ScrollPane para mostrar la lista de gatos -->
-        <ScrollPane fx:id="scrol"
-                    layoutX="0.0" layoutY="0.0"
-                    prefWidth="600.0" prefHeight="650.0"
-                    hbarPolicy="NEVER"
-                    vbarPolicy="AS_NEEDED"
-                    fitToWidth="true">
-            <content>
-                <AnchorPane fx:id="anchorweb3" prefWidth="600.0">
-                    <children>
-                        <VBox fx:id="catsContainer"
-                              layoutX="0.0" layoutY="0.0"
-                              spacing="20.0"
-                              style="-fx-background-color: white; -fx-padding: 20;" />
-                    </children>
-                </AnchorPane>
-            </content>
-        </ScrollPane>
 
-        <!-- Contenedor de botones en la parte inferior -->
-        <HBox fx:id="buttonContainer"
-              layoutX="0.0" layoutY="650.0"
-              prefWidth="600.0" prefHeight="100.0"
-              alignment="CENTER"
-              spacing="10"
-              style="-fx-background-color: #f0f0f0; -fx-padding: 10;">
-            <!-- Botón para ir a login, solo visible en primera página -->
-            <Button fx:id="goToLoginButton"
-                    onMouseClicked="#handleGoToLogin"
-                    text="%goToLoginButton"
-                    visible="false"
-                    managed="false"/>
+    <!-- ScrollPane para gatos - Ocupa todo el espacio menos la barra inferior -->
+    <ScrollPane fx:id="scrol"
+                AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="60"
+                fitToWidth="true" fitToHeight="true"
+                hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+        <content>
+            <VBox fx:id="catsContainer"
+                  spacing="20"
+                  style="-fx-background-color: white; -fx-padding: 20;"/>
+        </content>
+    </ScrollPane>
 
-            <!-- Botones de paginación y adopción -->
-            <Button fx:id="previouspage"
-                    onMouseClicked="#handlePreviousPage"
-                    text="%previouspage"
-                    minWidth="100" />
+    <!-- Barra de botones inferior -->
+    <HBox fx:id="buttonContainer"
+          spacing="10" alignment="CENTER"
+          AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0" prefHeight="60"
+          style="-fx-background-color: #f0f0f0; -fx-padding: 10;">
 
-            <Button fx:id="adopt"
-                    onMouseClicked="#handleAdopt"
-                    text="%adopt"
-                    minWidth="80" />
+        <Button fx:id="goToLoginButton"
+                onMouseClicked="#handleGoToLogin"
+                text="%goToLoginButton"
+                visible="false"
+                managed="false"
+                prefWidth="100"/>
 
-            <Button fx:id="nextpage"
-                    onMouseClicked="#handleNextPage"
-                    text="%nextpage"
-                    minWidth="100" />
+        <Button fx:id="previouspage"
+                onMouseClicked="#handlePreviousPage"
+                text="%previouspage"
+                minWidth="100" />
 
-            <!-- Nuevo buscador por raza -->
-            <TextField fx:id="searchField" promptText="%search.prompt" minWidth="120" HBox.hgrow="ALWAYS" />
-            <Button fx:id="searchButton" onMouseClicked="#handleSearchBreed" text="%search.button" minWidth="80" />
-        </HBox>
-    </children>
+        <Button fx:id="adopt"
+                onMouseClicked="#handleAdopt"
+                text="%adopt"
+                minWidth="80" />
+
+        <Button fx:id="nextpage"
+                onMouseClicked="#handleNextPage"
+                text="%nextpage"
+                minWidth="100" />
+
+        <TextField fx:id="searchField"
+                   promptText="%search.prompt"
+                   minWidth="120"
+                   HBox.hgrow="ALWAYS" />
+
+        <Button fx:id="searchButton"
+                onMouseClicked="#handleSearchBreed"
+                text="%search.button"
+                minWidth="80" />
+    </HBox>
 </AnchorPane>
 
 

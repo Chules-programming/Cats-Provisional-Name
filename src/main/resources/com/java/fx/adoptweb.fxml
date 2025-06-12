@@ -2,38 +2,68 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
-<AnchorPane fx:id="AnchorAdopt" prefHeight="700.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/23.0.1"
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<AnchorPane fx:id="AnchorAdopt" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.UsuarioController">
-   <children>
-      <Label fx:id="congratulations" layoutX="221.0" layoutY="41.0" text="%congratulations">
-         <font>
-            <Font name="Candara Light" size="24.0" />
-         </font>
-      </Label>
-      <Label fx:id="found" layoutX="159.0" layoutY="103.0" text="%found" />
-      <Label fx:id="information" layoutX="82.0" layoutY="129.0" text="%information" />
-      <Label fx:id="name" layoutX="213.0" layoutY="173.0" text="%name" />
-      <Label fx:id="adress" layoutX="248.0" layoutY="203.0" text="%adress" />
-      <Label fx:id="postal" layoutX="234.0" layoutY="231.0" text="%postal" />
-      <Label fx:id="select" layoutX="76.0" layoutY="257.0" text="%select" />
-      <ChoiceBox fx:id="selection" layoutX="334.0" layoutY="253.0" prefWidth="150.0" />
-      <Label fx:id="phone" layoutX="226.0" layoutY="292.0" text="%phone" />
-      <TextField fx:id="fieldname" layoutX="335.0" layoutY="169.0" />
-      <TextField fx:id="fieldadress" layoutX="335.0" layoutY="199.0" />
-      <TextField fx:id="fieldpostal" layoutX="335.0" layoutY="227.0" />
-      <TextField fx:id="fieldphone" layoutX="334.0" layoutY="288.0" />
-      <Label fx:id="warningName" layoutX="341.0" layoutY="319.0" text="%warningName" textFill="red" visible="false" />
-      <Label fx:id="warningPostal" layoutX="42.0" layoutY="231.0" text="%warningPostal" textFill="red" visible="false" />
-      <Label fx:id="warningPhone" layoutX="10.0" layoutY="292.0" text="%warningPhone" textFill="red" visible="false" />
-      <Label fx:id="warningNameSur" layoutX="10.0" layoutY="173.0" text="%warningNameSur" textFill="red" visible="false" />
-      <Label fx:id="warningAdress" layoutX="98.0" layoutY="203.0" text="%warningAdress" textFill="red" visible="false" />
-      <CheckBox fx:id="pleasecheck" layoutX="218.0" layoutY="455.0" text="" />
-      <Button fx:id="conditions" layoutX="250.0" layoutY="451.0" text="%theconditions" onMouseClicked="#handleGoConditionsSection" />
-      <Button fx:id="confirmation" layoutX="281.0" layoutY="608.0" text="%confirmation" disable="true" style="-fx-opacity: 0.7; -fx-cursor: default;" onMouseClicked="#handleConfirmation" />
-      <Button fx:id="back" layoutX="98.0" layoutY="608.0" text="%back" onMouseClicked="#handleGoCatSection" />
-      <Button fx:id="back1" layoutX="427.0" layoutY="608.0" text="%back1" onMouseClicked="#handleAdoptToMenu" />
-   </children>
+            fx:controller="com.cats.cats.UsuarioController"
+            prefHeight="700.0" prefWidth="600.0">
+
+   <!-- Contenedor principal con anclajes dinámicos -->
+   <VBox alignment="CENTER" spacing="15"
+         AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20"
+         AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="80">
+
+      <!-- Títulos -->
+      <VBox alignment="CENTER" spacing="5">
+         <Label fx:id="congratulations" text="%congratulations">
+            <font><Font name="Candara Light" size="24.0"/></font>
+         </Label>
+         <Label fx:id="found" text="%found" />
+         <Label fx:id="information" text="%information" />
+      </VBox>
+
+      <!-- Formulario con posicionamiento absoluto relativo -->
+      <AnchorPane prefWidth="550.0" prefHeight="300.0">
+         <!-- Labels -->
+         <Label fx:id="name" layoutX="100.0" layoutY="25.0" text="%name" />
+         <Label fx:id="adress" layoutX="100.0" layoutY="55.0" text="%adress" />
+         <Label fx:id="postal" layoutX="100.0" layoutY="85.0" text="%postal" />
+         <Label fx:id="select" layoutX="100.0" layoutY="115.0" text="%select" />
+         <Label fx:id="phone" layoutX="100.0" layoutY="145.0" text="%phone" />
+
+         <!-- Fields -->
+         <TextField fx:id="fieldname" layoutX="250.0" layoutY="20.0" prefWidth="250.0"/>
+         <TextField fx:id="fieldadress" layoutX="250.0" layoutY="50.0" prefWidth="250.0"/>
+         <TextField fx:id="fieldpostal" layoutX="250.0" layoutY="80.0" prefWidth="250.0"/>
+         <ChoiceBox fx:id="selection" layoutX="250.0" layoutY="110.0" prefWidth="250.0"/>
+         <TextField fx:id="fieldphone" layoutX="250.0" layoutY="140.0" prefWidth="250.0"/>
+
+         <!-- Etiquetas de advertencia -->
+         <Label fx:id="warningNameSur" layoutX="250.0" layoutY="45.0" text="%warningNameSur" textFill="red" visible="false" />
+         <Label fx:id="warningAdress" layoutX="250.0" layoutY="75.0" text="%warningAdress" textFill="red" visible="false" />
+         <Label fx:id="warningPostal" layoutX="250.0" layoutY="105.0" text="%warningPostal" textFill="red" visible="false" />
+         <Label fx:id="warningPhone" layoutX="250.0" layoutY="165.0" text="%warningPhone" textFill="red" visible="false" />
+      </AnchorPane>
+
+      <!-- Términos y condiciones -->
+      <HBox alignment="CENTER" spacing="5">
+         <CheckBox fx:id="pleasecheck"/>
+         <Button fx:id="conditions" text="%theconditions"
+                 onMouseClicked="#handleGoConditionsSection"
+                 style="-fx-background-color: transparent; -fx-underline: true;"/>
+      </HBox>
+   </VBox>
+
+   <!-- Botones inferiores anclados -->
+   <HBox spacing="20" alignment="CENTER"
+         AnchorPane.bottomAnchor="20" AnchorPane.leftAnchor="20"
+         AnchorPane.rightAnchor="20">
+      <Button fx:id="back" text="%back" onMouseClicked="#handleGoCatSection" prefWidth="100"/>
+      <Button fx:id="confirmation" text="%confirmation" disable="true"
+              style="-fx-opacity: 0.7; -fx-cursor: default;"
+              onMouseClicked="#handleConfirmation" prefWidth="150"/>
+      <Button fx:id="back1" text="%back1" onMouseClicked="#handleAdoptToMenu" prefWidth="100"/>
+   </HBox>
 </AnchorPane>
 

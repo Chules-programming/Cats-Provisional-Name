@@ -1,133 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="AnchorMenuAdd" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cats.cats.UsuarioController">
-   <children>
-      <!-- Header -->
-      <Label fx:id="labelmenuadd1" layoutX="173.0" layoutY="47.0" text="%labelmenuadd1" />
+<ScrollPane fitToWidth="true" fitToHeight="true"
+            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cats.cats.UsuarioController">
+   <content>
+      <AnchorPane fx:id="AnchorMenuAdd">
+         <VBox spacing="10" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20"
+               AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="20">
+            <!-- Título -->
+            <Label fx:id="labelmenuadd1" style="-fx-font-size: 18px;" text="%labelmenuadd1"
+                   alignment="CENTER" maxWidth="Infinity"/>
 
-      <!-- Basic cat info fields -->
-      <Label fx:id="breedadd" layoutX="71.0" layoutY="80.0" text="%breedadd" />
-      <TextField fx:id="fieldaddbreed" layoutX="113.0" layoutY="76.0" />
-      <Label fx:id="errorbreed" layoutX="55.0" layoutY="56.0" text="%errorbreed" textFill="red" visible="false" />
+            <!-- Formulario en dos columnas -->
+            <GridPane hgap="10" vgap="10">
+               <columnConstraints>
+                  <ColumnConstraints prefWidth="150" halignment="RIGHT"/>
+                  <ColumnConstraints prefWidth="200"/>
+                  <ColumnConstraints prefWidth="150" halignment="RIGHT"/>
+                  <ColumnConstraints prefWidth="200"/>
+               </columnConstraints>
 
-      <Label fx:id="ageadd" layoutX="77.0" layoutY="106.0" text="%ageadd" />
-      <TextField fx:id="fieldaddage" layoutX="113.0" layoutY="102.0" />
-      <Label fx:id="errorage" layoutX="6.0" layoutY="106.0" text="%errorage" textFill="red" visible="false" />
-      <Label fx:id="errorage2" layoutX="6.0" layoutY="106.0" text="%errorage2" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <!-- Primera fila -->
+               <Label text="%breedadd" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddbreed" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+               <Label fx:id="errorbreed" textFill="red" visible="false" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-      <Label fx:id="sexadd" layoutX="78.0" layoutY="137.0" text="%sexadd" />
-      <TextField fx:id="fieldaddsex" layoutX="114.0" layoutY="133.0" />
-      <Label fx:id="errorsex" layoutX="6.0" layoutY="137.0" text="%errorsex" textFill="red" visible="false" />
+               <Label text="%widthadd" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+               <TextField fx:id="fieldaddwidth" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+               <Label fx:id="errorwidth" textFill="red" visible="false" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
 
-      <Label fx:id="coloradd" layoutX="73.0" layoutY="164.0" text="%coloradd" />
-      <TextField fx:id="fieldaddcolor" layoutX="115.0" layoutY="160.0" />
-      <Label fx:id="errorcolor" layoutX="6.0" layoutY="164.0" text="%errorcolor" textFill="red" visible="false" />
+               <!-- Segunda fila -->
+               <Label text="%ageadd" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddage" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+               <Label fx:id="errorage" textFill="red" visible="false" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-      <Label fx:id="heightadd" layoutX="71.0" layoutY="191.0" text="%heightadd" />
-      <TextField fx:id="fieldaddheight" layoutX="113.0" layoutY="187.0" />
-      <Label fx:id="errorheight" layoutX="52.0" layoutY="212.0" text="%errorheight" textFill="red" visible="false" />
-      <Label fx:id="errorheight2" layoutX="52.0" layoutY="212.0" text="%errorheight2" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <Label text="%friendlykidsadd" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+               <ChoiceBox fx:id="choiceadd1" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+               <Label fx:id="erroroption1" textFill="red" visible="false" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
 
-      <Label fx:id="widthadd" layoutX="388.0" layoutY="79.0" text="%widthadd" />
-      <TextField fx:id="fieldaddwidth" layoutX="436.0" layoutY="75.0" />
-      <Label fx:id="errorwidth" layoutX="475.0" layoutY="56.0" text="%errorwidth" textFill="red" visible="false" />
-      <Label fx:id="errorwidth2" layoutX="475.0" layoutY="56.0" text="%errorwidth2" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <!-- Tercera fila -->
+               <Label text="%sexadd" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddsex" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+               <Label fx:id="errorsex" textFill="red" visible="false" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-      <!-- ChoiceBoxes for friendliness -->
-      <Label fx:id="friendlykidsadd" layoutX="271.0" layoutY="106.0" text="%friendlykidsadd" />
-      <ChoiceBox fx:id="choiceadd1" layoutX="436.0" layoutY="102.0" prefWidth="150.0" />
-      <Label fx:id="erroroption1" layoutX="282.0" layoutY="88.0" text="%erroroption1" textFill="red" visible="false" />
+               <Label text="%friendlyanimalsadd" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+               <ChoiceBox fx:id="choiceadd2" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+               <Label fx:id="erroroption2" textFill="red" visible="false" GridPane.rowIndex="5" GridPane.columnIndex="3"/>
 
-      <Label fx:id="friendlyanimalsadd" layoutX="271.0" layoutY="137.0" text="%friendlyanimalsadd" />
-      <ChoiceBox fx:id="choiceadd2" layoutX="482.0" layoutY="132.0" prefHeight="26.0" prefWidth="91.0" />
-      <Label fx:id="erroroption2" layoutX="282.0" layoutY="124.0" text="%erroroption2" textFill="red" visible="false">
-         <font><Font size="11.0" /></font>
-      </Label>
+               <!-- Cuarta fila -->
+               <Label text="%coloradd" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddcolor" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+               <Label fx:id="errorcolor" textFill="red" visible="false" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
 
-      <!-- Description area -->
-      <Label fx:id="descriptionadd" layoutX="271.0" layoutY="164.0" text="%descriptionadd" />
-      <TextArea fx:id="areaadd" layoutX="375.0" layoutY="160.0" prefHeight="70.0" prefWidth="200.0" />
-      <Label fx:id="errordescription" layoutX="426.0" layoutY="324.0" text="%errordescription" textFill="red" visible="false" />
+               <Label text="%heightadd" GridPane.rowIndex="6" GridPane.columnIndex="2"/>
+               <TextField fx:id="fieldaddheight" GridPane.rowIndex="6" GridPane.columnIndex="3"/>
+               <Label fx:id="errorheight" textFill="red" visible="false" GridPane.rowIndex="7" GridPane.columnIndex="3"/>
 
-      <!-- Name field -->
-      <Label fx:id="nameadd1" layoutX="293.0" layoutY="346.0" text="%nameadd1" />
-      <TextField fx:id="fieldaddname" layoutX="399.0" layoutY="342.0" />
-      <Label fx:id="errorname1" layoutX="350.0" layoutY="384.0" text="%errorname1" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <!-- Quinta fila: Descripción -->
+               <Label text="%descriptionadd" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+               <TextArea fx:id="areaadd" GridPane.rowIndex="8" GridPane.columnIndex="1" GridPane.columnSpan="3"
+                         prefHeight="80"/>
+               <Label fx:id="errordescription" textFill="red" visible="false"
+                      GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+               <Label fx:id="descriptionCounter" GridPane.rowIndex="10" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
 
-      <!-- DatePicker for born date -->
-      <Label fx:id="DateLabel" layoutX="21.0" layoutY="470.0" text="%dateLabel" />
-      <DatePicker fx:id="fieldaddBornDate" layoutX="18.0" layoutY="493.0" />
-      <Label fx:id="errorBornDate" layoutX="38.0" layoutY="518.0" text="%error.born_date" textFill="RED" visible="false" />
+               <!-- Sexta fila: Nombre y fecha -->
+               <Label text="%nameadd1" GridPane.rowIndex="11" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddname" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+               <Label fx:id="errorname1" textFill="red" visible="false" GridPane.rowIndex="12" GridPane.columnIndex="1"/>
 
-      <!-- Buttons to add media -->
-      <Label fx:id="image1add" layoutX="18.0" layoutY="267.0" text="%image1add" />
-      <Button fx:id="add1button" layoutX="166.0" layoutY="263.0" mnemonicParsing="false" onMouseClicked="#handleAddImage1" text="%add1button" />
-      <ImageView fx:id="addimage1" fitHeight="26.0" fitWidth="38.0" layoutX="255.0" layoutY="263.0" pickOnBounds="true" preserveRatio="true" />
-      <Label fx:id="errorimage1" layoutX="270.0" layoutY="268.0" text="%errorimage1" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <Label text="%dateLabel" GridPane.rowIndex="11" GridPane.columnIndex="2"/>
+               <DatePicker fx:id="fieldaddBornDate" GridPane.rowIndex="11" GridPane.columnIndex="3"/>
+               <Label fx:id="errorBornDate" textFill="red" visible="false" GridPane.rowIndex="12" GridPane.columnIndex="3"/>
 
-      <Label fx:id="image2add" layoutX="20.0" layoutY="301.0" text="%image2add" />
-      <Button fx:id="add2button" layoutX="166.0" layoutY="297.0" mnemonicParsing="false" onMouseClicked="#handleAddImage2" text="%add2button" />
-      <ImageView fx:id="addimage2" fitHeight="26.0" fitWidth="35.0" layoutX="254.0" layoutY="297.0" pickOnBounds="true" preserveRatio="true" />
-      <Label fx:id="errorimage2" layoutX="270.0" layoutY="301.0" text="%errorimage2" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <!-- Séptima fila: ONG y ubicación -->
+               <Label text="%ongname" GridPane.rowIndex="13" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddong1" GridPane.rowIndex="13" GridPane.columnIndex="1"/>
+               <Label fx:id="errorongname" textFill="red" visible="false" GridPane.rowIndex="14" GridPane.columnIndex="1"/>
 
-      <Label fx:id="image3add" layoutX="16.0" layoutY="332.0" text="%image3add" />
-      <Button fx:id="add3button" layoutX="166.0" layoutY="328.0" mnemonicParsing="false" onMouseClicked="#handleAddImage3" text="%add3button" />
-      <ImageView fx:id="addimage3" fitHeight="26.0" fitWidth="31.0" layoutX="256.0" layoutY="328.0" pickOnBounds="true" preserveRatio="true" />
-      <Label fx:id="errorimage3" layoutX="270.0" layoutY="332.0" text="%errorimage3" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <Label text="%catplace" GridPane.rowIndex="13" GridPane.columnIndex="2"/>
+               <TextField fx:id="fieldaddplace1" GridPane.rowIndex="13" GridPane.columnIndex="3"/>
+               <Label fx:id="errorcatplace1" textFill="red" visible="false" GridPane.rowIndex="14" GridPane.columnIndex="3"/>
 
-      <Label fx:id="video1add" layoutX="26.0" layoutY="364.0" text="%video1add" />
-      <Button fx:id="add4button" layoutX="167.0" layoutY="360.0" mnemonicParsing="false" onMouseClicked="#handleAddVideo1" text="%add4button" />
-      <MediaView fx:id="addvideo1" fitHeight="100.0" fitWidth="100.0" layoutX="59.0" layoutY="382.0" />
-      <Label fx:id="errorvideo1" layoutX="270.0" layoutY="364.0" text="%errorvideo1" textFill="red" visible="false">
-         <font><Font size="10.0" /></font>
-      </Label>
+               <!-- Octava fila: Imágenes y video -->
+               <Label text="%image1add" GridPane.rowIndex="15" GridPane.columnIndex="0"/>
+               <HBox spacing="5" GridPane.rowIndex="15" GridPane.columnIndex="1">
+                  <Button fx:id="add1button" text="%add1button" onMouseClicked="#handleAddImage1"/>
+                  <ImageView fx:id="addimage1" fitHeight="26" fitWidth="38" pickOnBounds="true" preserveRatio="true"/>
+               </HBox>
+               <Label fx:id="errorimage1" textFill="red" visible="false" GridPane.rowIndex="16" GridPane.columnIndex="1"/>
 
-      <!-- Success message -->
-      <Label fx:id="successMessage" layoutX="220.0" layoutY="450.0" text="%successMessage" textFill="green" visible="false" />
+               <Label text="%image2add" GridPane.rowIndex="15" GridPane.columnIndex="2"/>
+               <HBox spacing="5" GridPane.rowIndex="15" GridPane.columnIndex="3">
+                  <Button fx:id="add2button" text="%add2button" onMouseClicked="#handleAddImage2"/>
+                  <ImageView fx:id="addimage2" fitHeight="26" fitWidth="35" pickOnBounds="true" preserveRatio="true"/>
+               </HBox>
+               <Label fx:id="errorimage2" textFill="red" visible="false" GridPane.rowIndex="16" GridPane.columnIndex="3"/>
 
-      <!-- Navigation buttons -->
-      <Button fx:id="menuaddtomenu" layoutX="63.0" layoutY="538.0" mnemonicParsing="false" onMouseClicked="#handleMenu" text="%menuaddtomenu" />
+               <Label text="%image3add" GridPane.rowIndex="17" GridPane.columnIndex="0"/>
+               <HBox spacing="5" GridPane.rowIndex="17" GridPane.columnIndex="1">
+                  <Button fx:id="add3button" text="%add3button" onMouseClicked="#handleAddImage3"/>
+                  <ImageView fx:id="addimage3" fitHeight="26" fitWidth="31" pickOnBounds="true" preserveRatio="true"/>
+               </HBox>
+               <Label fx:id="errorimage3" textFill="red" visible="false" GridPane.rowIndex="18" GridPane.columnIndex="1"/>
 
-      <Button fx:id="submitadd" layoutX="274.0" layoutY="538.0" mnemonicParsing="false" onAction="#handleSubmitButtonAction" text="%submitadd" />
-      <Label fx:id="ongname" layoutX="293.0" layoutY="391.0" text="%ongname" />
-      <TextField fx:id="fieldaddong1" layoutX="401.0" layoutY="387.0" />
-      <Label fx:id="catplace" layoutX="293.0" layoutY="424.0" text="%catplace" />
-      <TextField fx:id="fieldaddplace1" layoutX="399.0" layoutY="420.0" />
-      <Label fx:id="errorongname" layoutX="251.0" layoutY="405.0" text="%errorongname" textFill="red" visible="false">
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Label>
-      <Label fx:id="errorcatplace1" layoutX="284.0" layoutY="451.0" text="%errorcatplace1" textFill="red" visible="false">
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Label>
-      <Label fx:id="descriptionCounter" layoutX="375.0" layoutY="240.0" text="0/100" />
-   </children>
-</AnchorPane>
+               <Label text="%video1add" GridPane.rowIndex="17" GridPane.columnIndex="2"/>
+               <HBox spacing="5" GridPane.rowIndex="17" GridPane.columnIndex="3">
+                  <Button fx:id="add4button" text="%add4button" onMouseClicked="#handleAddVideo1"/>
+               </HBox>
+               <Label fx:id="errorvideo1" textFill="red" visible="false" GridPane.rowIndex="18" GridPane.columnIndex="3"/>
+
+               <!-- MediaView para previsualización de video -->
+               <MediaView fx:id="addvideo1" fitHeight="100" fitWidth="100"
+                          GridPane.rowIndex="19" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+            </GridPane>
+
+            <!-- Mensaje de éxito -->
+            <Label fx:id="successMessage" text="%successMessage" textFill="green" visible="false"
+                   alignment="CENTER" maxWidth="Infinity"/>
+
+            <!-- Botones de acción -->
+            <HBox spacing="20" alignment="CENTER">
+               <Button fx:id="menuaddtomenu" text="%menuaddtomenu" onMouseClicked="#handleMenu" prefWidth="100"/>
+               <Button fx:id="submitadd" text="%submitadd" onAction="#handleSubmitButtonAction" prefWidth="100"/>
+            </HBox>
+         </VBox>
+      </AnchorPane>
+   </content>
+</ScrollPane>

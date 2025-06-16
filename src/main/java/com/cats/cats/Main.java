@@ -49,35 +49,41 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		// Guardar referencia a HostServices
 		this.appHostServices = getHostServices();
 
-		Platform.runLater(() -> {
-			try {
-				// 1. Cargar el ResourceBundle con el locale actual
-				ResourceBundle bundle = getResourceBundle();
+		try {
+			ResourceBundle bundle = getResourceBundle();
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
+			loader.setControllerFactory(context::getBean);
+			loader.setResources(bundle);
 
-				// 2. Configurar FXMLLoader con el bundle y el controllerFactory de Spring
-				FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
-				loader.setControllerFactory(context::getBean);
-				loader.setResources(bundle);
+			Parent root = loader.load();
+			Scene scene = new Scene(root);
+			UsuarioController controller = loader.getController();
+			controller.setHostServices(this.appHostServices);
 
-				Parent root = loader.load();
-				Scene scene = new Scene(root);
+			primaryStage.setScene(scene);
+			primaryStage.setTitle("Cats Application");
 
-				// 3. Configurar HostServices en el controlador principal
-				UsuarioController controller = loader.getController();
-				controller.setHostServices(this.appHostServices);
+			// 1. Establecer dimensiones mínimas
+			primaryStage.setMinWidth(600);
+			primaryStage.setMinHeight(700);
 
-				primaryStage.setScene(scene);
-				primaryStage.setTitle("Cats Application");
-				primaryStage.show();
-			} catch (Exception e) {
-				e.printStackTrace();
-				Platform.exit();
-			}
-		});
+			// 2. Establecer tamaño inicial
+			primaryStage.setWidth(600);
+			primaryStage.setHeight(700);
+
+			// 3. Centrar la ventana
+			primaryStage.centerOnScreen();
+
+			primaryStage.show();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Platform.exit();
+		}
 	}
+
 
 	@Override
 	public void stop() {

@@ -5,9 +5,12 @@
 <?import javafx.scene.text.Font?>
 
 <?import javafx.scene.image.Image?>
-<AnchorPane fx:id="AnchorMain" xmlns="http://javafx.com/javafx/23.0.1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.UsuarioController">
+<AnchorPane  fx:id="AnchorMain"
+             xmlns="http://javafx.com/javafx/23.0.1"
+             xmlns:fx="http://javafx.com/fxml/1"
+             prefWidth="600"
+             prefHeight="700"
+             fx:controller="com.cats.cats.UsuarioController">
 
    <VBox alignment="TOP_CENTER" spacing="20"
          AnchorPane.topAnchor="40" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">

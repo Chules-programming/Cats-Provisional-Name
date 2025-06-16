@@ -1440,9 +1440,20 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleGoCatSection(Event event) throws IOException {
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
+        // Detener cualquier reproducción en los controladores de detalles
+        Stage[] stages = Stage.getWindows().toArray(new Stage[0]);
+        for (Stage stage : stages) {
+            if (stage.getScene() != null &&
+                    stage.getScene().getRoot() != null &&
+                    stage.getScene().getRoot().getUserData() instanceof CatDetailController) {
+
+                CatDetailController controller = (CatDetailController) stage.getScene().getRoot().getUserData();
+                controller.stopVideo();
+            }
         }
+
+        // También detener cualquier reproducción en el controlador principal
+        stopCurrentPlayback();
 
         setCurrentFxmlPath("/com/java/fx/web2.fxml");
         FXMLLoader loader = new FXMLLoader(
@@ -1802,8 +1813,28 @@ public class UsuarioController implements Initializable {
     }
     public void openAdoptionScreen(Cat selectedCat) {
         try {
+            // Detener cualquier reproducción actual
             stopCurrentPlayback();
 
+            // Buscar el controlador de detalles en ventanas abiertas
+            CatDetailController detailController = null;
+            Stage[] stages = Stage.getWindows().toArray(new Stage[0]);
+            for (Stage stage : stages) {
+                if (stage.getScene() != null &&
+                        stage.getScene().getRoot() != null &&
+                        stage.getScene().getRoot().getUserData() instanceof CatDetailController) {
+
+                    detailController = (CatDetailController) stage.getScene().getRoot().getUserData();
+                    break;
+                }
+            }
+
+            // Detener video en el controlador de detalles si existe
+            if (detailController != null) {
+                detailController.stopVideo();
+            }
+
+            // Abrir la pantalla de adopción
             setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/java/fx/adoptweb.fxml"),
@@ -1816,7 +1847,6 @@ public class UsuarioController implements Initializable {
             controller.setCurrentCat(selectedCat);
             controller.initializeAdoptView();
 
-            // Ventana nueva también redimensionable con mínimo
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             stage.setScene(scene);
@@ -1825,6 +1855,7 @@ public class UsuarioController implements Initializable {
             stage.setMinHeight(700);
             stage.setTitle("Adopt " + selectedCat.getName());
             stage.show();
+
         } catch (IOException e) {
             e.printStackTrace();
             showErrorAlert("Could not open adoption screen: " + e.getMessage());
@@ -1845,17 +1876,19 @@ public class UsuarioController implements Initializable {
             controller.setCurrentCat(cat);
             controller.updateCatDetails();
 
+            // Asociar controlador con la raíz para poder encontrarlo después
+            root.setUserData(controller);
+
             Stage stage = new Stage();
-            // Establecer tamaño inicial y mínimo
-            Scene scene = new Scene(root, 900, 700); // Tamaño inicial: 900x700
-            stage.setScene(scene);
+            stage.setScene(new Scene(root, 900, 700));
             stage.setTitle(cat.getName() + " - Details");
-            stage.setMinWidth(800);  // Tamaño mínimo
+            stage.setMinWidth(800);
             stage.setMinHeight(600);
-            stage.centerOnScreen();  // Centrar en la pantalla
+            stage.centerOnScreen();
             stage.show();
 
             stage.setOnCloseRequest(e -> controller.cleanUp());
+
         } catch (Exception ex) {
             ex.printStackTrace();
             showErrorAlert("Error loading cat details: " + ex.getMessage());

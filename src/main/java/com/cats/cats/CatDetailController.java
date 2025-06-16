@@ -80,13 +80,30 @@ public class CatDetailController {
         loadCatVideo();
         setupButtons();
     }
+    public void stopVideo() {
+        MediaPlayer player = catVideo.getMediaPlayer();
+        if (player != null) {
+            player.stop();
+        }
+    }
+
 
     private void setupButtons() {
         adoptButton.setText(resources.getString("cat.adopt.button") + " " + currentCat.getName());
         playVideoButton.setText(resources.getString("cat.play"));
         playVideoButton.setOnAction(e -> toggleVideoPlayback());
-        returnButton.setOnAction(e -> returnButton.getScene().getWindow().hide());
-        adoptButton.setOnAction(e -> handleAdopt());
+
+        // Modificar manejador de botón Volver
+        returnButton.setOnAction(e -> {
+            stopVideo(); // Detener el video
+            returnButton.getScene().getWindow().hide(); // Cerrar ventana
+        });
+
+        // Modificar manejador de botón Adoptar
+        adoptButton.setOnAction(e -> {
+            stopVideo(); // Detener el video
+            handleAdopt();
+        });
     }
 
     private void handleAdopt() {

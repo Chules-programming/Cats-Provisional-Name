@@ -683,13 +683,16 @@ public class UsuarioController implements Initializable {
     private void cargarSigFXML() throws IOException {
         setCurrentFxmlPath("/com/java/fx/RegisterUser.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/RegisterUser.fxml"));
-
-        // Añade esta línea para cargar el ResourceBundle
         loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
-
         loader.setControllerFactory(Main.context::getBean);
-        AnchorPane registerPane = loader.load();
-        AnchorMain.getChildren().setAll(registerPane);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) AnchorMain.getScene().getWindow();
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
     }
 
 
@@ -813,9 +816,14 @@ public class UsuarioController implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
         loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
         loader.setControllerFactory(Main.context::getBean);
-        AnchorPane mainPane = loader.load();
-        AnchorPane currentRoot = (AnchorPane) ((Button) event.getSource()).getScene().getRoot();
-        currentRoot.getChildren().setAll(mainPane);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
     }
 
     //Login and go to website
@@ -886,7 +894,11 @@ public class UsuarioController implements Initializable {
         Parent root = loader.load();
 
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root));
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
         stage.setResizable(true);
         stage.setMinWidth(600);
         stage.setMinHeight(700);
@@ -906,15 +918,15 @@ public class UsuarioController implements Initializable {
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
-        // Escena sin dimensiones fijas
-        Scene scene = new Scene(root);
-
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(scene);
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
         stage.setResizable(true);
         stage.setMinWidth(600);
         stage.setMinHeight(700);
-        // stage.show() no es necesario si ya está visible
     }
 
 
@@ -942,29 +954,30 @@ public class UsuarioController implements Initializable {
 
     private boolean validateForm() {
         boolean isValid = true;
-
-        // Reset all error messages visibility
         hideAllErrorMessages();
         errorBornDate.setVisible(false);
 
         // Validar Breed
         if (fieldaddbreed.getText().trim().isEmpty()) {
+            errorbreed.setText(resources.getString("errorbreed"));
             errorbreed.setVisible(true);
             isValid = false;
         }
 
+        // Validar fecha de nacimiento
         if (fieldaddBornDate.getValue() == null) {
-            errorBornDate.setText("Date of birth is required");
+            errorBornDate.setText(resources.getString("error.born_date"));
             errorBornDate.setVisible(true);
             isValid = false;
         }
+
         // Validar Descripción
         if (areaadd.getText().trim().isEmpty()) {
-            errordescription.setText(resources.getString("error.description_empty"));
+            errordescription.setText(resources.getString("errordescription"));
             errordescription.setVisible(true);
             isValid = false;
         } else {
-            // Validar longitud máxima de caracteres
+            // Validaciones de longitud y líneas
             if (areaadd.getText().length() > MAX_DESCRIPTION_CHARS) {
                 errordescription.setText(
                         resources.getString("error.description_chars") +
@@ -974,7 +987,6 @@ public class UsuarioController implements Initializable {
                 isValid = false;
             }
 
-            // Validar número máximo de líneas
             int lineCount = areaadd.getText().split("\n").length;
             if (lineCount > MAX_DESCRIPTION_LINES) {
                 errordescription.setText(
@@ -986,41 +998,44 @@ public class UsuarioController implements Initializable {
             }
         }
 
-
         // Validar Age
         if (fieldaddage.getText().trim().isEmpty()) {
+            errorage.setText(resources.getString("errorage"));
             errorage.setVisible(true);
             isValid = false;
         }
 
         // Validar Sex
         if (fieldaddsex.getText().trim().isEmpty()) {
+            errorsex.setText(resources.getString("errorsex"));
             errorsex.setVisible(true);
             isValid = false;
         }
 
         // Validar Name
         if (fieldaddname.getText().trim().isEmpty()) {
-            errorname1.setText("Name cannot be empty");
+            errorname1.setText(resources.getString("errorname1"));
             errorname1.setVisible(true);
             isValid = false;
         }
 
         // Validar Color
         if (fieldaddcolor.getText().trim().isEmpty()) {
+            errorcolor.setText(resources.getString("errorcolor"));
             errorcolor.setVisible(true);
             isValid = false;
         }
 
         // Validar Height
         if (fieldaddheight.getText().trim().isEmpty()) {
+            errorheight.setText(resources.getString("errorheight"));
             errorheight.setVisible(true);
             isValid = false;
         } else {
             try {
                 Double.parseDouble(fieldaddheight.getText().trim());
             } catch (NumberFormatException e) {
-                errorheight.setText("Height must be a number");
+                errorheight.setText(resources.getString("errorheight2"));
                 errorheight.setVisible(true);
                 isValid = false;
             }
@@ -1028,13 +1043,14 @@ public class UsuarioController implements Initializable {
 
         // Validar Width
         if (fieldaddwidth.getText().trim().isEmpty()) {
+            errorwidth.setText(resources.getString("errorwidth"));
             errorwidth.setVisible(true);
             isValid = false;
         } else {
             try {
                 Double.parseDouble(fieldaddwidth.getText().trim());
             } catch (NumberFormatException e) {
-                errorwidth.setText("Width must be a number");
+                errorwidth.setText(resources.getString("errorwidth2"));
                 errorwidth.setVisible(true);
                 isValid = false;
             }
@@ -1042,57 +1058,54 @@ public class UsuarioController implements Initializable {
 
         // Validar nombre de ONG
         if (fieldaddong1.getText().trim().isEmpty()) {
-            errorongname.setText(resources.getString("error.ongname"));
+            errorongname.setText(resources.getString("errorongname"));
             errorongname.setVisible(true);
             isValid = false;
         }
+
         // Validar ubicación
         if (fieldaddplace1.getText().trim().isEmpty()) {
-            errorcatplace1.setText(resources.getString("error.catplace1"));
+            errorcatplace1.setText(resources.getString("errorcatplace1"));
             errorcatplace1.setVisible(true);
             isValid = false;
         }
 
         // Validar Friendly with kids
         if (choiceadd1.getValue() == null || choiceadd1.getValue().isEmpty()) {
+            erroroption1.setText(resources.getString("erroroption1"));
             erroroption1.setVisible(true);
             isValid = false;
         }
 
         // Validar Friendly with animals
         if (choiceadd2.getValue() == null || choiceadd2.getValue().isEmpty()) {
+            erroroption2.setText(resources.getString("erroroption2"));
             erroroption2.setVisible(true);
-            isValid = false;
-        }
-        if (fieldaddBornDate.getValue() == null) {
-            errorBornDate.setText(resources.getString("error.born_date"));
-            isValid = false;
-        }
-
-        // Validar Descripción
-        if (areaadd.getText().trim().isEmpty()) {
-            errordescription.setVisible(true);
             isValid = false;
         }
 
         // Validar Imágenes (presencia)
         if (addimage1.getImage() == null) {
+            errorimage1.setText(resources.getString("errorimage1"));
             errorimage1.setVisible(true);
             isValid = false;
         }
 
         if (addimage2.getImage() == null) {
+            errorimage2.setText(resources.getString("errorimage2"));
             errorimage2.setVisible(true);
             isValid = false;
         }
 
         if (addimage3.getImage() == null) {
+            errorimage3.setText(resources.getString("errorimage3"));
             errorimage3.setVisible(true);
             isValid = false;
         }
 
         // Validar Video (presencia)
         if (addvideo1.getMediaPlayer() == null || addvideo1.getMediaPlayer().getMedia() == null) {
+            errorvideo1.setText(resources.getString("errorvideo1"));
             errorvideo1.setVisible(true);
             isValid = false;
         }
@@ -1463,11 +1476,12 @@ public class UsuarioController implements Initializable {
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
-        // Crear escena sin dimensiones fijas
-        Scene scene = new Scene(root);
-
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(scene);
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
         stage.setResizable(true);
         stage.setMinWidth(600);
         stage.setMinHeight(700);
@@ -1526,7 +1540,11 @@ public class UsuarioController implements Initializable {
         Parent root = loader.load();
 
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root));
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
     }
 
 
@@ -1545,18 +1563,12 @@ public class UsuarioController implements Initializable {
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
-            // 1) Crear la escena sin dimensiones fijas
-            Scene scene = new Scene(root);
-
-            // 2) Obtener el Stage actual
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // 3) Asignar escena y permitir redimensionamiento
-            stage.setScene(scene);
-            stage.setResizable(true);
-            stage.setMinWidth(600);
-            stage.setMinHeight(700);
-
+            boolean wasMaximized = stage.isMaximized();
+            stage.getScene().setRoot(root);
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            }
         } catch (IOException e) {
             System.err.println("Error loading ONG menu: " + e.getMessage());
             e.printStackTrace();
@@ -1583,15 +1595,12 @@ public class UsuarioController implements Initializable {
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
-            // Crear escena sin dimensiones fijas
-            Scene scene = new Scene(root);
-
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
-            stage.setResizable(true);
-            stage.setMinWidth(600);
-            stage.setMinHeight(700);
-
+            boolean wasMaximized = stage.isMaximized();
+            stage.getScene().setRoot(root);
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            }
         } else {
             errorongpassword.setText("Wrong password");
             errorongpassword.setVisible(true);
@@ -2919,13 +2928,14 @@ public class UsuarioController implements Initializable {
             controller.currentPage = 0;
             controller.loadCatsIntoView();
 
-            Scene scene = new Scene(root);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
-            stage.setResizable(true);
-            stage.setMinWidth(600);
-            stage.setMinHeight(700);
-            // stage.show(); // opcional
+            boolean wasMaximized = stage.isMaximized();
+
+            stage.getScene().setRoot(root); // Solo cambia el contenido
+
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

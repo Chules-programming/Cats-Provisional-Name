@@ -14,4 +14,5 @@ public interface CatRepository extends MongoRepository<Cat, ObjectId> {
 
     @Query("{ 'name' : { $regex: ?0, $options: 'i' } }")
     Cat findByName(String name);
+    Cat findByNameIgnoreCase(String name);
 }

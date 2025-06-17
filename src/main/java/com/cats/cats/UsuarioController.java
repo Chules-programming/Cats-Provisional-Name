@@ -153,7 +153,7 @@ public class UsuarioController implements Initializable {
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
             tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword,
             found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningName, warningPostal, warningPhone, warningAdress, warningNameSur,
-            count, theconditions,
+            count, theconditions, errorDuplicateName,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
             errorbreed, errorage, errorsex, errorcolor, errorheight, errorwidth, erroroption1, erroroption2, errordescription, errorimage1, errorimage2, errorimage3, errorvideo1, successMessage, nameadd1, errorname1,
             errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1, descriptionCounter;
@@ -1012,13 +1012,6 @@ public class UsuarioController implements Initializable {
             isValid = false;
         }
 
-        // Validar Name
-        if (fieldaddname.getText().trim().isEmpty()) {
-            errorname1.setText(resources.getString("errorname1"));
-            errorname1.setVisible(true);
-            isValid = false;
-        }
-
         // Validar Color
         if (fieldaddcolor.getText().trim().isEmpty()) {
             errorcolor.setText(resources.getString("errorcolor"));
@@ -1142,18 +1135,58 @@ public class UsuarioController implements Initializable {
         return isValid;
     }
 
+    private boolean validateCatName() {
+        String catName = fieldaddname.getText().trim();
+        boolean isValid = true;
+
+        // Validar que el nombre no esté vacío
+        if (catName.isEmpty()) {
+            errorname1.setVisible(true);
+            isValid = false;
+        } else {
+            errorname1.setVisible(false);
+        }
+
+        // Validar que el nombre sea único
+        Cat existingCat = catRepository.findByNameIgnoreCase(catName);
+        if (existingCat != null) {
+            errorDuplicateName.setVisible(true);
+            isValid = false;
+        } else {
+            errorDuplicateName.setVisible(false);
+        }
+
+        return isValid;
+    }
+
 
 
     @FXML
     private void handleSubmitButtonAction(ActionEvent event) {
         successMessage.setVisible(false);
+        hideAllErrorMessages(); // Ocultar mensajes de error anteriores
 
+        // Validación de nombre obligatorio
+        String catName = fieldaddname.getText().trim();
+        if (catName.isEmpty()) {
+            errorname1.setVisible(true);
+            return;
+        }
+
+        // Validación de nombre único
+        Cat existingCat = catRepository.findByNameIgnoreCase(catName);
+        if (existingCat != null) {
+            errorDuplicateName.setVisible(true);
+            return;
+        }
+
+        // Validar el resto del formulario
         if (!validateForm()) return;
 
         try {
             Cat nuevoGato = new Cat();
             nuevoGato.setAdopted(false);
-            nuevoGato.setName(fieldaddname.getText().trim());
+            nuevoGato.setName(catName);
             nuevoGato.setBreed(fieldaddbreed.getText().trim());
             nuevoGato.setAge(fieldaddage.getText().trim());
             nuevoGato.setSex(fieldaddsex.getText().trim());
@@ -1166,13 +1199,12 @@ public class UsuarioController implements Initializable {
             nuevoGato.setOngName(fieldaddong1.getText().trim());
             nuevoGato.setCatLocation(fieldaddplace1.getText().trim());
 
-            // Asignar fecha de nacimiento si está disponible
             if (fieldaddBornDate.getValue() != null) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 nuevoGato.setBornDate(fieldaddBornDate.getValue().format(formatter));
             }
 
-            // Guardar imágenes y obtener sus IDs
+            // Guardar imágenes
             String imageId1 = saveImageToDatabase(addimage1.getImage(), selectedImageFile1);
             String imageId2 = saveImageToDatabase(addimage2.getImage(), selectedImageFile2);
             String imageId3 = saveImageToDatabase(addimage3.getImage(), selectedImageFile3);
@@ -1186,15 +1218,24 @@ public class UsuarioController implements Initializable {
                 String videoId = saveVideoToDatabase(addvideo1.getMediaPlayer().getMedia());
                 nuevoGato.setVideoID(videoId);
             }
+            // Validar nombre primero
+            if (!validateCatName()) {
+                return; // Detener si hay errores en el nombre
+            }
 
-            // Guardar en la base de datos
+            // Validar el resto del formulario
+            if (!validateForm()) {
+                return;
+            }
+
+            // Guardar gato en la base de datos
             catService.save(nuevoGato);
 
             // Actualizar vistas necesarias
             loadCatsIntoView();
             updateCatStatusDisplays();
 
-            // Mostrar éxito y limpiar formulario
+            // Mostrar mensaje de éxito y limpiar formulario
             successMessage.setVisible(true);
             clearForm();
 
@@ -1219,6 +1260,8 @@ public class UsuarioController implements Initializable {
             showErrorAlert("Error saving the cat: " + e.getMessage());
         }
     }
+
+
     @FXML
     private void handleSearchBreed(MouseEvent event) {
         String breed = searchField.getText().trim();
@@ -1296,7 +1339,7 @@ public class UsuarioController implements Initializable {
         errorcatplace1.setVisible(false);
         if (errorongname != null) errorongname.setVisible(false);
         if (errorcatplace1 != null) errorcatplace1.setVisible(false);
-
+        if (errorDuplicateName != null) errorDuplicateName.setVisible(false);
     }
 
     private void clearForm() {
@@ -1320,6 +1363,7 @@ public class UsuarioController implements Initializable {
             addvideo1.getMediaPlayer().stop();
             addvideo1.setMediaPlayer(null);
         }
+        if (errorDuplicateName != null) errorDuplicateName.setVisible(false);
     }
 
     private String saveImageToDatabase(javafx.scene.image.Image image, File originalFile) {
@@ -2123,6 +2167,11 @@ public class UsuarioController implements Initializable {
                 safeLoadImage(ximage, "twitter.jpg", true);
                 safeLoadImage(linkedinimage, "LinkedIn.jpg", true);
                 safeLoadImage(gmailimage, "gmail.jpg", true);
+            }
+            //Checkear si hay algo duplicao
+            if (errorDuplicateName != null) {
+                errorDuplicateName.setVisible(false);
+                errorDuplicateName.setFont(Font.font(7)); // Tamaño consistente
             }
 
             // 11. Inicializar opciones en ChoiceBoxes con traducciones

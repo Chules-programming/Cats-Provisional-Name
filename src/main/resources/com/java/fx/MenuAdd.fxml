@@ -74,51 +74,51 @@
                <Label text="%nameadd1" GridPane.rowIndex="11" GridPane.columnIndex="0"/>
                <TextField fx:id="fieldaddname" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
                <Label fx:id="errorname1" textFill="red" visible="false" GridPane.rowIndex="12" GridPane.columnIndex="1"/>
-
+               <Label fx:id="errorDuplicateName" text="%error.duplicate_name" textFill="red" visible="false" GridPane.rowIndex="13" GridPane.columnIndex="1"/>
                <Label text="%dateLabel" GridPane.rowIndex="11" GridPane.columnIndex="2"/>
                <DatePicker fx:id="fieldaddBornDate" GridPane.rowIndex="11" GridPane.columnIndex="3"/>
                <Label fx:id="errorBornDate" textFill="red" visible="false" GridPane.rowIndex="12" GridPane.columnIndex="3"/>
 
                <!-- Séptima fila: ONG y ubicación -->
-               <Label text="%ongname" GridPane.rowIndex="13" GridPane.columnIndex="0"/>
-               <TextField fx:id="fieldaddong1" GridPane.rowIndex="13" GridPane.columnIndex="1"/>
-               <Label fx:id="errorongname" textFill="red" visible="false" GridPane.rowIndex="14" GridPane.columnIndex="1"/>
+               <Label text="%ongname" GridPane.rowIndex="14" GridPane.columnIndex="0"/>
+               <TextField fx:id="fieldaddong1" GridPane.rowIndex="14" GridPane.columnIndex="1"/>
+               <Label fx:id="errorongname" textFill="red" visible="false" GridPane.rowIndex="15" GridPane.columnIndex="1"/>
 
-               <Label text="%catplace" GridPane.rowIndex="13" GridPane.columnIndex="2"/>
-               <TextField fx:id="fieldaddplace1" GridPane.rowIndex="13" GridPane.columnIndex="3"/>
-               <Label fx:id="errorcatplace1" textFill="red" visible="false" GridPane.rowIndex="14" GridPane.columnIndex="3"/>
+               <Label text="%catplace" GridPane.rowIndex="14" GridPane.columnIndex="2"/>
+               <TextField fx:id="fieldaddplace1" GridPane.rowIndex="14" GridPane.columnIndex="3"/>
+               <Label fx:id="errorcatplace1" textFill="red" visible="false" GridPane.rowIndex="15" GridPane.columnIndex="3"/>
 
                <!-- Octava fila: Imágenes y video -->
-               <Label text="%image1add" GridPane.rowIndex="15" GridPane.columnIndex="0"/>
-               <HBox spacing="5" GridPane.rowIndex="15" GridPane.columnIndex="1">
+               <Label text="%image1add" GridPane.rowIndex="16" GridPane.columnIndex="0"/>
+               <HBox spacing="5" GridPane.rowIndex="16" GridPane.columnIndex="1">
                   <Button fx:id="add1button" text="%add1button" onMouseClicked="#handleAddImage1"/>
                   <ImageView fx:id="addimage1" fitHeight="26" fitWidth="38" pickOnBounds="true" preserveRatio="true"/>
                </HBox>
-               <Label fx:id="errorimage1" textFill="red" visible="false" GridPane.rowIndex="16" GridPane.columnIndex="1"/>
+               <Label fx:id="errorimage1" textFill="red" visible="false" GridPane.rowIndex="17" GridPane.columnIndex="1"/>
 
-               <Label text="%image2add" GridPane.rowIndex="15" GridPane.columnIndex="2"/>
-               <HBox spacing="5" GridPane.rowIndex="15" GridPane.columnIndex="3">
+               <Label text="%image2add" GridPane.rowIndex="16" GridPane.columnIndex="2"/>
+               <HBox spacing="5" GridPane.rowIndex="16" GridPane.columnIndex="3">
                   <Button fx:id="add2button" text="%add2button" onMouseClicked="#handleAddImage2"/>
                   <ImageView fx:id="addimage2" fitHeight="26" fitWidth="35" pickOnBounds="true" preserveRatio="true"/>
                </HBox>
-               <Label fx:id="errorimage2" textFill="red" visible="false" GridPane.rowIndex="16" GridPane.columnIndex="3"/>
+               <Label fx:id="errorimage2" textFill="red" visible="false" GridPane.rowIndex="17" GridPane.columnIndex="3"/>
 
-               <Label text="%image3add" GridPane.rowIndex="17" GridPane.columnIndex="0"/>
-               <HBox spacing="5" GridPane.rowIndex="17" GridPane.columnIndex="1">
+               <Label text="%image3add" GridPane.rowIndex="18" GridPane.columnIndex="0"/>
+               <HBox spacing="5" GridPane.rowIndex="18" GridPane.columnIndex="1">
                   <Button fx:id="add3button" text="%add3button" onMouseClicked="#handleAddImage3"/>
                   <ImageView fx:id="addimage3" fitHeight="26" fitWidth="31" pickOnBounds="true" preserveRatio="true"/>
                </HBox>
-               <Label fx:id="errorimage3" textFill="red" visible="false" GridPane.rowIndex="18" GridPane.columnIndex="1"/>
+               <Label fx:id="errorimage3" textFill="red" visible="false" GridPane.rowIndex="19" GridPane.columnIndex="1"/>
 
-               <Label text="%video1add" GridPane.rowIndex="17" GridPane.columnIndex="2"/>
-               <HBox spacing="5" GridPane.rowIndex="17" GridPane.columnIndex="3">
+               <Label text="%video1add" GridPane.rowIndex="18" GridPane.columnIndex="2"/>
+               <HBox spacing="5" GridPane.rowIndex="18" GridPane.columnIndex="3">
                   <Button fx:id="add4button" text="%add4button" onMouseClicked="#handleAddVideo1"/>
                </HBox>
-               <Label fx:id="errorvideo1" textFill="red" visible="false" GridPane.rowIndex="18" GridPane.columnIndex="3"/>
+               <Label fx:id="errorvideo1" textFill="red" visible="false" GridPane.rowIndex="19" GridPane.columnIndex="3"/>
 
                <!-- MediaView para previsualización de video -->
                <MediaView fx:id="addvideo1" fitHeight="100" fitWidth="100"
-                          GridPane.rowIndex="19" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                          GridPane.rowIndex="20" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
             </GridPane>
 
             <!-- Mensaje de éxito -->

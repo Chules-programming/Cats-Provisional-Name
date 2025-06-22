@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
 
 <AnchorPane fx:id="anchorweb2" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -41,41 +42,49 @@
         <!-- Bottom: Botones de navegación -->
         <bottom>
             <HBox fx:id="buttonContainer"
-                  spacing="10" alignment="CENTER"
-                  style="-fx-background-color: #f0f0f0; -fx-padding: 10;"
-                  prefHeight="60">
+                  spacing="20" alignment="CENTER"
+                  style="-fx-background-color: #f0f0f0; -fx-padding: 15;"
+                  prefHeight="80">
 
-                <Button fx:id="goToLoginButton"
-                        onMouseClicked="#handleGoToLogin"
-                        text="%goToLoginButton"
-                        styleClass="modern-button"
-                        visible="false"
-                        managed="false"
-                        prefWidth="100"/>
-
+                <!-- Botón anterior (más grande) -->
                 <Button fx:id="previouspage"
                         onMouseClicked="#handlePreviousPage"
-                        text="%previouspage"
-                        styleClass="modern-button"
-                        minWidth="100"/>
+                        styleClass="modern-button-icon"
+                        minWidth="60" minHeight="60">
+                    <graphic>
+                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true">
+                            <Image url="/assets/left.png" />
+                        </ImageView>
+                    </graphic>
+                </Button>
 
+                <!-- Botón de Adoptar -->
                 <Button fx:id="adopt"
                         onMouseClicked="#handleAdopt"
                         text="%adopt"
                         styleClass="modern-button"
-                        minWidth="80"/>
+                        minWidth="120" minHeight="50"
+                        style="-fx-font-size: 16px;"/>
 
+                <!-- Botón de Reseñas -->
                 <Button fx:id="reviewsButton"
                         onMouseClicked="#handleReviews"
                         text="%reviews.button"
                         styleClass="modern-button"
-                        minWidth="80"/>
+                        minWidth="120" minHeight="50"
+                        style="-fx-font-size: 16px;"/>
 
+                <!-- Botón siguiente (más grande) -->
                 <Button fx:id="nextpage"
                         onMouseClicked="#handleNextPage"
-                        text="%nextpage"
-                        styleClass="modern-button"
-                        minWidth="100"/>
+                        styleClass="modern-button-icon"
+                        minWidth="60" minHeight="60">
+                    <graphic>
+                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true">
+                            <Image url="/assets/right.png" />
+                        </ImageView>
+                    </graphic>
+                </Button>
             </HBox>
         </bottom>
     </BorderPane>

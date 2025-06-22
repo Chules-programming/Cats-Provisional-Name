@@ -38,3 +38,21 @@
     -fx-border-color: #4CAF50;
     -fx-effect: dropshadow(three-pass-box, rgba(76,175,80,0.3), 3, 0, 0, 0;
 }
+/* Estilos para botones con iconos */
+.modern-button-icon {
+    -fx-background-color: transparent;
+    -fx-border-color: #4CAF50;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-padding: 5px;
+    -fx-cursor: hand;
+}
+
+.modern-button-icon:hover {
+    -fx-background-color: #e8f5e9; /* Verde muy claro al pasar el ratón */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.modern-button-icon:pressed {
+    -fx-background-color: #c8e6c9; /* Verde más intenso al presionar */
+}

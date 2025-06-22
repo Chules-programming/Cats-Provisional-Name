@@ -144,10 +144,10 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact;
+    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge;
 
     @FXML
-    private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword;
+    private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
 
     @FXML
     private TextArea areaadd;
@@ -156,7 +156,7 @@ public class UsuarioController implements Initializable {
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
             tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword,
             found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningPostal, warningPhone, warningAdress, warningNameSur,
-            count, theconditions, errorDuplicateName, errorphone, additionalContactLabel,
+            count, theconditions, errorDuplicateName, errorphone, additionalContactLabel, recoverMessage,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
             errorbreed, errorage, errorsex, errorcolor, errorheight, errorwidth, erroroption1, erroroption2, errordescription, errorimage1, errorimage2, errorimage3, errorvideo1, successMessage, nameadd1, errorname1,
             errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1, descriptionCounter;
@@ -538,9 +538,82 @@ public class UsuarioController implements Initializable {
         });
     }
 
+    @FXML
+    private void handleForgotPassword(MouseEvent event) throws IOException {
+        setCurrentFxmlPath("/com/java/fx/RecoverAccount.fxml");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/RecoverAccount.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        loader.setControllerFactory(Main.context::getBean);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
+    }
+
+    @FXML
+    private void handleRecoverAccount(MouseEvent event) {
+        String email = recoverEmail.getText();
+        String password = recoverPassword.getText();
+        String ageText = recoverAge.getText();
+
+        // Validar campos
+        if (email.isEmpty() || password.isEmpty() || ageText.isEmpty()) {
+            recoverMessage.setText(resources.getString("recover.error.incomplete_fields"));
+            recoverMessage.setTextFill(Color.RED);
+            recoverMessage.setVisible(true);
+            return;
+        }
+
+        // Verificar si el correo existe en la base de datos
+        Usuario usuario = usuarioRepository.findByEmail(email);
+        if (usuario == null) {
+            recoverMessage.setText(resources.getString("error.email.not.registered"));
+            recoverMessage.setTextFill(Color.RED);
+            recoverMessage.setVisible(true);
+            return;
+        }
+
+        // Simular proceso de recuperación
+        recoverMessage.setText(resources.getString("recover.success"));
+        recoverMessage.setTextFill(Color.GREEN);
+        recoverMessage.setVisible(true);
+
+        // Limpiar campos después de 3 segundos
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                Platform.runLater(() -> {
+                    recoverEmail.clear();
+                    recoverPassword.clear();
+                    recoverAge.clear();
+                    recoverMessage.setVisible(false);
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 
 
+    @FXML
+    private void handleBackFromRecover(MouseEvent event) throws IOException {
+        setCurrentFxmlPath("/com/java/fx/main.fxml");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/main.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        loader.setControllerFactory(Main.context::getBean);
+        Parent root = loader.load();
 
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
+    }
 
     public File downloadFileFromGridFS(String fileId) {
         try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {

@@ -56,6 +56,11 @@
          <Button fx:id="login" text="%login" onMouseClicked="#handleLogin" prefWidth="100"/>
       </HBox>
 
+      <!-- Nuevo botón para recuperar contraseña -->
+      <Button fx:id="forgotPassword" text="%forgotPassword"
+              onMouseClicked="#handleForgotPassword"
+              style="-fx-background-color: transparent; -fx-text-fill: #2b78e4; -fx-underline: true;"/>
+
       <!-- Sección de usuarios registrados -->
       <VBox alignment="CENTER" spacing="5">
          <HBox spacing="5" alignment="CENTER">

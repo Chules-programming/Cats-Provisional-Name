@@ -43,6 +43,12 @@
                 text="%adopt"
                 minWidth="80" />
 
+        <!-- Nuevo botón para Reviews -->
+        <Button fx:id="reviewsButton"
+                onMouseClicked="#handleReviews"
+                text="%reviews.button"
+                minWidth="80" />
+
         <Button fx:id="nextpage"
                 onMouseClicked="#handleNextPage"
                 text="%nextpage"

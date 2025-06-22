@@ -55,6 +55,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javafx.embed.swing.SwingFXUtils;
@@ -105,6 +106,8 @@ public class UsuarioController implements Initializable {
     public void setCatService(CatService catService) {
         this.catService = catService;
     }
+    @Autowired
+    private ReviewService reviewService;
 
     private Usuario currentUser;
     private Map<String, ObjectId> catNameToIdMap = new HashMap<>();
@@ -150,7 +153,7 @@ public class UsuarioController implements Initializable {
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
 
     @FXML
-    private TextArea areaadd;
+    private TextArea areaadd, reviewComment;
 
     @FXML
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
@@ -163,6 +166,9 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private DatePicker fieldaddBornDate;
+
+    @FXML
+    private ChoiceBox<Integer> ratingChoice;
 
     @FXML
     private Button register, registeruser, goback, login, adopt, nextpage, previouspage, gomenu, back, back1, confirmation, play1, play2,
@@ -186,7 +192,7 @@ public class UsuarioController implements Initializable {
     @FXML
     private ChoiceBox<String> selection, choiceadd1, choiceadd2;
     @FXML
-    private VBox catsContainer, searchResultsContainer;
+    private VBox catsContainer, searchResultsContainer, reviewsContainer;
 
     @FXML
     private MediaView currentMediaView, addvideo1, catVideo;
@@ -552,6 +558,112 @@ public class UsuarioController implements Initializable {
         if (wasMaximized) {
             stage.setMaximized(true);
         }
+    }
+
+    @FXML
+    private void handleReviews(MouseEvent event) throws IOException {
+        setCurrentFxmlPath("/com/java/fx/Reviews.fxml");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Reviews.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        loader.setControllerFactory(Main.context::getBean);
+        Parent root = loader.load();
+
+        // Cargar reseñas existentes
+        UsuarioController controller = loader.getController();
+        controller.loadReviews();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        boolean wasMaximized = stage.isMaximized();
+        stage.getScene().setRoot(root);
+        if (wasMaximized) {
+            stage.setMaximized(true);
+        }
+    }
+
+    public void loadReviews() {
+        reviewsContainer.getChildren().clear();
+        List<Review> reviews = reviewService.findAll();
+
+        for (Review review : reviews) {
+            reviewsContainer.getChildren().add(createReviewCard(review));
+        }
+    }
+
+    private Node createReviewCard(Review review) {
+        VBox card = new VBox(10);
+        card.setStyle("-fx-padding: 10; -fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getChildren().add(new Label(review.getUsername()));
+
+        // Mostrar estrellas según la calificación
+        HBox stars = new HBox(5);
+        for (int i = 0; i < 5; i++) {
+            Label star = new Label(i < review.getRating() ? "★" : "☆");
+            star.setStyle("-fx-text-fill: " + (i < review.getRating() ? "gold" : "gray") + ";");
+            stars.getChildren().add(star);
+        }
+
+        Label dateLabel = new Label(review.getDate().toString());
+        dateLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: gray;");
+
+        Label commentLabel = new Label(review.getComment());
+        commentLabel.setWrapText(true);
+
+        card.getChildren().addAll(header, stars, dateLabel, commentLabel);
+        return card;
+    }
+
+    @FXML
+    private void handleSubmitReview(MouseEvent event) {
+        if (currentUser == null) {
+            showErrorAlert("Debes iniciar sesión para agregar una reseña");
+            return;
+        }
+
+        Integer rating = ratingChoice.getValue();
+        String comment = reviewComment.getText();
+
+        if (rating == null) {
+            showErrorAlert("Por favor selecciona una calificación");
+            return;
+        }
+
+        if (comment.isEmpty()) {
+            showErrorAlert("Por favor escribe un comentario");
+            return;
+        }
+
+        // Crear y guardar nueva reseña
+        Review newReview = new Review();
+        newReview.setUserId(currentUser.getId());
+        newReview.setUsername(currentUser.getUsername());
+        newReview.setRating(rating);
+        newReview.setComment(comment);
+        newReview.setDate(LocalDate.now());
+
+        reviewService.save(newReview);
+
+        // Actualizar la lista de reseñas
+        loadReviews();
+
+        // Limpiar el formulario
+        ratingChoice.setValue(null);
+        reviewComment.clear();
+
+        // Mostrar mensaje de éxito
+        showInfoAlert("¡Reseña enviada con éxito!");
+    }
+
+    private void showInfoAlert(String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Información");
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
     }
 
     @FXML

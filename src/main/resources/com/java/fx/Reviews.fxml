@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.Integer?>
+<AnchorPane fx:id="AnchorReviews" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cats.cats.UsuarioController"
+            prefHeight="700.0" prefWidth="600.0">
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.java.fx.Reviews"
-            prefHeight="400.0" prefWidth="600.0">
+    <!-- ScrollPane para reseñas existentes -->
+    <ScrollPane fitToWidth="true" fitToHeight="true"
+                AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="250">
+        <content>
+            <VBox fx:id="reviewsContainer" spacing="20"
+                  style="-fx-padding: 20;"/>
+        </content>
+    </ScrollPane>
 
+    <!-- Formulario para nueva reseña -->
+    <VBox spacing="10" style="-fx-padding: 20; -fx-background-color: #f0f0f0;"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
+          prefHeight="250">
+        <Label text="%add.review.label" style="-fx-font-weight: bold;"/>
+
+        <!-- Calificación con estrellas -->
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="%rating.label"/>
+            <ChoiceBox fx:id="ratingChoice" prefWidth="100">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <Integer fx:value="1"/>
+                        <Integer fx:value="2"/>
+                        <Integer fx:value="3"/>
+                        <Integer fx:value="4"/>
+                        <Integer fx:value="5"/>
+                    </FXCollections>
+                </items>
+            </ChoiceBox>
+        </HBox>
+
+        <TextArea fx:id="reviewComment" promptText="%review.comment.prompt"
+                  wrapText="true" prefRowCount="3"/>
+
+        <Button fx:id="submitReview" text="%submit.review" onMouseClicked="#handleSubmitReview"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
+                maxWidth="Infinity"/>
+    </VBox>
 </AnchorPane>

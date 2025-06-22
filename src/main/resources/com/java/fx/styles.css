@@ -1,0 +1,40 @@
+/* styles.css */
+.modern-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);
+    -fx-font-size: 14px;
+}
+
+.modern-button:hover {
+    -fx-background-color: #45a049;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 2);
+}
+
+.modern-button:pressed {
+    -fx-background-color: #3d8b40;
+    -fx-effect: innershadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 1);
+}
+
+.modern-button:disabled {
+    -fx-opacity: 0.7;
+    -fx-background-color: #cccccc;
+}
+
+.modern-textfield {
+    -fx-padding: 8px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-color: #cccccc;
+    -fx-font-size: 14px;
+}
+
+.modern-textfield:focused {
+    -fx-border-color: #4CAF50;
+    -fx-effect: dropshadow(three-pass-box, rgba(76,175,80,0.3), 3, 0, 0, 0;
+}

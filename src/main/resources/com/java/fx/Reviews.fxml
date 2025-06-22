@@ -46,5 +46,8 @@
         <Button fx:id="submitReview" text="%submit.review" onMouseClicked="#handleSubmitReview"
                 style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
                 maxWidth="Infinity"/>
+        <Button text="%back.button" onMouseClicked="#handleGoToWeb2"
+                styleClass="modern-button"
+                maxWidth="Infinity"/>
     </VBox>
 </AnchorPane>

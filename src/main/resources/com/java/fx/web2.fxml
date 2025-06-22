@@ -4,67 +4,79 @@
 
 <AnchorPane fx:id="anchorweb2" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.UsuarioController">
+            fx:controller="com.cats.cats.UsuarioController"
+            stylesheets="@styles.css">
 
-    <!-- ScrollPane para gatos - Ocupa todo el espacio menos la barra inferior -->
-    <ScrollPane fx:id="scrol"
-                AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
-                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="60"
-                fitToWidth="true" fitToHeight="true"
-                hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
-        <content>
-            <VBox fx:id="catsContainer"
-                  spacing="20"
-                  style="-fx-background-color: white; -fx-padding: 20;"/>
-        </content>
-    </ScrollPane>
+    <BorderPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
 
-    <!-- Barra de botones inferior -->
-    <HBox fx:id="buttonContainer"
-          spacing="10" alignment="CENTER"
-          AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
-          AnchorPane.rightAnchor="0" prefHeight="60"
-          style="-fx-background-color: #f0f0f0; -fx-padding: 10;">
+        <!-- Top: Barra de búsqueda -->
+        <top>
+            <HBox alignment="CENTER_RIGHT" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
+                <TextField fx:id="searchField"
+                           promptText="%search.prompt"
+                           styleClass="modern-textfield"
+                           minWidth="200"/>
+                <Button fx:id="searchButton"
+                        onMouseClicked="#handleSearchBreed"
+                        text="%search.button"
+                        styleClass="modern-button"
+                        minWidth="80"/>
+            </HBox>
+        </top>
 
-        <Button fx:id="goToLoginButton"
-                onMouseClicked="#handleGoToLogin"
-                text="%goToLoginButton"
-                visible="false"
-                managed="false"
-                prefWidth="100"/>
+        <!-- Center: Lista de gatos -->
+        <center>
+            <ScrollPane fx:id="scrol"
+                        fitToWidth="true" fitToHeight="true"
+                        hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                <content>
+                    <VBox fx:id="catsContainer"
+                          spacing="20"
+                          style="-fx-background-color: white; -fx-padding: 20;"/>
+                </content>
+            </ScrollPane>
+        </center>
 
-        <Button fx:id="previouspage"
-                onMouseClicked="#handlePreviousPage"
-                text="%previouspage"
-                minWidth="100" />
+        <!-- Bottom: Botones de navegación -->
+        <bottom>
+            <HBox fx:id="buttonContainer"
+                  spacing="10" alignment="CENTER"
+                  style="-fx-background-color: #f0f0f0; -fx-padding: 10;"
+                  prefHeight="60">
 
-        <Button fx:id="adopt"
-                onMouseClicked="#handleAdopt"
-                text="%adopt"
-                minWidth="80" />
+                <Button fx:id="goToLoginButton"
+                        onMouseClicked="#handleGoToLogin"
+                        text="%goToLoginButton"
+                        styleClass="modern-button"
+                        visible="false"
+                        managed="false"
+                        prefWidth="100"/>
 
-        <!-- Nuevo botón para Reviews -->
-        <Button fx:id="reviewsButton"
-                onMouseClicked="#handleReviews"
-                text="%reviews.button"
-                minWidth="80" />
+                <Button fx:id="previouspage"
+                        onMouseClicked="#handlePreviousPage"
+                        text="%previouspage"
+                        styleClass="modern-button"
+                        minWidth="100"/>
 
-        <Button fx:id="nextpage"
-                onMouseClicked="#handleNextPage"
-                text="%nextpage"
-                minWidth="100" />
+                <Button fx:id="adopt"
+                        onMouseClicked="#handleAdopt"
+                        text="%adopt"
+                        styleClass="modern-button"
+                        minWidth="80"/>
 
-        <TextField fx:id="searchField"
-                   promptText="%search.prompt"
-                   minWidth="120"
-                   HBox.hgrow="ALWAYS" />
+                <Button fx:id="reviewsButton"
+                        onMouseClicked="#handleReviews"
+                        text="%reviews.button"
+                        styleClass="modern-button"
+                        minWidth="80"/>
 
-        <Button fx:id="searchButton"
-                onMouseClicked="#handleSearchBreed"
-                text="%search.button"
-                minWidth="80" />
-    </HBox>
+                <Button fx:id="nextpage"
+                        onMouseClicked="#handleNextPage"
+                        text="%nextpage"
+                        styleClass="modern-button"
+                        minWidth="100"/>
+            </HBox>
+        </bottom>
+    </BorderPane>
 </AnchorPane>
-
-
-

@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -19,18 +20,22 @@ import java.util.ResourceBundle;
 @Scope("prototype")
 public class CatDetailController {
 
-    @FXML private ImageView catImage1, catImage2, catImage3;
+    @FXML private ImageView catImage1, catImage2, catImage3, playPauseOverlay;
     @FXML private MediaView catVideo;
     @FXML private Label catNameLabel, breedLabel, ageLabel, heightLabel, widthLabel,
             colorLabel, sexLabel, friendlyKidsLabel, friendlyAnimalsLabel,
             statusLabel, personality1Label, personality2Label, bornDateLabel, ongLabel, locationLabel;
-    @FXML private Button returnButton, playVideoButton, adoptButton;
+    @FXML private Button returnButton, adoptButton;
+    @FXML private StackPane videoContainer;
 
     @Autowired private CatService catService;
     @Autowired private UsuarioController usuarioController;
     private ResourceBundle resources;
 
     private Cat currentCat;
+    private MediaPlayer mediaPlayer;
+    private final Image playImage = new Image(getClass().getResourceAsStream("/assets/reproduce.png"));
+    private final Image pauseImage = new Image(getClass().getResourceAsStream("/assets/pause.png"));
 
 
     public void setCurrentCat(Cat cat) {
@@ -39,10 +44,9 @@ public class CatDetailController {
     }
 
     public void cleanUp() {
-        MediaPlayer player = catVideo.getMediaPlayer();
-        if (player != null) {
-            player.stop();
-            player.dispose();
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
         }
     }
 
@@ -90,8 +94,6 @@ public class CatDetailController {
 
     private void setupButtons() {
         adoptButton.setText(resources.getString("cat.adopt.button") + " " + currentCat.getName());
-        playVideoButton.setText(resources.getString("cat.play"));
-        playVideoButton.setOnAction(e -> toggleVideoPlayback());
 
         // Modificar manejador de botón Volver
         returnButton.setOnAction(e -> {
@@ -119,26 +121,32 @@ public class CatDetailController {
         }
     }
 
-    private void toggleVideoPlayback() {
-        MediaPlayer player = catVideo.getMediaPlayer();
-        if (player != null) {
-            if (player.getStatus() == MediaPlayer.Status.PLAYING) {
-                player.pause();
-                playVideoButton.setText(resources.getString("cat.play"));
-            } else {
-                player.play();
-                playVideoButton.setText(resources.getString("cat.pause"));
-            }
-        }
-    }
-
     private void loadCatVideo() {
         if (currentCat.getVideoID() != null && !currentCat.getVideoID().isEmpty()) {
             try {
                 String videoUrl = "http://localhost:8080/api/usuario/video/" + currentCat.getVideoID();
                 Media media = new Media(videoUrl);
-                MediaPlayer player = new MediaPlayer(media);
-                catVideo.setMediaPlayer(player);
+                mediaPlayer = new MediaPlayer(media);
+                catVideo.setMediaPlayer(mediaPlayer);
+
+                // Configurar listeners para cambios de estado
+                mediaPlayer.statusProperty().addListener((obs, oldStatus, newStatus) -> {
+                    if (newStatus == MediaPlayer.Status.PLAYING) {
+                        playPauseOverlay.setImage(pauseImage);
+                        playPauseOverlay.setVisible(false); // Ocultar durante reproducción
+                    } else {
+                        playPauseOverlay.setImage(playImage);
+                        playPauseOverlay.setVisible(true);
+                    }
+                });
+
+                // Resetear al final del video
+                mediaPlayer.setOnEndOfMedia(() -> {
+                    mediaPlayer.stop();
+                    playPauseOverlay.setImage(playImage);
+                    playPauseOverlay.setVisible(true);
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -189,7 +197,34 @@ public class CatDetailController {
 
     @FXML
     private void initialize() {
-        // Se inicializa tras setCurrentCat()
+        playPauseOverlay.setImage(playImage);
+        playPauseOverlay.setVisible(true);
+
+        videoContainer.setOnMouseEntered(e -> showVideoControls());
+        videoContainer.setOnMouseExited(e -> hideVideoControls());
+        playPauseOverlay.setOnMouseClicked(e -> togglePlayPause());
+    }
+    private void showVideoControls() {
+        if (mediaPlayer != null) {
+            playPauseOverlay.setVisible(true);
+        }
+    }
+
+    private void hideVideoControls() {
+        if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            playPauseOverlay.setVisible(false);
+        }
+    }
+
+    private void togglePlayPause() {
+        if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            mediaPlayer.pause();
+            playPauseOverlay.setImage(playImage);
+        } else {
+            mediaPlayer.play();
+            playPauseOverlay.setImage(pauseImage);
+            hideVideoControls(); // Ocultar después de reproducir
+        }
     }
 }
 

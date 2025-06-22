@@ -3,6 +3,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.media.MediaView?>
+
 <ScrollPane fx:id="scro" fitToWidth="true"
             xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -36,12 +37,19 @@
                     <ImageView fx:id="catImage3" fitWidth="200" fitHeight="150" preserveRatio="true" pickOnBounds="true" />
                 </HBox>
 
-                <!-- Fila 2: Video y detalles -->
+                <!-- Fila 2: Video con overlay -->
                 <VBox spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2">
-                    <MediaView fx:id="catVideo" fitWidth="400" fitHeight="200" />
-                    <Button fx:id="playVideoButton" text="%playVideoButton" maxWidth="Infinity" />
+                    <StackPane fx:id="videoContainer">
+                        <MediaView fx:id="catVideo" fitWidth="400" fitHeight="200" />
+                        <ImageView fx:id="playPauseOverlay"
+                                   fitWidth="50" fitHeight="50"
+                                   preserveRatio="true"
+                                   pickOnBounds="true"
+                                   style="-fx-cursor: hand;" />
+                    </StackPane>
                 </VBox>
 
+                <!-- Fila 2: Detalles -->
                 <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="2">
                     <Label fx:id="breedLabel" />
                     <Label fx:id="ageLabel" />
@@ -59,7 +67,7 @@
 
                 <!-- Fila 3: Descripción -->
                 <VBox spacing="5" GridPane.rowIndex="3" GridPane.columnSpan="3">
-                    <Label text="Personality:" style="-fx-font-weight: bold;"/>
+                    <Label text="Personality:" style="-fx-font-weight: bold;" />
                     <Label fx:id="personality1Label" wrapText="true" />
                     <Label fx:id="personality2Label" wrapText="true" />
                 </VBox>
@@ -74,5 +82,6 @@
         </AnchorPane>
     </content>
 </ScrollPane>
+
 
 

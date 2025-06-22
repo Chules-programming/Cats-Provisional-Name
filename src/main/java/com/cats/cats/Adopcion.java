@@ -16,6 +16,7 @@ public class Adopcion {
     private String phone;
     private String catName;
     private ObjectId userId;
+    private String additionalContact;
 
     public ObjectId getId() {
         return id;
@@ -63,6 +64,14 @@ public class Adopcion {
 
     public void setCatName(String catName) {
         this.catName = catName;
+    }
+
+    public String getAdditionalContact() {
+        return additionalContact;
+    }
+
+    public void setAdditionalContact(String additionalContact) {
+        this.additionalContact = additionalContact;
     }
 
     public ObjectId getUserId() {

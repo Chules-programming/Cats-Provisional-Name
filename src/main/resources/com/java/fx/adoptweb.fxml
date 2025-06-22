@@ -38,6 +38,8 @@
          <TextField fx:id="fieldpostal" layoutX="250.0" layoutY="80.0" prefWidth="250.0"/>
          <ChoiceBox fx:id="selection" layoutX="250.0" layoutY="110.0" prefWidth="250.0"/>
          <TextField fx:id="fieldphone" layoutX="250.0" layoutY="140.0" prefWidth="250.0"/>
+         <Label fx:id="additionalContactLabel" layoutX="100.0" layoutY="175.0" text="%additionalContact" />
+         <TextField fx:id="fieldAdditionalContact" layoutX="250.0" layoutY="170.0" prefWidth="250.0"/>
 
          <!-- Etiquetas de advertencia -->
          <Label fx:id="warningNameSur" layoutX="250.0" layoutY="45.0" text="%warningNameSur" textFill="red" visible="false" />

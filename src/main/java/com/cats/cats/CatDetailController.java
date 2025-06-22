@@ -111,6 +111,7 @@ public class CatDetailController {
             Stage currentStage = (Stage) adoptButton.getScene().getWindow();
             currentStage.close();
 
+            //la que tengo debajo posible linea a eliminar
             UsuarioController usuarioController = Main.context.getBean(UsuarioController.class);
             usuarioController.openAdoptionScreen(currentCat);
         } catch (Exception ex) {

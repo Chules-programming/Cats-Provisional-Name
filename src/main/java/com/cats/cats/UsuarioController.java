@@ -54,6 +54,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javafx.embed.swing.SwingFXUtils;
@@ -106,6 +107,8 @@ public class UsuarioController implements Initializable {
     }
 
     private Usuario currentUser;
+    private Map<String, ObjectId> catNameToIdMap = new HashMap<>();
+    private ObservableList<String> catNames = FXCollections.observableArrayList();
     private List<Cat> allCats;// Lista completa de gatos
     private List<Cat> searchResults;
     private int currentPage = 0;
@@ -141,7 +144,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1, searchField;
+    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword;
@@ -152,8 +155,8 @@ public class UsuarioController implements Initializable {
     @FXML
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
             tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword,
-            found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningName, warningPostal, warningPhone, warningAdress, warningNameSur,
-            count, theconditions, errorDuplicateName,
+            found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningPostal, warningPhone, warningAdress, warningNameSur,
+            count, theconditions, errorDuplicateName, errorphone, additionalContactLabel,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
             errorbreed, errorage, errorsex, errorcolor, errorheight, errorwidth, erroroption1, erroroption2, errordescription, errorimage1, errorimage2, errorimage3, errorvideo1, successMessage, nameadd1, errorname1,
             errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1, descriptionCounter;
@@ -182,7 +185,6 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private ChoiceBox<String> selection, choiceadd1, choiceadd2;
-
     @FXML
     private VBox catsContainer, searchResultsContainer;
 
@@ -964,6 +966,12 @@ public class UsuarioController implements Initializable {
             isValid = false;
         }
 
+        if (fieldaddphone.getText().trim().isEmpty()) {
+            errorphone.setText(resources.getString("error.ongphone"));
+            errorphone.setVisible(true);
+            isValid = false;
+        }
+
         // Validar fecha de nacimiento
         if (fieldaddBornDate.getValue() == null) {
             errorBornDate.setText(resources.getString("error.born_date"));
@@ -1198,7 +1206,7 @@ public class UsuarioController implements Initializable {
             nuevoGato.setDescription(areaadd.getText().trim());
             nuevoGato.setOngName(fieldaddong1.getText().trim());
             nuevoGato.setCatLocation(fieldaddplace1.getText().trim());
-
+            nuevoGato.setOngPhone(fieldaddphone.getText().trim());
             if (fieldaddBornDate.getValue() != null) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 nuevoGato.setBornDate(fieldaddBornDate.getValue().format(formatter));
@@ -1340,12 +1348,14 @@ public class UsuarioController implements Initializable {
         if (errorongname != null) errorongname.setVisible(false);
         if (errorcatplace1 != null) errorcatplace1.setVisible(false);
         if (errorDuplicateName != null) errorDuplicateName.setVisible(false);
+        if (errorphone != null) errorphone.setVisible(false);
     }
 
     private void clearForm() {
         fieldaddbreed.clear();
         fieldaddage.clear();
         fieldaddname.clear();
+        fieldaddphone.clear();
         fieldaddsex.clear();
         fieldaddcolor.clear();
         fieldaddheight.clear();
@@ -1363,6 +1373,7 @@ public class UsuarioController implements Initializable {
             addvideo1.getMediaPlayer().stop();
             addvideo1.setMediaPlayer(null);
         }
+        if (fieldAdditionalContact != null) fieldAdditionalContact.clear();
         if (errorDuplicateName != null) errorDuplicateName.setVisible(false);
     }
 
@@ -1753,9 +1764,8 @@ public class UsuarioController implements Initializable {
     }
 
     @FXML
-    private void handleConfirmation(MouseEvent event) throws IOException {
-        // Ocultar todos los warnings
-        warningName.setVisible(false);
+    private void handleConfirmation(MouseEvent event) {
+        // Ocultar todos los mensajes de advertencia
         warningPostal.setVisible(false);
         warningPhone.setVisible(false);
         warningAdress.setVisible(false);
@@ -1766,35 +1776,36 @@ public class UsuarioController implements Initializable {
         String postal = fieldpostal.getText();
         String phone = fieldphone.getText();
         String selectedCatName = selection.getValue();
+        String additionalContact = fieldAdditionalContact.getText();
 
         boolean hasError = false;
 
         // Validaciones de campos
         if (name.isEmpty()) {
-            warningNameSur.setText(resources.getString("error.name.empty")); // Modificado
+            warningNameSur.setText(resources.getString("error.name.empty"));
             warningNameSur.setVisible(true);
             hasError = true;
         }
         if (adress.isEmpty()) {
-            warningAdress.setText(resources.getString("error.address.empty")); // Modificado
+            warningAdress.setText(resources.getString("error.address.empty"));
             warningAdress.setVisible(true);
             hasError = true;
         }
         if (postal.isEmpty()) {
-            warningPostal.setText(resources.getString("error.postal.empty")); // Modificado
+            warningPostal.setText(resources.getString("error.postal.empty"));
             warningPostal.setVisible(true);
             hasError = true;
         } else if (!postal.matches("\\d+")) {
-            warningPostal.setText(resources.getString("error.postal.non_numeric")); // Modificado
+            warningPostal.setText(resources.getString("error.postal.non_numeric"));
             warningPostal.setVisible(true);
             hasError = true;
         }
         if (phone.isEmpty()) {
-            warningPhone.setText(resources.getString("error.phone.empty")); // Modificado
+            warningPhone.setText(resources.getString("error.phone.empty"));
             warningPhone.setVisible(true);
             hasError = true;
         } else if (!phone.matches("\\d+")) {
-            warningPhone.setText(resources.getString("error.phone.non_numeric")); // Modificado
+            warningPhone.setText(resources.getString("error.phone.non_numeric"));
             warningPhone.setVisible(true);
             hasError = true;
         }
@@ -1802,49 +1813,72 @@ public class UsuarioController implements Initializable {
         // Validar selección del gato
         if (selectedCatName == null || selectedCatName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Selección de gato requerida");
+            alert.setTitle(resources.getString("error.title"));
             alert.setHeaderText(null);
-            alert.setContentText("Por favor, selecciona un gato que quieras adoptar.");
+            alert.setContentText(resources.getString("error.cat_not_selected"));
             alert.showAndWait();
+            return;
+        }
+
+        ObjectId catId = catNameToIdMap.get(selectedCatName);
+        if (catId == null) {
+            showErrorAlert(resources.getString("error.cat_not_found"));
             return;
         }
 
         if (hasError) return;
 
-        // Debug: Mostrar el nombre seleccionado
-        System.out.println("Selected cat name: " + selectedCatName);
+        // Mostrar diálogo de confirmación
+        Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationDialog.setTitle(resources.getString("confirmation.title"));
+        confirmationDialog.setHeaderText(MessageFormat.format(
+                resources.getString("confirmation.header"),
+                selectedCatName
+        ));
+        confirmationDialog.setContentText(MessageFormat.format(
+                resources.getString("confirmation.content"),
+                selectedCatName
+        ));
 
-        // Obtener el gato seleccionado
-        Cat selectedCat = catRepository.findByName(selectedCatName);
+        // Botones traducidos
+        ButtonType yesButton = new ButtonType(resources.getString("yes"));
+        ButtonType noButton = new ButtonType(resources.getString("no"));
+        confirmationDialog.getButtonTypes().setAll(yesButton, noButton);
 
-        // Debug: Mostrar resultado de la búsqueda
-        System.out.println("Cat found in DB: " + (selectedCat != null ? selectedCat : "null"));
+        Optional<ButtonType> result = confirmationDialog.showAndWait();
+        if (result.isPresent() && result.get() == yesButton) {
+            processAdoption(catId, additionalContact);
+        }
+    }
+
+
+
+    private void processAdoption(ObjectId catId, String additionalContact) {
+        // Obtener el gato seleccionado por ID
+        Cat selectedCat = catRepository.findById(catId).orElse(null);
 
         if (selectedCat == null) {
-            System.err.println("Cat not found. Available cats in DB:");
-            catRepository.findAll().forEach(cat ->
-                    System.err.println(" - " + cat.getName() + (cat.isAdopted() ? " (Adopted)" : "")));
-
-            showErrorAlert("Selected cat not found in database");
+            showErrorAlert(resources.getString("error.cat_not_found"));
             return;
         }
 
         if (selectedCat.isAdopted()) {
-            showErrorAlert("This cat has already been adopted");
+            showErrorAlert(resources.getString("error.cat_already_adopted"));
             return;
         }
 
-        // Marcar como adoptado
+        // Marcar como adoptado y guardar
         selectedCat.setAdopted(true);
         catService.save(selectedCat);
 
-        // Crear objeto adopción
+        // Crear y guardar objeto de adopción
         Adopcion adopcion = new Adopcion();
-        adopcion.setNameSurname(name);
-        adopcion.setAdress(adress);
-        adopcion.setPostal(postal);
-        adopcion.setPhone(phone);
-        adopcion.setCatName(selectedCatName);
+        adopcion.setNameSurname(fieldname.getText());
+        adopcion.setAdress(fieldadress.getText());
+        adopcion.setPostal(fieldpostal.getText());
+        adopcion.setPhone(fieldphone.getText());
+        adopcion.setCatName(selectedCat.getName());
+        adopcion.setAdditionalContact(additionalContact);
 
         if (currentUser != null) {
             adopcion.setUserId(currentUser.getId());
@@ -1853,41 +1887,25 @@ public class UsuarioController implements Initializable {
         adopcionService.save(adopcion);
 
         // Mostrar mensaje de éxito
-        congratulations.setText("Congratulations, cat adopted :)");
+        congratulations.setText(resources.getString("adoption.success"));
         congratulations.setTextFill(Color.GREEN);
         congratulations.setVisible(true);
 
-        // Limpiar campos
+        // Limpiar campos del formulario
         fieldname.clear();
         fieldadress.clear();
         fieldpostal.clear();
         fieldphone.clear();
+        fieldAdditionalContact.clear();
         selection.setValue(null);
     }
+
+
+
     public void openAdoptionScreen(Cat selectedCat) {
         try {
-            // Detener cualquier reproducción actual
-            stopCurrentPlayback();
+            setCurrentCat(selectedCat); // Guardar el gato seleccionado
 
-            // Buscar el controlador de detalles en ventanas abiertas
-            CatDetailController detailController = null;
-            Stage[] stages = Stage.getWindows().toArray(new Stage[0]);
-            for (Stage stage : stages) {
-                if (stage.getScene() != null &&
-                        stage.getScene().getRoot() != null &&
-                        stage.getScene().getRoot().getUserData() instanceof CatDetailController) {
-
-                    detailController = (CatDetailController) stage.getScene().getRoot().getUserData();
-                    break;
-                }
-            }
-
-            // Detener video en el controlador de detalles si existe
-            if (detailController != null) {
-                detailController.stopVideo();
-            }
-
-            // Abrir la pantalla de adopción
             setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/java/fx/adoptweb.fxml"),
@@ -1897,8 +1915,10 @@ public class UsuarioController implements Initializable {
             Parent root = loader.load();
 
             UsuarioController controller = loader.getController();
-            controller.setCurrentCat(selectedCat);
-            controller.initializeAdoptView();
+            controller.setCurrentCat(selectedCat); // Pasar el gato al controlador
+
+            // Añade esta línea para preseleccionar el gato
+            controller.preselectCatInChoiceBox(selectedCat.getName());
 
             Stage stage = new Stage();
             Scene scene = new Scene(root);
@@ -1908,12 +1928,18 @@ public class UsuarioController implements Initializable {
             stage.setMinHeight(700);
             stage.setTitle("Adopt " + selectedCat.getName());
             stage.show();
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             showErrorAlert("Could not open adoption screen: " + e.getMessage());
         }
     }
+
+    public void preselectCatInChoiceBox(String catName) {
+        if (selection != null && selection.getItems().contains(catName)) {
+            selection.setValue(catName);
+        }
+    }
+
 
 
     private void handleCatClick(MouseEvent event, Cat cat) {
@@ -2327,6 +2353,7 @@ public class UsuarioController implements Initializable {
         safeSetText(heightLabel, "cat.height", bundle);
         safeSetText(widthLabel, "cat.width", bundle);
         safeSetText(colorLabel, "cat.color", bundle);
+        safeSetText(errorphone, "error.ongphone", bundle);
         safeSetText(sexLabel, "cat.sex", bundle);
         safeSetText(friendlyKidsLabel, "cat.friendly.kids", bundle);
         safeSetText(friendlyAnimalsLabel, "cat.friendly.animals", bundle);
@@ -2349,7 +2376,6 @@ public class UsuarioController implements Initializable {
         safeSetText(warning2, "warning2", bundle);
         safeSetText(warning3, "warning3", bundle);
         safeSetText(warning4, "warning4", bundle);
-        safeSetText(warningName, "warningName", bundle);
         safeSetText(warningPostal, "warningPostal", bundle);
         safeSetText(warningPhone, "warningPhone", bundle);
         safeSetText(warningAdress, "warningAdress", bundle);
@@ -2697,11 +2723,14 @@ public class UsuarioController implements Initializable {
             // Inicializar ChoiceBox con datos de MongoDB
             if (selection != null && catRepository != null) {
                 List<Cat> availableCats = catRepository.findByAdoptedFalse();
-                ObservableList<String> catNames = FXCollections.observableArrayList();
+                catNames.clear();  // Limpiar lista existente
+                catNameToIdMap.clear();  // Limpiar mapa existente
 
                 for (Cat cat : availableCats) {
-                    if (cat.getName() != null && !cat.getName().trim().isEmpty()) {
-                        catNames.add(cat.getName().trim());
+                    String catName = cat.getName();
+                    if (catName != null && !catName.trim().isEmpty()) {
+                        catNames.add(catName);
+                        catNameToIdMap.put(catName, cat.getId());
                     }
                 }
 
@@ -2721,14 +2750,17 @@ public class UsuarioController implements Initializable {
 
 
     private void initializeAdoptView() {
-        if (selection == null) return; // ← Prevención de NPE
+        if (selection == null) return;
 
         List<Cat> availableCats = catRepository.findByAdoptedFalse();
         ObservableList<String> catNames = FXCollections.observableArrayList();
+        catNameToIdMap.clear(); // Limpiar el mapa previo
 
         for (Cat cat : availableCats) {
             if (cat.getName() != null && !cat.getName().trim().isEmpty()) {
-                catNames.add(cat.getName().trim());
+                String name = cat.getName().trim();
+                catNames.add(name);
+                catNameToIdMap.put(name, cat.getId());
             }
         }
 

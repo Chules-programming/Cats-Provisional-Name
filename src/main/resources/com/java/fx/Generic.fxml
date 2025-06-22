@@ -42,7 +42,7 @@
                     <StackPane fx:id="videoContainer">
                         <MediaView fx:id="catVideo" fitWidth="400" fitHeight="200" />
                         <ImageView fx:id="playPauseOverlay"
-                                   fitWidth="50" fitHeight="50"
+                                   fitWidth="400" fitHeight="200"
                                    preserveRatio="true"
                                    pickOnBounds="true"
                                    style="-fx-cursor: hand;" />

@@ -58,6 +58,13 @@
                     </graphic>
                 </Button>
 
+                <Button fx:id="suggestButton"
+                        onMouseClicked="#handleSuggestions"
+                        text="%suggestions.button"
+                        styleClass="modern-button"
+                        minWidth="150" minHeight="50"
+                        style="-fx-font-size: 16px;"/>
+
                 <!-- Botón de Adoptar -->
                 <Button fx:id="adopt"
                         onMouseClicked="#handleAdopt"

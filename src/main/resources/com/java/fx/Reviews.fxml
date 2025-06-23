@@ -9,19 +9,14 @@
             prefHeight="700.0" prefWidth="600.0">
 
     <!-- ScrollPane para reseñas existentes -->
-    <ScrollPane fitToWidth="true" fitToHeight="true"
-                AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
-                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="250">
+    <ScrollPane fitToWidth="true" fitToHeight="true" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="250">
         <content>
-            <VBox fx:id="reviewsContainer" spacing="20"
-                  style="-fx-padding: 20;"/>
+            <VBox fx:id="reviewsContainer" spacing="20" style="-fx-padding: 20;"/>
         </content>
     </ScrollPane>
 
     <!-- Formulario para nueva reseña -->
-    <VBox spacing="10" style="-fx-padding: 20; -fx-background-color: #f0f0f0;"
-          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
-          prefHeight="250">
+    <VBox spacing="10" style="-fx-padding: 20; -fx-background-color: #f0f0f0;" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" prefHeight="250">
         <Label text="%add.review.label" style="-fx-font-weight: bold;"/>
 
         <!-- Calificación con estrellas -->
@@ -40,14 +35,10 @@
             </ChoiceBox>
         </HBox>
 
-        <TextArea fx:id="reviewComment" promptText="%review.comment.prompt"
-                  wrapText="true" prefRowCount="3"/>
+        <TextArea fx:id="reviewComment" promptText="%review.comment.prompt" wrapText="true" prefRowCount="3"/>
+        <Label fx:id="reviewCounter" style="-fx-font-size: 12px; -fx-text-fill: gray;"/>
 
-        <Button fx:id="submitReview" text="%submit.review" onMouseClicked="#handleSubmitReview"
-                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
-                maxWidth="Infinity"/>
-        <Button text="%back.button" onMouseClicked="#handleGoToWeb2"
-                styleClass="modern-button"
-                maxWidth="Infinity"/>
+        <Button fx:id="submitReview" text="%submit.review" onMouseClicked="#handleSubmitReview" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" maxWidth="Infinity"/>
+        <Button text="%back.button" onMouseClicked="#handleGoToWeb2" styleClass="modern-button" maxWidth="Infinity"/>
     </VBox>
 </AnchorPane>

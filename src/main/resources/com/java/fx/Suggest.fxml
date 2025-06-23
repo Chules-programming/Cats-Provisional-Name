@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cats.cats.UsuarioController" style="-fx-padding: 20;">
+
+    <VBox spacing="20" alignment="CENTER" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <Label text="%suggestions.title" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        <TextArea fx:id="suggestionTextArea" promptText="%suggestions.prompt" wrapText="true" prefHeight="200" prefWidth="400"/>
+        <Label fx:id="suggestionCounter" style="-fx-font-size: 12px; -fx-text-fill: gray;"/>
+        <Button text="%suggestions.submit" onMouseClicked="#handleSubmitSuggestion" styleClass="modern-button" minWidth="100" minHeight="40"/>
+        <Label fx:id="suggestionMessage" style="-fx-text-fill: green; -fx-font-size: 14px;" visible="false"/>
+        <Button text="%back.button" onMouseClicked="#handleGoCatSection" styleClass="modern-button" minWidth="100" minHeight="40"/>
+    </VBox>
+</AnchorPane>

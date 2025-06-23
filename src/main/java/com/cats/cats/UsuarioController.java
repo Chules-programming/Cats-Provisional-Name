@@ -116,6 +116,11 @@ public class UsuarioController implements Initializable {
     private List<Cat> searchResults;
     private int currentPage = 0;
     private static final int CATS_PER_PAGE = 6;
+    private static final int MAX_SUGGESTION_CHARS = 400;
+    private static final int MAX_SUGGESTION_LINES = 10;
+
+    private static final int MAX_REVIEW_CHARS = 400;
+    private static final int MAX_REVIEW_LINES = 10;
     private void safeSetText(Labeled component, String key, ResourceBundle bundle) {
         if (component == null) return;
 
@@ -153,13 +158,13 @@ public class UsuarioController implements Initializable {
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
 
     @FXML
-    private TextArea areaadd, reviewComment;
+    private TextArea areaadd, reviewComment, suggestionTextArea;
 
     @FXML
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
             tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword,
             found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningPostal, warningPhone, warningAdress, warningNameSur,
-            count, theconditions, errorDuplicateName, errorphone, additionalContactLabel, recoverMessage,
+            count, theconditions, errorDuplicateName, errorphone, additionalContactLabel, recoverMessage, suggestionMessage, suggestionCounter, reviewCounter,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
             errorbreed, errorage, errorsex, errorcolor, errorheight, errorwidth, erroroption1, erroroption2, errordescription, errorimage1, errorimage2, errorimage3, errorvideo1, successMessage, nameadd1, errorname1,
             errorage2, errorheight2, errorwidth2, heightLabel, widthLabel, colorLabel, catNameLabel, breedLabel, ageLabel, personality1Label, sexLabel, personality2Label, friendlyKidsLabel, friendlyAnimalsLabel, DateLabel, bornDateLabel, errorBornDate, theconditions2, ongname, catplace, errorongname, errorcatplace1, descriptionCounter;
@@ -623,8 +628,10 @@ public class UsuarioController implements Initializable {
         }
 
         Integer rating = ratingChoice.getValue();
-        String comment = reviewComment.getText();
+        String comment = reviewComment.getText().trim();
+        int lineCount = comment.split("\n").length;
 
+        // Validaciones
         if (rating == null) {
             showErrorAlert("Por favor selecciona una calificación");
             return;
@@ -632,6 +639,16 @@ public class UsuarioController implements Initializable {
 
         if (comment.isEmpty()) {
             showErrorAlert("Por favor escribe un comentario");
+            return;
+        }
+
+        if (comment.length() > MAX_REVIEW_CHARS) {
+            showErrorAlert("El comentario excede el límite de " + MAX_REVIEW_CHARS + " caracteres");
+            return;
+        }
+
+        if (lineCount > MAX_REVIEW_LINES) {
+            showErrorAlert("El comentario excede el límite de " + MAX_REVIEW_LINES + " líneas");
             return;
         }
 
@@ -656,6 +673,7 @@ public class UsuarioController implements Initializable {
         showInfoAlert("¡Reseña enviada con éxito!");
     }
 
+
     private void showInfoAlert(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -665,6 +683,59 @@ public class UsuarioController implements Initializable {
             alert.showAndWait();
         });
     }
+
+    // Método para manejar el botón de sugerencias
+    @FXML
+    private void handleSuggestions(MouseEvent event) throws IOException {
+        setCurrentFxmlPath("/com/java/fx/Suggest.fxml");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Suggest.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        loader.setControllerFactory(Main.context::getBean);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+    }
+
+    // Método para enviar sugerencias
+    @FXML
+    private void handleSubmitSuggestion(MouseEvent event) {
+        if (currentUser == null) {
+            showErrorAlert("Debes iniciar sesión para enviar una sugerencia");
+            return;
+        }
+
+        String suggestion = suggestionTextArea.getText().trim();
+        int lineCount = suggestion.split("\n").length;
+
+        // Validaciones
+        if (suggestion.isEmpty()) {
+            showErrorAlert("Por favor, escribe tu sugerencia");
+            return;
+        }
+
+        if (suggestion.length() > MAX_SUGGESTION_CHARS) {
+            showErrorAlert("La sugerencia excede el límite de " + MAX_SUGGESTION_CHARS + " caracteres");
+            return;
+        }
+
+        if (lineCount > MAX_SUGGESTION_LINES) {
+            showErrorAlert("La sugerencia excede el límite de " + MAX_SUGGESTION_LINES + " líneas");
+            return;
+        }
+
+        // Simular envío (aquí iría la lógica real)
+        String email = currentUser.getEmail();
+        System.out.println("Sugerencia enviada a " + email + ": " + suggestion);
+
+        // Mostrar mensaje de confirmación
+        String message = resources.getString("suggestions.success")
+                .replace("{0}", email);
+        suggestionMessage.setText(message);
+        suggestionMessage.setVisible(true);
+        suggestionTextArea.clear();
+    }
+
 
     @FXML
     private void handleRecoverAccount(MouseEvent event) {
@@ -2350,6 +2421,7 @@ public class UsuarioController implements Initializable {
                 currentFxmlPath = "/com/java/fx/main.fxml";
             }
 
+
             // 4. Reiniciar la paginación
             currentPage = 0;
 
@@ -2509,6 +2581,63 @@ public class UsuarioController implements Initializable {
                 // ————————————————————————————————
             });
         }
+        if (suggestionMessage != null) {
+            suggestionMessage.setVisible(false);
+        }
+        if (suggestionTextArea != null) {
+            suggestionTextArea.textProperty().addListener((observable, oldValue, newValue) -> {
+                validateTextArea(
+                        suggestionTextArea,
+                        suggestionCounter,
+                        MAX_SUGGESTION_CHARS,
+                        MAX_SUGGESTION_LINES,
+                        oldValue
+                );
+            });
+        }
+        if (reviewComment != null) {
+            reviewComment.textProperty().addListener((observable, oldValue, newValue) -> {
+                validateTextArea(
+                        reviewComment,
+                        reviewCounter,
+                        MAX_REVIEW_CHARS,
+                        MAX_REVIEW_LINES,
+                        oldValue
+                );
+            });
+        }
+    }
+
+    // Método reusable para validación
+    private void validateTextArea(TextArea textArea, Label counter,
+                                  int maxChars, int maxLines, String oldValue) {
+        String newValue = textArea.getText();
+
+        // Validar longitud máxima
+        if (newValue.length() > maxChars) {
+            Platform.runLater(() -> textArea.setText(oldValue));
+            return;
+        }
+
+        // Validar número de líneas
+        int lineCount = newValue.split("\n").length;
+        if (lineCount > maxLines) {
+            Platform.runLater(() -> textArea.setText(oldValue));
+            return;
+        }
+
+        // Actualizar contador
+        if (counter != null) {
+            counter.setText(lineCount + "/" + maxLines + " líneas | " +
+                    newValue.length() + "/" + maxChars + " caracteres");
+
+            // Cambiar color si se acerca al límite
+            if (newValue.length() > maxChars * 0.9 || lineCount > maxLines * 0.9) {
+                counter.setTextFill(Color.ORANGE);
+            } else {
+                counter.setTextFill(Color.GRAY);
+            }
+        }
     }
 
 
@@ -2526,6 +2655,7 @@ public class UsuarioController implements Initializable {
         safeSetText(welcome, "welcome", bundle);
         safeSetText(username, "username", bundle);
         safeSetText(password, "password", bundle);
+        safeSetText(suggestionMessage, "suggestions.success", bundle);
         safeSetText(registeredusers, "registeredusers", bundle);
         safeSetText(addusername, "addusername", bundle);
         safeSetText(addemail, "addemail", bundle);

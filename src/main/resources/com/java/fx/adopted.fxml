@@ -20,15 +20,19 @@
             </HBox>
         </top>
 
-        <!-- Center: Lista de gatos adoptados -->
+        <!-- Center: Lista de gatos adoptados dentro de un AnchorPane -->
         <center>
             <ScrollPane fitToWidth="true" fitToHeight="true"
                         hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
                 <content>
-                    <TilePane  fx:id="adoptedCatsContainer"
-                               prefColumns="2"
-                               hgap="20" vgap="20"
-                               style="-fx-background-color: white; -fx-padding: 20;"/>
+                    <AnchorPane style="-fx-background-color: white; -fx-padding: 20;">
+                        <TilePane fx:id="adoptedCatsContainer"
+                                  prefColumns="2"
+                                  hgap="20" vgap="20"
+                                  AnchorPane.topAnchor="0"
+                                  AnchorPane.leftAnchor="0"
+                                  AnchorPane.rightAnchor="0"/>
+                    </AnchorPane>
                 </content>
             </ScrollPane>
         </center>

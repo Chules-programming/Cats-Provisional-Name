@@ -3156,25 +3156,14 @@ public class UsuarioController implements Initializable {
     }
 
     private VBox createCatCard(Cat cat) {
-        // Asegurar que el ResourceBundle esté cargado
-        if (resources == null) {
-            resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale());
-        }
-
-        // Omitir gatos adoptados si así lo requiere la vista
-        if (cat.isAdopted()) {
-            return null;
-        }
-
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
-        card.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8;" +
-                "-fx-background-color: #f9f9f9; -fx-padding: 15;" +
-                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);");
+        card.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8;"
+                + "-fx-background-color: #f9f9f9; -fx-padding: 15;"
+                + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);");
         card.setPrefWidth(280);
-        card.setMaxWidth(280); // Asegura consistencia en el grid
+        card.setMaxWidth(280);
 
-        // Imagen del gato
         ImageView catImage = new ImageView();
         catImage.setFitWidth(200);
         catImage.setFitHeight(200);
@@ -3188,25 +3177,19 @@ public class UsuarioController implements Initializable {
             catImage.setImage(getDefaultCatImage());
         }
 
-        // Evento al hacer clic en la imagen
         catImage.setOnMouseClicked(ev -> handleCatClick(ev, cat));
 
-        // Nombre del gato
         Label nameLabel = new Label(cat.getName());
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // Raza del gato
         Label breedLabel = new Label(resources.getString("breed.label") + ": " + cat.getBreed());
 
-        // Estado de adopción
-        String statusText = resources.getString("status.label") + ": " +
-                (cat.isAdopted()
-                        ? resources.getString("status.adopted")
-                        : resources.getString("status.available"));
-        Label statusLabel = new Label(statusText);
+        Label statusLabel = new Label(resources.getString("status.label") + ": "
+                + (cat.isAdopted()
+                ? resources.getString("status.adopted")
+                : resources.getString("status.available")));
         statusLabel.setTextFill(cat.isAdopted() ? Color.RED : Color.GREEN);
 
-        // Añadir todo al card
         card.getChildren().addAll(catImage, nameLabel, breedLabel, statusLabel);
         return card;
     }
@@ -3483,25 +3466,33 @@ public class UsuarioController implements Initializable {
         adoptedCatsContainer.getChildren().clear();
         List<Cat> adoptedCats = catRepository.findByAdoptedTrue();
 
-        // Crear TilePane para organización automática en 2 columnas
-        TilePane tilePane = new TilePane();
-        tilePane.setPrefColumns(2); // Mostrar en 2 columnas
-        tilePane.setHgap(20);       // Espaciado horizontal entre elementos
-        tilePane.setVgap(20);       // Espaciado vertical entre elementos
-        tilePane.setPadding(new Insets(20));
-        tilePane.setStyle("-fx-background-color: white;");
-        tilePane.setAlignment(Pos.CENTER);
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(20);
+        grid.setVgap(20);
+        grid.setPadding(new Insets(20));
+        grid.setStyle("-fx-background-color: white;");
 
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(50);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(50);
+        grid.getColumnConstraints().addAll(col1, col2);
+
+        int row = 0;
+        int col = 0;
         for (Cat cat : adoptedCats) {
             if (cat != null) {
                 Node catCard = createCatCard(cat);
                 if (catCard != null) {
-                    tilePane.getChildren().add(catCard);
+                    grid.add(catCard, col, row);
+                    col = (col + 1) % 2;
+                    if (col == 0) row++;
                 }
             }
         }
 
-        adoptedCatsContainer.getChildren().add(tilePane);
+        adoptedCatsContainer.getChildren().add(grid);
     }
 
 

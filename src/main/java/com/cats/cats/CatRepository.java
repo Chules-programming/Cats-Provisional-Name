@@ -9,7 +9,12 @@ import java.util.List;
 
 @Repository
 public interface CatRepository extends MongoRepository<Cat, ObjectId> {
+    // Gatos disponibles (no adoptados)
     List<Cat> findByAdoptedFalse();
+
+    // Gatos adoptados
+    List<Cat> findByAdoptedTrue();
+
     List<Cat> findByBreedIgnoreCaseAndAdoptedFalse(String breed);
 
     @Query("{ 'name' : { $regex: ?0, $options: 'i' } }")

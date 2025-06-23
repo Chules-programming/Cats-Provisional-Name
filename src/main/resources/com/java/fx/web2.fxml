@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 
 <AnchorPane fx:id="anchorweb2" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -14,7 +15,6 @@
         <!-- Top: Barra de búsqueda y botón de login -->
         <top>
             <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #f0f0f0;" spacing="10">
-                <!-- Sección izquierda: búsqueda -->
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <TextField fx:id="searchField"
                                promptText="%search.prompt"
@@ -26,11 +26,7 @@
                             styleClass="modern-button"
                             minWidth="80"/>
                 </HBox>
-
-                <!-- Espaciador -->
                 <Region HBox.hgrow="ALWAYS"/>
-
-                <!-- Botón de volver a login -->
                 <Button fx:id="goToLoginButton"
                         onMouseClicked="#handleGoToLogin"
                         text="%goToLogin"
@@ -39,15 +35,28 @@
             </HBox>
         </top>
 
-        <!-- Center: Lista de gatos -->
+        <!-- Center: Lista de gatos con GridPane -->
         <center>
             <ScrollPane fx:id="scrol"
                         fitToWidth="true" fitToHeight="true"
                         hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
                 <content>
-                    <VBox fx:id="catsContainer"
-                          spacing="20"
-                          style="-fx-background-color: white; -fx-padding: 20;"/>
+                    <AnchorPane>
+                        <GridPane fx:id="catsGrid"
+                                  hgap="20"
+                                  vgap="20"
+                                  AnchorPane.topAnchor="0"
+                                  AnchorPane.leftAnchor="0"
+                                  AnchorPane.rightAnchor="0">
+                            <padding>
+                                <Insets top="20" right="20" bottom="20" left="20"/>
+                            </padding>
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                            </columnConstraints>
+                        </GridPane>
+                    </AnchorPane>
                 </content>
             </ScrollPane>
         </center>
@@ -59,7 +68,6 @@
                   style="-fx-background-color: #f0f0f0; -fx-padding: 15;"
                   prefHeight="80">
 
-                <!-- Botón anterior -->
                 <Button fx:id="previouspage"
                         onMouseClicked="#handlePreviousPage"
                         styleClass="modern-button-icon"
@@ -85,6 +93,13 @@
                         minWidth="150" minHeight="50"
                         style="-fx-font-size: 16px;"/>
 
+                <Button fx:id="adoptedButton"
+                        onMouseClicked="#handleGoToAdopted"
+                        text="%adopted.button"
+                        styleClass="modern-button"
+                        minWidth="150" minHeight="50"
+                        style="-fx-font-size: 16px;"/>
+
                 <Button fx:id="reviewsButton"
                         onMouseClicked="#handleReviews"
                         text="%reviews.button"
@@ -92,7 +107,6 @@
                         minWidth="120" minHeight="50"
                         style="-fx-font-size: 16px;"/>
 
-                <!-- Botón siguiente -->
                 <Button fx:id="nextpage"
                         onMouseClicked="#handleNextPage"
                         styleClass="modern-button-icon"
@@ -107,3 +121,4 @@
         </bottom>
     </BorderPane>
 </AnchorPane>
+

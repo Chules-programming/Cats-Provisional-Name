@@ -160,6 +160,13 @@ public class UsuarioController implements Initializable {
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
 
     @FXML
+    private GridPane catsGrid;
+    @FXML
+    public void setCatsGrid(GridPane catsGrid) {
+        this.catsGrid = catsGrid;
+    }
+
+    @FXML
     private TextArea areaadd, reviewComment, suggestionTextArea;
 
     @FXML
@@ -176,6 +183,9 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private ChoiceBox<Integer> ratingChoice;
+
+    @FXML
+    private TilePane adoptedCatsContainer;
 
     @FXML
     private Button register, registeruser, goback, login, adopt, nextpage, previouspage, gomenu, back, back1, confirmation, play1, play2, goToLoginButton,
@@ -205,7 +215,7 @@ public class UsuarioController implements Initializable {
     @FXML
     private ChoiceBox<String> selection, choiceadd1, choiceadd2;
     @FXML
-    private VBox catsContainer, searchResultsContainer, reviewsContainer;
+    private VBox searchResultsContainer, reviewsContainer;
 
     @FXML
     private MediaView currentMediaView, addvideo1, catVideo;
@@ -218,6 +228,11 @@ public class UsuarioController implements Initializable {
     private MongoDatabase mongoDatabase;
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB en bytes
     private static final long MAX_VIDEO_SIZE = 10 * 1024 * 1024; //10MB en bytes
+    public void show() {
+        if (catsGrid != null) {
+            loadCatsIntoView();
+        }
+    }
 
     private FileChooser fileChooser = new FileChooser();
 
@@ -262,20 +277,6 @@ public class UsuarioController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private Image loadImageFromDatabase(String imageId) {
-        try {
-            Document imageDoc = mongoDatabase.getCollection("images").find(Filters.eq("_id", new ObjectId(imageId))).first();
-            if (imageDoc != null) {
-                String base64 = imageDoc.getString("data");
-                byte[] decodedBytes = Base64.getDecoder().decode(base64);
-                return new Image(new ByteArrayInputStream(decodedBytes));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private Media loadVideoFromDatabase(String videoId) {
@@ -980,39 +981,39 @@ public class UsuarioController implements Initializable {
     }
 
     private void updatePage() {
-        if (catsContainer == null || allCats == null) return;
+        if (catsGrid == null || allCats == null) return;
 
-        catsContainer.getChildren().clear();
-        catsContainer.setSpacing(20);
-        catsContainer.setPadding(new Insets(20));
+        // Limpiar contenedor principal
+        catsGrid.getChildren().clear();
 
-        int fromIndex = currentPage * CATS_PER_PAGE;
-        int toIndex = Math.min(fromIndex + CATS_PER_PAGE, allCats.size());
-
-        // Crear un GridPane para organizar los gatos en 2 columnas
+        // Crear GridPane para 2 columnas
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(20);
         grid.setVgap(20);
         grid.setPadding(new Insets(20));
+        grid.setStyle("-fx-background-color: white;");
+
+        int fromIndex = currentPage * CATS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + CATS_PER_PAGE, allCats.size());
 
         int col = 0;
         int row = 0;
         for (int i = fromIndex; i < toIndex; i++) {
             Cat cat = allCats.get(i);
-            Node catCard = createCatCard(cat); // Método que crea la tarjeta individual
+            Node catCard = createCatCard(cat);
 
-            grid.add(catCard, col, row);
-            col++;
+            if (catCard != null) {
+                grid.add(catCard, col, row);
 
-            if (col > 1) {
-                col = 0;
-                row++;
+                // Control de columnas
+                col = (col + 1) % 2; // Alternar entre 0 y 1
+                if (col == 0) row++; // Nueva fila cuando se completa una columna
             }
         }
 
-        // Añadir el grid al contenedor principal
-        catsContainer.getChildren().add(grid);
+        // Añadir grid al contenedor principal
+        catsGrid.getChildren().add(grid);
     }
 
     private void initializeChoiceBoxes() {
@@ -1772,7 +1773,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleGoCatSection(Event event) throws IOException {
-        // Detener cualquier reproducción en los controladores de detalles
+        // Detener cualquier reproducción en los controladores de detalle
         Stage[] stages = Stage.getWindows().toArray(new Stage[0]);
         for (Stage stage : stages) {
             if (stage.getScene() != null &&
@@ -1784,7 +1785,7 @@ public class UsuarioController implements Initializable {
             }
         }
 
-        // También detener cualquier reproducción en el controlador principal
+        // Detener reproducción en controlador principal
         stopCurrentPlayback();
 
         setCurrentFxmlPath("/com/java/fx/web2.fxml");
@@ -1795,6 +1796,11 @@ public class UsuarioController implements Initializable {
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
+        // Obtener el controlador y ejecutar show()
+        UsuarioController controller = loader.getController();
+        controller.show();  // Asegúrate de que el método show() exista y cargue correctamente los gatos
+
+        // Configurar la ventana actual
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         boolean wasMaximized = stage.isMaximized();
         stage.getScene().setRoot(root);
@@ -1805,14 +1811,17 @@ public class UsuarioController implements Initializable {
         stage.setMinWidth(600);
         stage.setMinHeight(700);
 
+        // Hacer scroll al principio
         Platform.runLater(() -> {
             ScrollPane scroll = (ScrollPane) root.lookup("#scrol");
             if (scroll != null) {
                 scroll.setVvalue(0.0);
             }
         });
+
         updateCatStatusDisplays();
     }
+
 
 
 
@@ -2488,6 +2497,9 @@ public class UsuarioController implements Initializable {
 
             // 14. Ejecutar tareas diferidas en UI thread
             Platform.runLater(() -> {
+                if (catsGrid != null) {
+                    loadCatsIntoView(); // Cargar gatos al inicializar
+                }
                 // Configuración SOLO para elementos visibles
                 if (previouspage != null && previouspage.isVisible()) {
                     previouspage.setMinWidth(100);
@@ -2513,7 +2525,7 @@ public class UsuarioController implements Initializable {
 
                 // Actualizar vista
                 updateCatStatusDisplays();
-                if (catsContainer != null) {
+                if (catsGrid != null) {
                     loadCatsIntoView();
                 }
                 updatePaginationButtons();
@@ -2613,6 +2625,13 @@ public class UsuarioController implements Initializable {
                         oldValue
                 );
             });
+        }
+        if (catsGrid != null) {
+            ColumnConstraints col1 = new ColumnConstraints();
+            col1.setPercentWidth(50);
+            ColumnConstraints col2 = new ColumnConstraints();
+            col2.setPercentWidth(50);
+            catsGrid.getColumnConstraints().addAll(col1, col2);
         }
     }
 
@@ -2897,8 +2916,8 @@ public class UsuarioController implements Initializable {
 
         // 6. Forzar actualización de UI
         Platform.runLater(() -> {
-            if (catsContainer != null) {
-                catsContainer.requestLayout();
+            if (catsGrid != null) {
+                catsGrid.requestLayout();
             }
         });
     }
@@ -3102,38 +3121,66 @@ public class UsuarioController implements Initializable {
     }
 
     private void loadCatsIntoView() {
-        if (catsContainer == null) {
-            System.out.println("catsContainer es nulo!");
-            return;
-        }
+        if (catsGrid == null) return;
 
-        System.out.println("Cargando gatos en vista...");
+        catsGrid.getChildren().clear();
+        // Usar SOLO gatos no adoptados
+        List<Cat> availableCats = catRepository.findByAdoptedFalse();
+        int totalCats = availableCats.size();
 
-        Platform.runLater(() -> {
-            updatePage();
-            updatePaginationButtons();
+        int fromIndex = currentPage * CATS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + CATS_PER_PAGE, totalCats);
 
-            // Depuración adicional
-            System.out.println("Gatos cargados: " + catsContainer.getChildren().size());
-            if (nextpage != null) {
-                System.out.println("Botón siguiente habilitado: " + !nextpage.isDisabled());
+        int row = 0;
+        int col = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            Cat cat = availableCats.get(i);
+            Node catCard = createCatCard(cat);
+            if (catCard != null) {
+                catsGrid.add(catCard, col, row);
+                col = (col + 1) % 2; // 2 columnas
+                if (col == 0) row++;
             }
-        });
+        }
+        updatePaginationButtons();
+    }
+
+
+    private Image loadLocalImage(String path) {
+        try (InputStream is = getClass().getResourceAsStream(path)) {
+            return new Image(is);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private VBox createCatCard(Cat cat) {
+        // Asegurar que el ResourceBundle esté cargado
+        if (resources == null) {
+            resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale());
+        }
+
+        // Omitir gatos adoptados si así lo requiere la vista
+        if (cat.isAdopted()) {
+            return null;
+        }
+
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
-        card.setStyle("-fx-border-color: #dddddd; -fx-border-width: 1; -fx-border-radius: 5; -fx-padding: 10;");
-        card.setPrefSize(250, 300);
+        card.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8;" +
+                "-fx-background-color: #f9f9f9; -fx-padding: 15;" +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);");
+        card.setPrefWidth(280);
+        card.setMaxWidth(280); // Asegura consistencia en el grid
 
+        // Imagen del gato
         ImageView catImage = new ImageView();
         catImage.setFitWidth(200);
         catImage.setFitHeight(200);
         catImage.setPreserveRatio(true);
         catImage.setCursor(Cursor.HAND);
 
-        // Cargar imagen
         if (cat.getImageId1() != null) {
             Image image = getImageFromDatabase(cat.getImageId1());
             catImage.setImage(image != null ? image : getDefaultCatImage());
@@ -3141,19 +3188,32 @@ public class UsuarioController implements Initializable {
             catImage.setImage(getDefaultCatImage());
         }
 
-        // Configurar manejador de clic SIMPLIFICADO
+        // Evento al hacer clic en la imagen
         catImage.setOnMouseClicked(ev -> handleCatClick(ev, cat));
 
+        // Nombre del gato
         Label nameLabel = new Label(cat.getName());
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        Label breedLabel = new Label("Breed: " + cat.getBreed());
-        Label statusLabel = new Label("Status: " + (cat.isAdopted() ? "Adopted" : "Available"));
+        // Raza del gato
+        Label breedLabel = new Label(resources.getString("breed.label") + ": " + cat.getBreed());
+
+        // Estado de adopción
+        String statusText = resources.getString("status.label") + ": " +
+                (cat.isAdopted()
+                        ? resources.getString("status.adopted")
+                        : resources.getString("status.available"));
+        Label statusLabel = new Label(statusText);
         statusLabel.setTextFill(cat.isAdopted() ? Color.RED : Color.GREEN);
 
+        // Añadir todo al card
         card.getChildren().addAll(catImage, nameLabel, breedLabel, statusLabel);
         return card;
     }
+
+
+
+
 
 
     private VBox createCatBox(Cat cat) {
@@ -3260,19 +3320,12 @@ public class UsuarioController implements Initializable {
     // Llamar este método al cargar web2.fxml
     @FXML
     private void handleNextPage(MouseEvent event) {
-        if (catRepository == null) return;
-
-        List<Cat> cats = catRepository.findAll();
-        int totalPages = (int) Math.ceil((double) cats.size() / CATS_PER_PAGE);
+        List<Cat> availableCats = catRepository.findByAdoptedFalse();
+        int totalPages = (int) Math.ceil((double) availableCats.size() / CATS_PER_PAGE);
 
         if (currentPage < totalPages - 1) {
             currentPage++;
             loadCatsIntoView();
-            updatePaginationButtons(); // Actualizar botones después de cambiar
-
-            Platform.runLater(() -> {
-                if (scrol != null) scrol.setVvalue(0.0);
-            });
         }
     }
 
@@ -3281,11 +3334,6 @@ public class UsuarioController implements Initializable {
         if (currentPage > 0) {
             currentPage--;
             loadCatsIntoView();
-            updatePaginationButtons(); // Actualizar botones después de cambiar
-
-            Platform.runLater(() -> {
-                if (scrol != null) scrol.setVvalue(0.0);
-            });
         }
     }
 
@@ -3321,6 +3369,7 @@ public class UsuarioController implements Initializable {
     private void handleGoToWeb2(MouseEvent event) {
         try {
             setCurrentFxmlPath("/com/java/fx/web2.fxml");
+
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/java/fx/web2.fxml"),
                     ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
@@ -3328,14 +3377,15 @@ public class UsuarioController implements Initializable {
             loader.setControllerFactory(Main.context::getBean);
             Parent root = loader.load();
 
+            // Obtener el controlador y preparar datos antes de mostrar
             UsuarioController controller = loader.getController();
             controller.currentPage = 0;
             controller.loadCatsIntoView();
 
+            // Conservar maximización
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             boolean wasMaximized = stage.isMaximized();
-
-            stage.getScene().setRoot(root); // Solo cambia el contenido
+            stage.getScene().setRoot(root);
 
             if (wasMaximized) {
                 stage.setMaximized(true);
@@ -3346,33 +3396,39 @@ public class UsuarioController implements Initializable {
     }
 
 
-    private void updatePaginationButtons() {
-        List<Cat> cats = catRepository.findAll();
-        int totalPages = (int) Math.ceil((double) cats.size() / CATS_PER_PAGE);
 
+    private void updatePaginationButtons() {
+        // Obtener solo gatos disponibles (no adoptados)
+        List<Cat> availableCats = catRepository.findByAdoptedFalse();
+        int totalCats = availableCats.size();
+
+        // Calcular páginas basado en gatos disponibles
+        int totalPages = (totalCats == 0) ? 1 : (int) Math.ceil((double) totalCats / CATS_PER_PAGE);
+
+        // Manejar botón "Siguiente"
         if (nextpage != null) {
             nextpage.setDisable(currentPage >= totalPages - 1);
             nextpage.setVisible(!(currentPage >= totalPages - 1));
             nextpage.setManaged(!(currentPage >= totalPages - 1));
         }
 
+        // Manejar botón "Anterior"
         if (previouspage != null) {
             previouspage.setDisable(currentPage <= 0);
             previouspage.setVisible(!(currentPage <= 0));
             previouspage.setManaged(!(currentPage <= 0));
         }
 
-        // SOLUCIÓN DEFINITIVA PARA "Ir a log in"
+        // Mantener lógica para el botón "Ir a login"
         if (goToLoginButton != null) {
             boolean showGoToLogin = currentPage == 0;
             goToLoginButton.setVisible(showGoToLogin);
             goToLoginButton.setManaged(showGoToLogin);
 
-            // Solo establecer minWidth cuando sea visible
             if (showGoToLogin) {
                 goToLoginButton.setMinWidth(100);
             } else {
-                goToLoginButton.setMinWidth(0); // Ancho cero cuando no está visible
+                goToLoginButton.setMinWidth(0);
             }
         }
     }
@@ -3418,6 +3474,57 @@ public class UsuarioController implements Initializable {
             } else if (e.getCause() instanceof javafx.fxml.LoadException) {
                 System.err.println("Error en recurso: " + e.getCause().getMessage());
             }
+        }
+    }
+
+    private void loadAdoptedCats() {
+        if (adoptedCatsContainer == null) return;
+
+        adoptedCatsContainer.getChildren().clear();
+        List<Cat> adoptedCats = catRepository.findByAdoptedTrue();
+
+        // Crear TilePane para organización automática en 2 columnas
+        TilePane tilePane = new TilePane();
+        tilePane.setPrefColumns(2); // Mostrar en 2 columnas
+        tilePane.setHgap(20);       // Espaciado horizontal entre elementos
+        tilePane.setVgap(20);       // Espaciado vertical entre elementos
+        tilePane.setPadding(new Insets(20));
+        tilePane.setStyle("-fx-background-color: white;");
+        tilePane.setAlignment(Pos.CENTER);
+
+        for (Cat cat : adoptedCats) {
+            if (cat != null) {
+                Node catCard = createCatCard(cat);
+                if (catCard != null) {
+                    tilePane.getChildren().add(catCard);
+                }
+            }
+        }
+
+        adoptedCatsContainer.getChildren().add(tilePane);
+    }
+
+
+    @FXML
+    private void handleGoToAdopted(MouseEvent event) {
+        try {
+            setCurrentFxmlPath("/com/java/fx/adopted.fxml");
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/adopted.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
+            loader.setControllerFactory(Main.context::getBean);
+            Parent root = loader.load();
+
+            // Cargar gatos adoptados
+            UsuarioController controller = loader.getController();
+            controller.loadAdoptedCats();
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Error loading adopted cats view: " + e.getMessage());
         }
     }
 

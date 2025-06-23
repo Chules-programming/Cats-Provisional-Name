@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="anchorAdopted" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cats.cats.UsuarioController"
+            stylesheets="@styles.css">
+
+    <BorderPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+
+        <!-- Top: Botón de volver -->
+        <top>
+            <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
+                <Button onMouseClicked="#handleGoCatSection"
+                        text="%back.to.available"
+                        styleClass="modern-button"
+                        minWidth="150"/>
+            </HBox>
+        </top>
+
+        <!-- Center: Lista de gatos adoptados -->
+        <center>
+            <ScrollPane fitToWidth="true" fitToHeight="true"
+                        hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                <content>
+                    <TilePane  fx:id="adoptedCatsContainer"
+                               prefColumns="2"
+                               hgap="20" vgap="20"
+                               style="-fx-background-color: white; -fx-padding: 20;"/>
+                </content>
+            </ScrollPane>
+        </center>
+    </BorderPane>
+</AnchorPane>

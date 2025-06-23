@@ -101,6 +101,8 @@ public class UsuarioController implements Initializable {
     public void setUsuarioService(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
+    @Autowired
+    private AdoptionPreferencesRepository preferencesRepository;
 
     @Autowired
     public void setCatService(CatService catService) {
@@ -152,7 +154,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge;
+    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
@@ -176,11 +178,17 @@ public class UsuarioController implements Initializable {
     private ChoiceBox<Integer> ratingChoice;
 
     @FXML
-    private Button register, registeruser, goback, login, adopt, nextpage, previouspage, gomenu, back, back1, confirmation, play1, play2,
-             notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, goToLoginButton, searchButton;
+    private Button register, registeruser, goback, login, adopt, nextpage, previouspage, gomenu, back, back1, confirmation, play1, play2, goToLoginButton,
+             notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, searchButton;
 
     @FXML
     private HBox buttonContainer;
+
+    @FXML
+    private ComboBox<String> sizeComboBox, ageComboBox, originComboBox;
+
+    @FXML
+    CheckBox acceptsDisabledCheckBox;
 
     @FXML
     private ResourceBundle resources;
@@ -3384,13 +3392,88 @@ public class UsuarioController implements Initializable {
                 return "/com/java/fx/Generic.fxml"; // Vista genérica si no hay coincidencia
         }
     }
+    @FXML
+    private void handleChooseForYou(MouseEvent event) {
+        try {
+            setCurrentFxmlPath("/com/java/fx/chooseforyou.fxml");
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/java/fx/chooseforyou.fxml"),
+                    ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+            );
+            loader.setControllerFactory(Main.context::getBean);
+            Parent root = loader.load();
+
+            UsuarioController controller = loader.getController();
+            controller.initializePreferencesForm();
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Error loading view: " + e.getMessage());
+
+            // Solución compatible con todas las versiones
+            if (e instanceof javafx.fxml.LoadException) {
+                System.err.println("Error en FXML: " + e.getMessage());
+            } else if (e.getCause() instanceof javafx.fxml.LoadException) {
+                System.err.println("Error en recurso: " + e.getCause().getMessage());
+            }
+        }
+    }
+
+    public void initializePreferencesForm() {
+        if (sizeComboBox != null) {
+            sizeComboBox.getItems().setAll(
+                    resources.getString("size.small"),
+                    resources.getString("size.medium"),
+                    resources.getString("size.large")
+            );
+        }
+
+        if (originComboBox != null) {
+            originComboBox.getItems().setAll(
+                    resources.getString("origin.organization"),
+                    resources.getString("origin.individual")
+            );
+        }
+
+        if (ageComboBox != null) {
+            ageComboBox.getItems().setAll(
+                    resources.getString("age.kitten"),
+                    resources.getString("age.young"),
+                    resources.getString("age.adult"),
+                    resources.getString("age.senior")
+            );
+        }
+    }
+
+    @FXML
+    private void handleSubmitPreferences(ActionEvent event) {
+        AdoptionPreferences preferences = new AdoptionPreferences();
+
+        if (currentUser != null) {
+            preferences.setUserId(currentUser.getId());
+        }
+
+        preferences.setPreferredSize(sizeComboBox.getValue());
+        preferences.setPreferredBreed(breedField.getText());
+        preferences.setOriginPreference(originComboBox.getValue());
+        preferences.setAcceptsDisabled(acceptsDisabledCheckBox.isSelected());
+        preferences.setPreferredAge(ageComboBox.getValue());
+
+        preferencesRepository.save(preferences);
+
+        showInfoAlert(resources.getString("preferences.saved"));
+
+        try {
+            handleGoCatSection(event);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleCancelPreferences(ActionEvent event) throws IOException {
+        handleGoCatSection(event);
+    }
 }
-
-
-
-
-
-
-
-
-

@@ -11,18 +11,31 @@
     <BorderPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
                 AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
 
-        <!-- Top: Barra de búsqueda -->
+        <!-- Top: Barra de búsqueda y botón de login -->
         <top>
-            <HBox alignment="CENTER_RIGHT" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
-                <TextField fx:id="searchField"
-                           promptText="%search.prompt"
-                           styleClass="modern-textfield"
-                           minWidth="200"/>
-                <Button fx:id="searchButton"
-                        onMouseClicked="#handleSearchBreed"
-                        text="%search.button"
+            <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #f0f0f0;" spacing="10">
+                <!-- Sección izquierda: búsqueda -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <TextField fx:id="searchField"
+                               promptText="%search.prompt"
+                               styleClass="modern-textfield"
+                               minWidth="200"/>
+                    <Button fx:id="searchButton"
+                            onMouseClicked="#handleSearchBreed"
+                            text="%search.button"
+                            styleClass="modern-button"
+                            minWidth="80"/>
+                </HBox>
+
+                <!-- Espaciador -->
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Botón de volver a login -->
+                <Button fx:id="goToLoginButton"
+                        onMouseClicked="#handleGoToLogin"
+                        text="%goToLogin"
                         styleClass="modern-button"
-                        minWidth="80"/>
+                        minWidth="120"/>
             </HBox>
         </top>
 
@@ -46,7 +59,7 @@
                   style="-fx-background-color: #f0f0f0; -fx-padding: 15;"
                   prefHeight="80">
 
-                <!-- Botón anterior (más grande) -->
+                <!-- Botón anterior -->
                 <Button fx:id="previouspage"
                         onMouseClicked="#handlePreviousPage"
                         styleClass="modern-button-icon"
@@ -65,15 +78,13 @@
                         minWidth="150" minHeight="50"
                         style="-fx-font-size: 16px;"/>
 
-                <!-- Botón de Adoptar -->
-                <Button fx:id="adopt"
-                        onMouseClicked="#handleAdopt"
-                        text="%adopt"
+                <Button fx:id="chooseForYouButton"
+                        onMouseClicked="#handleChooseForYou"
+                        text="%chooseForYou"
                         styleClass="modern-button"
-                        minWidth="120" minHeight="50"
+                        minWidth="150" minHeight="50"
                         style="-fx-font-size: 16px;"/>
 
-                <!-- Botón de Reseñas -->
                 <Button fx:id="reviewsButton"
                         onMouseClicked="#handleReviews"
                         text="%reviews.button"
@@ -81,7 +92,7 @@
                         minWidth="120" minHeight="50"
                         style="-fx-font-size: 16px;"/>
 
-                <!-- Botón siguiente (más grande) -->
+                <!-- Botón siguiente -->
                 <Button fx:id="nextpage"
                         onMouseClicked="#handleNextPage"
                         styleClass="modern-button-icon"

@@ -5,6 +5,7 @@
 <?import javafx.scene.text.*?>
 <?import javafx.scene.shape.Circle?>
 
+<?import javafx.util.Callback?>
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.ProfileController"
@@ -64,7 +65,6 @@
         <SplitPane orientation="VERTICAL" dividerPositions="0.7">
             <!-- Lista de mensajes -->
             <ListView fx:id="messageList" VBox.vgrow="ALWAYS"/>
-
             <!-- Entrada de mensajes -->
             <VBox spacing="10" style="-fx-padding: 10;">
                 <HBox spacing="10">

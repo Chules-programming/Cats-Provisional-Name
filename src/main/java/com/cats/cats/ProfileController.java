@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,7 +36,6 @@ import static com.cats.cats.Main.context;
 
 @Component
 public class ProfileController {
-    private final Gson gson = new Gson(); // Instancia única de Gson
 
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ChatMessageRepository chatMessageRepository;
@@ -60,10 +60,17 @@ public class ProfileController {
     private ObjectId currentConversationId;
     private Conversation selectedConversation;
     private WebSocketClient webSocketClient;
-    private final Map<ObjectId, String> usernameCache = new HashMap<>();
+    private Map<ObjectId, String> usernameCache = new HashMap<>();
+
+    // Lista observable persistente para los mensajes
+    private ObservableList<ChatMessage> observableMessages = FXCollections.observableArrayList();
+    private final Gson gson = new Gson();
 
     @FXML
     public void initialize() {
+        // Usa la lista observable persistente
+        messageList.setItems(observableMessages);
+
         messageList.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(ChatMessage message, boolean empty) {
@@ -73,13 +80,20 @@ public class ProfileController {
                     setStyle("");
                 } else {
                     String senderName = usernameCache.getOrDefault(
-                            message.getSenderId(), "Usuario desconocido");
-                    if (message.getSenderId().equals(currentUser.getId())) {
+                            message.getSenderId(),
+                            "Usuario desconocido"
+                    );
+
+                    // Comparación correcta de IDs para determinar si es el usuario actual
+                    boolean isCurrentUser = message.getSenderId().equals(currentUser.getId());
+
+                    if (isCurrentUser) {
                         setStyle("-fx-background-color: #DCF8C6; -fx-alignment: center-right;");
+                        setText("Tú: " + message.getContent()); // Identificación clara
                     } else {
                         setStyle("-fx-background-color: #FFFFFF; -fx-alignment: center-left;");
+                        setText(senderName + ": " + message.getContent());
                     }
-                    setText(senderName + ": " + message.getContent());
                 }
             }
         });
@@ -136,6 +150,8 @@ public class ProfileController {
 
     public void setCurrentUser(Usuario currentUser) {
         this.currentUser = currentUser;
+        // Precarga el nombre del usuario actual
+        usernameCache.put(currentUser.getId(), currentUser.getUsername());
         loadConversations();
         connectToWebSocket();
     }
@@ -177,11 +193,10 @@ public class ProfileController {
     }
 
     private void addMessageToUI(ChatMessage message) {
-        List<ChatMessage> currentMessages = new ArrayList<>(messageList.getItems());
-        currentMessages.add(message);
+        // Añade el mensaje a la lista observable existente
+        observableMessages.add(message);
         preloadUsernames(Collections.singletonList(message));
-        messageList.setItems(FXCollections.observableArrayList(currentMessages));
-        messageList.scrollTo(currentMessages.size() - 1);
+        messageList.scrollTo(observableMessages.size() - 1);
     }
 
     private void loadConversations() {
@@ -211,16 +226,21 @@ public class ProfileController {
         currentConversationId = conversationId;
         selectedConversation = chatService.getConversationById(conversationId);
 
-        List<ChatMessage> messages = chatService.getMessagesByConversationOrdered(conversationId);
-        preloadUsernames(messages);
-        messageList.setItems(FXCollections.observableArrayList(messages));
-        if (!messages.isEmpty()) {
-            messageList.scrollTo(messages.size() - 1);
+        // Limpia y añade mensajes a la lista observable existente
+        observableMessages.clear();
+        observableMessages.addAll(chatService.getMessagesByConversationOrdered(conversationId));
+
+        preloadUsernames(observableMessages);
+        if (!observableMessages.isEmpty()) {
+            messageList.scrollTo(observableMessages.size() - 1);
         }
     }
 
     private void preloadUsernames(List<ChatMessage> messages) {
-        Set<ObjectId> userIds = messages.stream().map(ChatMessage::getSenderId).collect(Collectors.toSet());
+        Set<ObjectId> userIds = messages.stream()
+                .map(ChatMessage::getSenderId)
+                .collect(Collectors.toSet());
+
         usuarioRepository.findAllById(userIds).forEach(user ->
                 usernameCache.put(user.getId(), user.getUsername())
         );
@@ -240,8 +260,11 @@ public class ProfileController {
         chatMessageRepository.save(newMessage);
         messageField.clear();
 
+        // Añade el mensaje localmente
+        addMessageToUI(newMessage);
+
         if (webSocketClient != null && webSocketClient.isOpen()) {
-            String jsonMessage = gson.toJson(newMessage); // Uso de la instancia única
+            String jsonMessage = gson.toJson(newMessage);
             webSocketClient.send(jsonMessage);
         }
 

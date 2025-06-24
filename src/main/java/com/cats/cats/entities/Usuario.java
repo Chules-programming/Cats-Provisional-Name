@@ -1,4 +1,4 @@
-package com.cats.cats;
+package com.cats.cats.entities;
 
 
 import org.bson.types.ObjectId;

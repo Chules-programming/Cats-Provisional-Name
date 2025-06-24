@@ -1,5 +1,7 @@
-package com.cats.cats;
+package com.cats.cats.services;
 
+import com.cats.cats.entities.Cat;
+import com.cats.cats.repository.CatRepository;
 import javafx.scene.image.Image;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +61,9 @@ public class CatService {
             e.printStackTrace();
         }
         return null; // Fallback si hay errores
+    }
+    public boolean existsByOngName(String ongName) {
+        return catRepository.existsByOngName(ongName);
     }
 }
 

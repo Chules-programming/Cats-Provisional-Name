@@ -1,5 +1,7 @@
-package com.cats.cats;
+package com.cats.cats.services;
 
+import com.cats.cats.entities.Usuario;
+import com.cats.cats.repository.UsuarioRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

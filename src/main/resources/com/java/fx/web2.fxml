@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <AnchorPane fx:id="anchorweb2" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -12,9 +13,16 @@
     <BorderPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
                 AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
 
-        <!-- Top: Barra de búsqueda y botón de login -->
+        <!-- Top: Barra superior combinada -->
         <top>
             <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #f0f0f0;" spacing="10">
+                <!-- Botón ONG -->
+                <Button fx:id="ongButton" text="%ong"
+                        onMouseClicked="#handleONG"
+                        styleClass="modern-button"
+                        minWidth="80"/>
+
+                <!-- Barra de búsqueda -->
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <TextField fx:id="searchField"
                                promptText="%search.prompt"
@@ -26,12 +34,25 @@
                             styleClass="modern-button"
                             minWidth="80"/>
                 </HBox>
+
                 <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Botón de login -->
                 <Button fx:id="goToLoginButton"
                         onMouseClicked="#handleGoToLogin"
                         text="%goToLogin"
                         styleClass="modern-button"
                         minWidth="120"/>
+
+                <!-- Perfil de usuario -->
+                <StackPane onMouseClicked="#handleOpenProfile">
+                    <Circle radius="20" fill="WHITE" stroke="BLACK" strokeWidth="1"/>
+                    <ImageView fx:id="profileIcon" fitWidth="40" fitHeight="40" preserveRatio="true" pickOnBounds="true">
+                        <image>
+                            <Image url="/assets/profile_icon.png" />
+                        </image>
+                    </ImageView>
+                </StackPane>
             </HBox>
         </top>
 
@@ -121,4 +142,5 @@
         </bottom>
     </BorderPane>
 </AnchorPane>
+
 

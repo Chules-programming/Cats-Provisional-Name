@@ -1,5 +1,6 @@
-package com.cats.cats;
+package com.cats.cats.repository;
 
+import com.cats.cats.entities.AdoptionPreferences;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;

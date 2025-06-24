@@ -1,5 +1,6 @@
-package com.cats.cats;
+package com.cats.cats.repository;
 
+import com.cats.cats.entities.Cat;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -20,4 +21,5 @@ public interface CatRepository extends MongoRepository<Cat, ObjectId> {
     @Query("{ 'name' : { $regex: ?0, $options: 'i' } }")
     Cat findByName(String name);
     Cat findByNameIgnoreCase(String name);
+    boolean existsByOngName(String ongName);
 }

@@ -1,5 +1,7 @@
 package com.cats.cats;
 
+import com.cats.cats.entities.Cat;
+import com.cats.cats.services.CatService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;

@@ -2,6 +2,12 @@ package com.cats.cats;
 
 
 
+import com.cats.cats.entities.*;
+import com.cats.cats.repository.*;
+import com.cats.cats.services.AdopcionService;
+import com.cats.cats.services.CatService;
+import com.cats.cats.services.ReviewService;
+import com.cats.cats.services.UsuarioService;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
@@ -14,7 +20,6 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import javafx.application.Platform;
@@ -44,7 +49,6 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -79,8 +83,6 @@ import java.util.*;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.cats.cats.Main.currentLocale;
-
 
 @Component
 @RestController
@@ -103,13 +105,18 @@ public class UsuarioController implements Initializable {
     }
     @Autowired
     private AdoptionPreferencesRepository preferencesRepository;
-
     @Autowired
     public void setCatService(CatService catService) {
         this.catService = catService;
     }
     @Autowired
     private ReviewService reviewService;
+    @Autowired
+    private com.cats.cats.services.ChatService chatService;
+    @Autowired
+    private AdopcionRepository adopcionRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     private Usuario currentUser;
     private Map<String, ObjectId> catNameToIdMap = new HashMap<>();
@@ -153,8 +160,11 @@ public class UsuarioController implements Initializable {
     private ListView<Cat> listview2;
 
     @FXML
+    private ListView<Conversation> chatList;
+
+    @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField;
+    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField, messageField;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
@@ -171,7 +181,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
-            tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword,
+            tituloregister, warning, congratulations, warningUsername, warningAge, warningEmail, warningPassword, profileUsername, userRole,
             found, information, name, adress, postal, select, phone, warning2, warning3, warning4, warningPostal, warningPhone, warningAdress, warningNameSur,
             count, theconditions, errorDuplicateName, errorphone, additionalContactLabel, recoverMessage, suggestionMessage, suggestionCounter, reviewCounter,
             label1ong, label2ong, label3ong, label4ong, label5ong, label6ong, label7ong, label8ong, label9ong, errorongpassword, breedadd, ageadd, coloradd, sexadd, heightadd, widthadd, image1add, image2add, image3add, video1add, friendlykidsadd, friendlyanimalsadd, descriptionadd, labelmenuadd1,
@@ -192,7 +202,7 @@ public class UsuarioController implements Initializable {
              notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, searchButton;
 
     @FXML
-    private HBox buttonContainer;
+    private HBox buttonContainer, ratingStars;
 
     @FXML
     private ComboBox<String> sizeComboBox, ageComboBox, originComboBox;
@@ -204,7 +214,7 @@ public class UsuarioController implements Initializable {
     private ResourceBundle resources;
 
     @FXML
-    private ImageView ximage, linkedinimage, gmailimage, addimage1, addimage2, addimage3, catImage1, catImage2, catImage3, spanish, english;
+    private ImageView ximage, linkedinimage, gmailimage, addimage1, addimage2, addimage3, catImage1, catImage2, catImage3, spanish, english, profileIcon;
 
     @FXML
     private ScrollPane scro, scrol;
@@ -2124,8 +2134,6 @@ public class UsuarioController implements Initializable {
         }
     }
 
-
-
     private void processAdoption(ObjectId catId, String additionalContact) {
         // Obtener el gato seleccionado por ID
         Cat selectedCat = catRepository.findById(catId).orElse(null);
@@ -2159,6 +2167,18 @@ public class UsuarioController implements Initializable {
 
         adopcionService.save(adopcion);
 
+        // Crear conversación entre adoptador y cuidador
+        if (currentUser != null) {
+            Conversation conversation = new Conversation();
+            conversation.setUserId1(currentUser.getId());
+            conversation.setUserId2(getCaregiverUserId(selectedCat)); // Implementar este método
+            conversation.setCatId(catId);
+            conversation.setLastMessage("Interesado en adoptar " + selectedCat.getName());
+            conversation.setTimestamp(new Date());
+
+            chatService.saveConversation(conversation);
+        }
+
         // Mostrar mensaje de éxito
         congratulations.setText(resources.getString("adoption.success"));
         congratulations.setTextFill(Color.GREEN);
@@ -2173,6 +2193,16 @@ public class UsuarioController implements Initializable {
         selection.setValue(null);
     }
 
+
+    private ObjectId getCaregiverUserId(Cat cat) {
+        if (cat == null || cat.getOngName() == null) {
+            return null;
+        }
+
+        // Buscar usuario por nombre de ONG
+        Usuario caregiver = usuarioRepository.findByUsername(cat.getOngName());
+        return caregiver != null ? caregiver.getId() : null;
+    }
 
 
     public void openAdoptionScreen(Cat selectedCat) {
@@ -3572,6 +3602,117 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleCancelPreferences(ActionEvent event) throws IOException {
+        handleGoCatSection(event);
+    }
+
+    //profile methods
+    @FXML
+    private void handleOpenProfile(MouseEvent event) throws IOException {
+        setCurrentFxmlPath("/com/java/fx/Profile.fxml");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Profile.fxml"));
+        loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
+        loader.setControllerFactory(Main.context::getBean);
+        Parent root = loader.load();
+
+        // Configurar datos del perfil
+        UsuarioController controller = loader.getController();
+        controller.loadProfileData();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+    }
+
+    public void loadProfileData() {
+        if (currentUser == null) return;
+
+        // Configurar información básica
+        profileUsername.setText(currentUser.getUsername());
+
+        // Determinar rol (adoptador o cuidador)
+        boolean isAdopter = adopcionService.existsByUserId(currentUser.getId());
+        boolean isCaregiver = catService.existsByOngName(currentUser.getUsername());
+
+        String roleText = "";
+        if (isAdopter && isCaregiver) {
+            roleText = resources.getString("role.both");
+        } else if (isAdopter) {
+            roleText = resources.getString("role.adopter");
+        } else if (isCaregiver) {
+            roleText = resources.getString("role.caregiver");
+        } else {
+            roleText = resources.getString("role.guest");
+        }
+        userRole.setText(roleText);
+
+        // Calcular y mostrar rating
+        double averageRating = reviewService.getAverageRatingByUserId(currentUser.getId());
+        ratingStars.getChildren().clear();
+        for (int i = 0; i < 5; i++) {
+            Label star = new Label(i < averageRating ? "★" : "☆");
+            star.setStyle("-fx-text-fill: " + (i < averageRating ? "gold" : "gray") + "; -fx-font-size: 20px;");
+            ratingStars.getChildren().add(star);
+        }
+
+        // Cargar conversaciones de chat
+        loadConversations();
+    }
+
+    private void loadConversations() {
+        if (currentUser == null) return;
+
+        List<Conversation> conversations = chatService.findByUserId(currentUser.getId());
+        chatList.setItems(FXCollections.observableArrayList(conversations));
+
+        // Configurar cómo se muestran las conversaciones
+        chatList.setCellFactory(param -> new ListCell<Conversation>() {
+            @Override
+            protected void updateItem(Conversation conversation, boolean empty) {
+                super.updateItem(conversation, empty);
+                if (empty || conversation == null) {
+                    setText(null);
+                } else {
+                    // Mostrar nombre del otro usuario y último mensaje
+                    ObjectId otherUserId = conversation.getUserId1().equals(currentUser.getId()) ?
+                            conversation.getUserId2() : conversation.getUserId1();
+
+                    Usuario otherUser = usuarioRepository.findById(otherUserId).orElse(null);
+                    String otherUserName = otherUser != null ? otherUser.getUsername() : "Usuario desconocido";
+
+                    setText(otherUserName + ": " + conversation.getLastMessage());
+                }
+            }
+        });
+    }
+
+    @FXML
+    private void handleSendMessage(ActionEvent event) {
+        String message = messageField.getText().trim();
+        if (message.isEmpty()) return;
+
+        Conversation selected = chatList.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        // Crear y guardar mensaje
+        ChatMessage newMessage = new ChatMessage();
+        newMessage.setConversationId(selected.getId());
+        newMessage.setSenderId(currentUser.getId());
+        newMessage.setContent(message);
+        newMessage.setTimestamp(new Date());
+
+        chatService.saveMessage(newMessage);
+
+        // Actualizar último mensaje en la conversación
+        selected.setLastMessage(message);
+        chatService.saveConversation(selected);
+
+        // Actualizar UI
+        messageField.clear();
+        loadConversations();
+    }
+
+    @FXML
+    private void handleGoBack(ActionEvent event) throws IOException {
+        // Regresar a la vista anterior
         handleGoCatSection(event);
     }
 }

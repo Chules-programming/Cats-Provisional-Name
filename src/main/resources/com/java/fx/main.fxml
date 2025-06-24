@@ -70,9 +70,5 @@
          <ListView fx:id="listview" prefHeight="150" prefWidth="300"/>
       </VBox>
    </VBox>
-
-   <!-- Botón ONG en la parte inferior -->
-   <Button fx:id="ong" text="%ong" layoutX="20" AnchorPane.bottomAnchor="20"
-           onMouseClicked="#handleONG" prefWidth="100"/>
 </AnchorPane>
 

@@ -7,8 +7,7 @@ import com.cats.cats.services.AdopcionService;
 import com.cats.cats.services.CatService;
 import com.cats.cats.services.ChatService;
 import com.cats.cats.services.ReviewService;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -20,12 +19,15 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import org.bson.types.ObjectId;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,7 @@ import static com.cats.cats.Main.context;
 
 @Component
 public class ProfileController {
+    private final Gson gson = new Gson(); // Instancia única de Gson
 
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ChatMessageRepository chatMessageRepository;
@@ -54,14 +57,10 @@ public class ProfileController {
 
     private Usuario currentUser;
     private ResourceBundle resources;
-
-    private Timeline messagePollingTimeline;
-    private Map<ObjectId, String> usernameCache = new HashMap<>();
     private ObjectId currentConversationId;
-    private Date lastMessageTimestamp = new Date(0);
-
-    // Nuevo campo para seguimiento de conversación seleccionada
     private Conversation selectedConversation;
+    private WebSocketClient webSocketClient;
+    private final Map<ObjectId, String> usernameCache = new HashMap<>();
 
     @FXML
     public void initialize() {
@@ -74,9 +73,7 @@ public class ProfileController {
                     setStyle("");
                 } else {
                     String senderName = usernameCache.getOrDefault(
-                            message.getSenderId(),
-                            "Usuario desconocido"
-                    );
+                            message.getSenderId(), "Usuario desconocido");
                     if (message.getSenderId().equals(currentUser.getId())) {
                         setStyle("-fx-background-color: #DCF8C6; -fx-alignment: center-right;");
                     } else {
@@ -128,22 +125,63 @@ public class ProfileController {
                 } else {
                     Adopcion adoption = getTableView().getItems().get(getIndex());
                     HBox buttons = new HBox(5);
-
                     if (!adoption.isConfirmedByCaregiver()) {
                         buttons.getChildren().addAll(confirmButton, rejectButton);
                     }
-
                     setGraphic(buttons);
                 }
             }
         });
-
-        startMessagePolling(); // Iniciar polling
     }
 
     public void setCurrentUser(Usuario currentUser) {
         this.currentUser = currentUser;
         loadConversations();
+        connectToWebSocket();
+    }
+
+    private void connectToWebSocket() {
+        try {
+            String uri = "ws://localhost:8080/ws/chat?userId=" + currentUser.getId();
+            webSocketClient = new WebSocketClient(new URI(uri)) {
+                @Override
+                public void onOpen(ServerHandshake handshakedata) {
+                    System.out.println("WebSocket conectado");
+                }
+
+                @Override
+                public void onMessage(String jsonMessage) {
+                    Platform.runLater(() -> {
+                        ChatMessage message = gson.fromJson(jsonMessage, ChatMessage.class);
+                        if (currentConversationId != null &&
+                                currentConversationId.equals(message.getConversationId())) {
+                            addMessageToUI(message);
+                        }
+                    });
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    System.out.println("WebSocket cerrado: " + reason);
+                }
+
+                @Override
+                public void onError(Exception ex) {
+                    ex.printStackTrace();
+                }
+            };
+            webSocketClient.connect();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addMessageToUI(ChatMessage message) {
+        List<ChatMessage> currentMessages = new ArrayList<>(messageList.getItems());
+        currentMessages.add(message);
+        preloadUsernames(Collections.singletonList(message));
+        messageList.setItems(FXCollections.observableArrayList(currentMessages));
+        messageList.scrollTo(currentMessages.size() - 1);
     }
 
     private void loadConversations() {
@@ -176,12 +214,8 @@ public class ProfileController {
         List<ChatMessage> messages = chatService.getMessagesByConversationOrdered(conversationId);
         preloadUsernames(messages);
         messageList.setItems(FXCollections.observableArrayList(messages));
-
         if (!messages.isEmpty()) {
-            lastMessageTimestamp = messages.get(messages.size() - 1).getTimestamp();
             messageList.scrollTo(messages.size() - 1);
-        } else {
-            lastMessageTimestamp = new Date(0);
         }
     }
 
@@ -190,43 +224,6 @@ public class ProfileController {
         usuarioRepository.findAllById(userIds).forEach(user ->
                 usernameCache.put(user.getId(), user.getUsername())
         );
-    }
-
-    private void startMessagePolling() {
-        messagePollingTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            if (currentConversationId != null) checkForNewMessages();
-        }));
-        messagePollingTimeline.setCycleCount(Timeline.INDEFINITE);
-        messagePollingTimeline.play();
-    }
-
-    private void checkForNewMessages() {
-        List<ChatMessage> newMessages = chatMessageRepository
-                .findByConversationIdAndTimestampGreaterThanOrderByTimestampAsc(currentConversationId, lastMessageTimestamp);
-
-        if (!newMessages.isEmpty()) {
-            Platform.runLater(() -> {
-                lastMessageTimestamp = newMessages.get(newMessages.size() - 1).getTimestamp();
-
-                List<ChatMessage> currentMessages = new ArrayList<>(messageList.getItems());
-                currentMessages.addAll(newMessages);
-                preloadUsernames(newMessages);
-
-                messageList.setItems(FXCollections.observableArrayList(currentMessages));
-                messageList.scrollTo(messageList.getItems().size() - 1);
-
-                updateConversationLastMessage(newMessages);
-            });
-        }
-    }
-
-    private void updateConversationLastMessage(List<ChatMessage> messages) {
-        if (!messages.isEmpty() && selectedConversation != null) {
-            String lastMessage = messages.get(messages.size() - 1).getContent();
-            selectedConversation.setLastMessage(lastMessage);
-            chatService.saveConversation(selectedConversation);
-            loadConversations(); // Refrescar lista
-        }
     }
 
     @FXML
@@ -243,11 +240,10 @@ public class ProfileController {
         chatMessageRepository.save(newMessage);
         messageField.clear();
 
-        List<ChatMessage> currentMessages = new ArrayList<>(messageList.getItems());
-        currentMessages.add(newMessage);
-        messageList.setItems(FXCollections.observableArrayList(currentMessages));
-        messageList.scrollTo(currentMessages.size() - 1);
-        lastMessageTimestamp = newMessage.getTimestamp();
+        if (webSocketClient != null && webSocketClient.isOpen()) {
+            String jsonMessage = gson.toJson(newMessage); // Uso de la instancia única
+            webSocketClient.send(jsonMessage);
+        }
 
         selectedConversation.setLastMessage(content);
         chatService.saveConversation(selectedConversation);
@@ -332,9 +328,10 @@ public class ProfileController {
 
     @FXML
     private void handleGoBack(ActionEvent event) throws IOException {
-        if (messagePollingTimeline != null) {
-            messagePollingTimeline.stop();
+        if (webSocketClient != null) {
+            webSocketClient.close();
         }
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/web2.fxml"));
         loader.setControllerFactory(context::getBean);
         loader.setResources(resources);
@@ -348,5 +345,7 @@ public class ProfileController {
         this.resources = resources;
     }
 }
+
+
 
 

@@ -1,5 +1,6 @@
 package com.cats.cats.services;
 
+import com.cats.cats.ChatWebSocketHandler;
 import com.cats.cats.entities.ChatMessage;
 import com.cats.cats.entities.Conversation;
 import com.cats.cats.repository.ChatMessageRepository;
@@ -15,62 +16,85 @@ import java.util.Optional;
 @Service
 public class ChatService {
 
-    @Autowired
-    private ConversationRepository conversationRepository;
+    private final ConversationRepository conversationRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final ChatWebSocketHandler webSocketHandler;
 
     @Autowired
-    private ChatMessageRepository chatMessageRepository;
-
-    /**
-     * Busca una conversación existente entre dos usuarios sobre un gato específico,
-     * o crea una nueva si no existe.
-     */
-    public Conversation findOrCreateConversation(ObjectId user1Id, ObjectId user2Id, ObjectId catId) {
-        Conversation conversation = conversationRepository.findByUserIds(user1Id, user2Id, catId);
-
-        if (conversation == null) {
-            conversation = new Conversation();
-            conversation.setUserId1(user1Id);
-            conversation.setUserId2(user2Id);
-            conversation.setCatId(catId);
-            conversation.setCreatedAt(new Date());
-            conversationRepository.save(conversation);
-        }
-
-        return conversation;
-    }
-
-
-    /**
-     * Guarda una nueva conversación.
-     */
-    public Conversation saveConversation(Conversation conversation) {
-        return conversationRepository.save(conversation);
+    public ChatService(
+            ConversationRepository conversationRepository,
+            ChatMessageRepository chatMessageRepository,
+            ChatWebSocketHandler webSocketHandler
+    ) {
+        this.conversationRepository = conversationRepository;
+        this.chatMessageRepository = chatMessageRepository;
+        this.webSocketHandler = webSocketHandler;
     }
 
     /**
-     * Guarda un nuevo mensaje de chat.
+     * Envía un mensaje en tiempo real a ambos usuarios involucrados en la conversación.
      */
-    public ChatMessage saveMessage(ChatMessage message) {
-        return chatMessageRepository.save(message);
+    public void sendRealTimeMessage(ChatMessage message) {
+        ObjectId senderId = message.getSenderId();
+        ObjectId receiverId = getReceiverId(message);
+
+        webSocketHandler.sendMessageToUser(senderId, message);
+        webSocketHandler.sendMessageToUser(receiverId, message);
     }
 
     /**
-     * Devuelve la lista de conversaciones en las que el usuario participa.
+     * Obtiene el receptor del mensaje en función de la conversación y el remitente.
      */
-    public List<Conversation> findByUserId(ObjectId userId) {
-        return conversationRepository.findByUserId1OrUserId2(userId, userId);
+    private ObjectId getReceiverId(ChatMessage message) {
+        Conversation conv = conversationRepository.findById(message.getConversationId())
+                .orElseThrow(() -> new IllegalArgumentException("Conversación no encontrada"));
+        return conv.getUserId1().equals(message.getSenderId())
+                ? conv.getUserId2()
+                : conv.getUserId1();
     }
 
     /**
-     * Devuelve todos los mensajes de una conversación ordenados cronológicamente (ascendente).
+     * Busca una conversación existente o crea una nueva si no existe.
+     */
+    public Conversation findOrCreateConversation(ObjectId userId1, ObjectId userId2, ObjectId catId) {
+        Conversation existing = conversationRepository.findByUserIds(userId1, userId2, catId);
+        if (existing != null) return existing;
+
+        Conversation newConv = new Conversation();
+        newConv.setUserId1(userId1);
+        newConv.setUserId2(userId2);
+        newConv.setCatId(catId);
+        newConv.setCreatedAt(new Date());
+        newConv.setLastMessage("Conversación iniciada");
+
+        return conversationRepository.save(newConv);
+    }
+
+    /**
+     * Guarda una conversación existente.
+     */
+    public void saveConversation(Conversation conversation) {
+        conversationRepository.save(conversation);
+    }
+
+    /**
+     * Retorna los mensajes ordenados cronológicamente para una conversación.
      */
     public List<ChatMessage> getMessagesByConversationOrdered(ObjectId conversationId) {
         return chatMessageRepository.findByConversationIdOrderByTimestampAsc(conversationId);
     }
-    // Add this method to get conversation by ID
+
+    /**
+     * Retorna una conversación por ID o null si no existe.
+     */
     public Conversation getConversationById(ObjectId conversationId) {
-        Optional<Conversation> conversation = conversationRepository.findById(conversationId);
-        return conversation.orElse(null);
+        return conversationRepository.findById(conversationId).orElse(null);
+    }
+
+    /**
+     * Retorna todas las conversaciones en las que participa el usuario.
+     */
+    public List<Conversation> findByUserId(ObjectId userId) {
+        return conversationRepository.findByUserId1OrUserId2(userId, userId);
     }
 }

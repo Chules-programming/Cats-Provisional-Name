@@ -1,5 +1,6 @@
 package com.cats.cats.entities;
 
+import com.google.gson.Gson;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -8,6 +9,7 @@ import java.util.Date;
 
 @Document(collection = "chat_messages")
 public class ChatMessage {
+    private static final Gson GSON = new Gson();
     @Id
     private ObjectId id;
     private ObjectId conversationId;
@@ -53,5 +55,12 @@ public class ChatMessage {
 
     public void setContent(String content) {
         this.content = content;
+    }
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
+
+    public static ChatMessage fromJson(String json) {
+        return new Gson().fromJson(json, ChatMessage.class);
     }
 }

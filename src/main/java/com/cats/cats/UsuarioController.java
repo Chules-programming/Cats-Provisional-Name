@@ -112,11 +112,13 @@ public class UsuarioController implements Initializable {
     @Autowired
     private ReviewService reviewService;
     @Autowired
-    private com.cats.cats.services.ChatService chatService;
-    @Autowired
     private AdopcionRepository adopcionRepository;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private ProfileController profileController;
+    @Autowired
+    private AdopcionController adopcionController;
 
     private Usuario currentUser;
     private Map<String, ObjectId> catNameToIdMap = new HashMap<>();
@@ -160,11 +162,8 @@ public class UsuarioController implements Initializable {
     private ListView<Cat> listview2;
 
     @FXML
-    private ListView<Conversation> chatList;
-
-    @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField, messageField;
+    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
@@ -1183,10 +1182,18 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleAdopt(MouseEvent event) throws IOException {
+        // Detener cualquier sonido si se está reproduciendo
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
 
+        // Asegurarse de que el gato tenga un cuidador asignado
+        if (currentCat.getCaregiverId() == null) {
+            currentCat.setCaregiverId(currentUser.getId());
+            catService.save(currentCat);
+        }
+
+        // Cambiar a la vista de adopción
         setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/com/java/fx/adoptweb.fxml"),
@@ -1205,6 +1212,7 @@ public class UsuarioController implements Initializable {
         stage.setMinWidth(600);
         stage.setMinHeight(700);
     }
+
 
 
     @FXML
@@ -1481,7 +1489,9 @@ public class UsuarioController implements Initializable {
             nuevoGato.setDescription(areaadd.getText().trim());
             nuevoGato.setOngName(fieldaddong1.getText().trim());
             nuevoGato.setCatLocation(fieldaddplace1.getText().trim());
+            nuevoGato.setCaregiverId(currentUser.getId());
             nuevoGato.setOngPhone(fieldaddphone.getText().trim());
+            nuevoGato.setCaregiverId(currentUser.getId());
             if (fieldaddBornDate.getValue() != null) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 nuevoGato.setBornDate(fieldaddBornDate.getValue().format(formatter));
@@ -2148,11 +2158,11 @@ public class UsuarioController implements Initializable {
             return;
         }
 
-        // Marcar como adoptado y guardar
+        // Marcar al gato como adoptado y guardar
         selectedCat.setAdopted(true);
         catService.save(selectedCat);
 
-        // Crear y guardar objeto de adopción
+        // Crear objeto de adopción
         Adopcion adopcion = new Adopcion();
         adopcion.setNameSurname(fieldname.getText());
         adopcion.setAdress(fieldadress.getText());
@@ -2160,23 +2170,20 @@ public class UsuarioController implements Initializable {
         adopcion.setPhone(fieldphone.getText());
         adopcion.setCatName(selectedCat.getName());
         adopcion.setAdditionalContact(additionalContact);
+        adopcion.setCatId(selectedCat.getId());
+        adopcion.setCaregiverId(selectedCat.getCaregiverId());
 
         if (currentUser != null) {
             adopcion.setUserId(currentUser.getId());
         }
 
+        // Guardar adopción
         adopcionService.save(adopcion);
 
-        // Crear conversación entre adoptador y cuidador
-        if (currentUser != null) {
-            Conversation conversation = new Conversation();
-            conversation.setUserId1(currentUser.getId());
-            conversation.setUserId2(getCaregiverUserId(selectedCat)); // Implementar este método
-            conversation.setCatId(catId);
-            conversation.setLastMessage("Interesado en adoptar " + selectedCat.getName());
-            conversation.setTimestamp(new Date());
-
-            chatService.saveConversation(conversation);
+        // Confirmar adopción desde el controlador de adopción (si aplica)
+        if (adopcionController != null && currentUser != null) {
+            adopcionController.setCurrentUser(currentUser);
+            adopcionController.confirmAdoption(adopcion.getId());
         }
 
         // Mostrar mensaje de éxito
@@ -2192,6 +2199,7 @@ public class UsuarioController implements Initializable {
         fieldAdditionalContact.clear();
         selection.setValue(null);
     }
+
 
 
     private ObjectId getCaregiverUserId(Cat cat) {
@@ -3605,7 +3613,13 @@ public class UsuarioController implements Initializable {
         handleGoCatSection(event);
     }
 
-    //profile methods
+    @FXML
+    private void handleGoBack(ActionEvent event) throws IOException {
+        // Regresar a la vista anterior
+        handleGoCatSection(event);
+    }
+
+    // UsuarioController.java
     @FXML
     private void handleOpenProfile(MouseEvent event) throws IOException {
         setCurrentFxmlPath("/com/java/fx/Profile.fxml");
@@ -3614,105 +3628,12 @@ public class UsuarioController implements Initializable {
         loader.setControllerFactory(Main.context::getBean);
         Parent root = loader.load();
 
-        // Configurar datos del perfil
-        UsuarioController controller = loader.getController();
-        controller.loadProfileData();
+        ProfileController profileController = loader.getController();
+        profileController.setResources(loader.getResources());
+        profileController.setCurrentUser(currentUser);
+        profileController.loadProfileData();
 
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.getScene().setRoot(root);
-    }
-
-    public void loadProfileData() {
-        if (currentUser == null) return;
-
-        // Configurar información básica
-        profileUsername.setText(currentUser.getUsername());
-
-        // Determinar rol (adoptador o cuidador)
-        boolean isAdopter = adopcionService.existsByUserId(currentUser.getId());
-        boolean isCaregiver = catService.existsByOngName(currentUser.getUsername());
-
-        String roleText = "";
-        if (isAdopter && isCaregiver) {
-            roleText = resources.getString("role.both");
-        } else if (isAdopter) {
-            roleText = resources.getString("role.adopter");
-        } else if (isCaregiver) {
-            roleText = resources.getString("role.caregiver");
-        } else {
-            roleText = resources.getString("role.guest");
-        }
-        userRole.setText(roleText);
-
-        // Calcular y mostrar rating
-        double averageRating = reviewService.getAverageRatingByUserId(currentUser.getId());
-        ratingStars.getChildren().clear();
-        for (int i = 0; i < 5; i++) {
-            Label star = new Label(i < averageRating ? "★" : "☆");
-            star.setStyle("-fx-text-fill: " + (i < averageRating ? "gold" : "gray") + "; -fx-font-size: 20px;");
-            ratingStars.getChildren().add(star);
-        }
-
-        // Cargar conversaciones de chat
-        loadConversations();
-    }
-
-    private void loadConversations() {
-        if (currentUser == null) return;
-
-        List<Conversation> conversations = chatService.findByUserId(currentUser.getId());
-        chatList.setItems(FXCollections.observableArrayList(conversations));
-
-        // Configurar cómo se muestran las conversaciones
-        chatList.setCellFactory(param -> new ListCell<Conversation>() {
-            @Override
-            protected void updateItem(Conversation conversation, boolean empty) {
-                super.updateItem(conversation, empty);
-                if (empty || conversation == null) {
-                    setText(null);
-                } else {
-                    // Mostrar nombre del otro usuario y último mensaje
-                    ObjectId otherUserId = conversation.getUserId1().equals(currentUser.getId()) ?
-                            conversation.getUserId2() : conversation.getUserId1();
-
-                    Usuario otherUser = usuarioRepository.findById(otherUserId).orElse(null);
-                    String otherUserName = otherUser != null ? otherUser.getUsername() : "Usuario desconocido";
-
-                    setText(otherUserName + ": " + conversation.getLastMessage());
-                }
-            }
-        });
-    }
-
-    @FXML
-    private void handleSendMessage(ActionEvent event) {
-        String message = messageField.getText().trim();
-        if (message.isEmpty()) return;
-
-        Conversation selected = chatList.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-
-        // Crear y guardar mensaje
-        ChatMessage newMessage = new ChatMessage();
-        newMessage.setConversationId(selected.getId());
-        newMessage.setSenderId(currentUser.getId());
-        newMessage.setContent(message);
-        newMessage.setTimestamp(new Date());
-
-        chatService.saveMessage(newMessage);
-
-        // Actualizar último mensaje en la conversación
-        selected.setLastMessage(message);
-        chatService.saveConversation(selected);
-
-        // Actualizar UI
-        messageField.clear();
-        loadConversations();
-    }
-
-    @FXML
-    private void handleGoBack(ActionEvent event) throws IOException {
-        // Regresar a la vista anterior
-        handleGoCatSection(event);
     }
 }

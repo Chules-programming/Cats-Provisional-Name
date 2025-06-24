@@ -31,6 +31,7 @@ public class Cat {
     private String ongPhone;
     private String catLocation;
     private boolean adopted = false;
+    private ObjectId caregiverId;
 
 
     // Constructores
@@ -259,5 +260,13 @@ public class Cat {
 
     public void setOngPhone(String ongPhone) {
         this.ongPhone = ongPhone;
+    }
+
+    public ObjectId getCaregiverId() {
+        return caregiverId;
+    }
+
+    public void setCaregiverId(ObjectId caregiverId) {
+        this.caregiverId = caregiverId;
     }
 }

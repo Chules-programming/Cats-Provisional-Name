@@ -4,7 +4,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "cats")
+@Document(collection = "adoptions")
 public class Adopcion {
 
     @Id
@@ -17,6 +17,12 @@ public class Adopcion {
     private String catName;
     private ObjectId userId;
     private String additionalContact;
+    private boolean ratingCompleted;
+    private ObjectId caregiverId;
+    private ObjectId catId;
+    private boolean confirmedByCaregiver = false;
+    private boolean confirmedByAdopter = false;
+    private boolean chatEnabled = false;
 
     public ObjectId getId() {
         return id;
@@ -80,5 +86,53 @@ public class Adopcion {
 
     public void setUserId(ObjectId userId) {
         this.userId = userId;
+    }
+
+    public boolean isConfirmedByCaregiver() {
+        return confirmedByCaregiver;
+    }
+
+    public void setConfirmedByCaregiver(boolean confirmedByCaregiver) {
+        this.confirmedByCaregiver = confirmedByCaregiver;
+    }
+
+    public boolean isConfirmedByAdopter() {
+        return confirmedByAdopter;
+    }
+
+    public void setConfirmedByAdopter(boolean confirmedByAdopter) {
+        this.confirmedByAdopter = confirmedByAdopter;
+    }
+
+    public boolean isRatingCompleted() {
+        return ratingCompleted;
+    }
+
+    public void setRatingCompleted(boolean ratingCompleted) {
+        this.ratingCompleted = ratingCompleted;
+    }
+
+    public ObjectId getCaregiverId() {
+        return caregiverId;
+    }
+
+    public void setCaregiverId(ObjectId caregiverId) {
+        this.caregiverId = caregiverId;
+    }
+
+    public ObjectId getCatId() {
+        return catId;
+    }
+
+    public void setCatId(ObjectId catId) {
+        this.catId = catId;
+    }
+
+    public boolean isChatEnabled() {
+        return chatEnabled;
+    }
+
+    public void setChatEnabled(boolean chatEnabled) {
+        this.chatEnabled = chatEnabled;
     }
 }

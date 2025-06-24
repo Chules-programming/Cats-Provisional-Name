@@ -3,50 +3,80 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-
 <?import javafx.scene.shape.Circle?>
+
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.UsuarioController"
-            prefHeight="600" prefWidth="800"
+            fx:controller="com.cats.cats.ProfileController"
+            prefHeight="700" prefWidth="900"
             style="-fx-background-color: #f5f5f5;">
 
-    <VBox spacing="20" alignment="TOP_CENTER"
-          AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+    <SplitPane dividerPositions="0.3"
+               AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
 
-        <!-- Encabezado del perfil -->
-        <HBox spacing="20" alignment="CENTER_LEFT">
-            <StackPane>
-                <Circle radius="50" fill="WHITE" stroke="BLACK" strokeWidth="2"/>
-                <ImageView fx:id="profileImage" fitWidth="100" fitHeight="100" preserveRatio="true">
-                    <image>
-                        <Image url="/assets/profile_icon.png" />
-                    </image>
-                </ImageView>
-            </StackPane>
+        <!-- Panel izquierdo: Perfil, solicitudes y conversaciones -->
+        <SplitPane orientation="VERTICAL" dividerPositions="0.4">
 
-            <VBox alignment="CENTER_LEFT" spacing="5">
-                <Label fx:id="profileUsername" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label fx:id="userRole" style="-fx-font-size: 16px;"/>
-                    <HBox fx:id="ratingStars" spacing="3" alignment="CENTER_LEFT"/>
+            <!-- Sección superior: Perfil y solicitudes -->
+            <VBox spacing="20" style="-fx-padding: 15;">
+                <!-- Encabezado del perfil -->
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <StackPane>
+                        <Circle radius="50" fill="WHITE" stroke="BLACK" strokeWidth="2"/>
+                        <ImageView fx:id="profileImage" fitWidth="100" fitHeight="100" preserveRatio="true">
+                            <image>
+                                <Image url="/assets/profile_icon.png" />
+                            </image>
+                        </ImageView>
+                    </StackPane>
+
+                    <VBox alignment="CENTER_LEFT" spacing="5">
+                        <Label fx:id="profileUsername" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label fx:id="userRole" style="-fx-font-size: 16px;"/>
+                            <HBox fx:id="ratingStars" spacing="3" alignment="CENTER_LEFT"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <!-- Solicitudes de adopción -->
+                <VBox spacing="10" VBox.vgrow="ALWAYS">
+                    <Label text="Solicitudes de Adopción" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <TableView fx:id="adoptionTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="catNameColumn" text="Gato"/>
+                            <TableColumn fx:id="adopterNameColumn" text="Adoptante"/>
+                            <TableColumn fx:id="actionsColumn" text="Acciones"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+
+            <!-- Sección inferior: Lista de conversaciones -->
+            <VBox spacing="10" style="-fx-padding: 10;">
+                <Label text="Conversaciones" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <ListView fx:id="chatList" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </SplitPane>
+
+        <!-- Panel derecho: Chat -->
+        <SplitPane orientation="VERTICAL" dividerPositions="0.7">
+            <!-- Lista de mensajes -->
+            <ListView fx:id="messageList" VBox.vgrow="ALWAYS"/>
+
+            <!-- Entrada de mensajes -->
+            <VBox spacing="10" style="-fx-padding: 10;">
+                <HBox spacing="10">
+                    <TextField fx:id="messageField" HBox.hgrow="ALWAYS"/>
+                    <Button text="Enviar" onAction="#handleSendMessage"/>
                 </HBox>
             </VBox>
-        </HBox>
+        </SplitPane>
+    </SplitPane>
 
-        <!-- Sección de chat -->
-        <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 15; -fx-border-radius: 8;">
-            <Label text="%chat.title" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-            <ListView fx:id="chatList" prefHeight="300"/>
-            <HBox spacing="10">
-                <TextField fx:id="messageField" HBox.hgrow="ALWAYS"/>
-                <Button text="%send.button" onAction="#handleSendMessage"/>
-            </HBox>
-        </VBox>
-
-        <!-- Botones de acción -->
-        <HBox spacing="20" alignment="CENTER">
-            <Button text="%back.button" onAction="#handleGoBack"/>
-        </HBox>
-    </VBox>
+    <!-- Botón de regreso -->
+    <Button text="Volver" onAction="#handleGoBack"
+            AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
 </AnchorPane>
+

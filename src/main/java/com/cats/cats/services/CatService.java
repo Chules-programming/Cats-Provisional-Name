@@ -65,5 +65,8 @@ public class CatService {
     public boolean existsByOngName(String ongName) {
         return catRepository.existsByOngName(ongName);
     }
+    public boolean existsByCaregiverId(ObjectId caregiverId) {
+        return catRepository.existsByCaregiverId(caregiverId);
+    }
 }
 

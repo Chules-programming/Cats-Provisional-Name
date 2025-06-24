@@ -13,7 +13,7 @@ public class Conversation {
     private ObjectId userId2;
     private ObjectId catId;
     private String lastMessage;
-    private Date timestamp;
+    private Date createdAt;
 
     public ObjectId getId() {
         return id;
@@ -55,11 +55,11 @@ public class Conversation {
         this.lastMessage = lastMessage;
     }
 
-    public Date getTimestamp() {
-        return timestamp;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 }

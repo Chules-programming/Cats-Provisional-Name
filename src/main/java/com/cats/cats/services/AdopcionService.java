@@ -11,17 +11,35 @@ import java.util.List;
 @Service
 public class AdopcionService {
 
-    @Autowired
-    private AdopcionRepository adopcionRepository;
+    private final AdopcionRepository adopcionRepository;
 
-    public Adopcion save(Adopcion adopcion){
+    @Autowired
+    public AdopcionService(AdopcionRepository adopcionRepository) {
+        this.adopcionRepository = adopcionRepository;
+    }
+
+    public Adopcion save(Adopcion adopcion) {
         return adopcionRepository.save(adopcion);
     }
+
     public boolean existsByUserId(ObjectId userId) {
         return adopcionRepository.existsByUserId(userId);
     }
 
-    public List<Adopcion> getAdopciones(){
+    public List<Adopcion> findByUserId(ObjectId userId) {
+        return adopcionRepository.findByUserId(userId);
+    }
+
+    public List<Adopcion> findByCaregiverId(ObjectId caregiverId) {
+        return adopcionRepository.findByCaregiverId(caregiverId);
+    }
+
+    public List<Adopcion> findByCatId(ObjectId catId) {
+        return adopcionRepository.findByCatId(catId);
+    }
+
+    public List<Adopcion> getAdopciones() {
         return adopcionRepository.findAll();
     }
 }
+

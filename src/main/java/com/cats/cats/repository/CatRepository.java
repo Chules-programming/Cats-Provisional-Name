@@ -22,4 +22,5 @@ public interface CatRepository extends MongoRepository<Cat, ObjectId> {
     Cat findByName(String name);
     Cat findByNameIgnoreCase(String name);
     boolean existsByOngName(String ongName);
+    boolean existsByCaregiverId(ObjectId caregiverId);
 }

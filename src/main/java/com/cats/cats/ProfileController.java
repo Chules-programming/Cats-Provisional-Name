@@ -15,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
@@ -31,6 +32,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.cats.cats.Main.context;
 
@@ -68,36 +70,53 @@ public class ProfileController {
 
     @FXML
     public void initialize() {
-        // Usa la lista observable persistente
+        // Configuración del messageList con visualización personalizada
         messageList.setItems(observableMessages);
 
-        messageList.setCellFactory(param -> new ListCell<>() {
+        messageList.setCellFactory(param -> new ListCell<ChatMessage>() {
             @Override
             protected void updateItem(ChatMessage message, boolean empty) {
                 super.updateItem(message, empty);
                 if (empty || message == null) {
                     setText(null);
                     setStyle("");
+                    setGraphic(null);
                 } else {
-                    String senderName = usernameCache.getOrDefault(
-                            message.getSenderId(),
-                            "Usuario desconocido"
-                    );
+                    // Crear un contenedor para cada mensaje
+                    HBox container = new HBox();
+                    container.setSpacing(10);
 
-                    // Comparación correcta de IDs para determinar si es el usuario actual
+                    // Etiqueta con el nombre del remitente
+                    Label senderLabel = new Label();
+                    senderLabel.setStyle("-fx-font-weight: bold;");
+
+                    // Etiqueta con el contenido del mensaje
+                    Label contentLabel = new Label(message.getContent());
+                    contentLabel.setWrapText(true);
+
+                    // Determinar si es el usuario actual
                     boolean isCurrentUser = message.getSenderId().equals(currentUser.getId());
 
                     if (isCurrentUser) {
-                        setStyle("-fx-background-color: #DCF8C6; -fx-alignment: center-right;");
-                        setText("Tú: " + message.getContent()); // Identificación clara
+                        container.setAlignment(Pos.CENTER_RIGHT);
+                        senderLabel.setText("Tú:");
+                        container.getChildren().addAll(senderLabel, contentLabel);
+                        container.setStyle("-fx-background-color: #DCF8C6; -fx-padding: 5px;");
                     } else {
-                        setStyle("-fx-background-color: #FFFFFF; -fx-alignment: center-left;");
-                        setText(senderName + ": " + message.getContent());
+                        container.setAlignment(Pos.CENTER_LEFT);
+                        String senderName = usernameCache.getOrDefault(
+                                message.getSenderId(), "Usuario desconocido");
+                        senderLabel.setText(senderName + ":");
+                        container.getChildren().addAll(senderLabel, contentLabel);
+                        container.setStyle("-fx-background-color: #FFFFFF; -fx-padding: 5px;");
                     }
+
+                    setGraphic(container);
                 }
             }
         });
 
+        // Manejo de selección del chat
         chatList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 selectedConversation = newVal;
@@ -105,6 +124,7 @@ public class ProfileController {
             }
         });
 
+        // Configuración de columnas en la tabla de adopciones
         catNameColumn.setCellValueFactory(cellData -> {
             Cat cat = catService.getCatById(cellData.getValue().getCatId());
             return new SimpleStringProperty(cat != null ? cat.getName() : "Unknown");
@@ -115,6 +135,7 @@ public class ProfileController {
             return new SimpleStringProperty(user != null ? user.getUsername() : "Unknown");
         });
 
+        // Configuración de acciones (Confirmar/Rechazar)
         actionsColumn.setCellFactory(param -> new TableCell<>() {
             private final Button confirmButton = new Button("Confirmar");
             private final Button rejectButton = new Button("Rechazar");
@@ -148,10 +169,17 @@ public class ProfileController {
         });
     }
 
+
     public void setCurrentUser(Usuario currentUser) {
         this.currentUser = currentUser;
-        // Precarga el nombre del usuario actual
         usernameCache.put(currentUser.getId(), currentUser.getUsername());
+
+        // Cierra cualquier conexión WebSocket existente antes de crear una nueva
+        if (webSocketClient != null) {
+            webSocketClient.close();
+            webSocketClient = null;
+        }
+
         loadConversations();
         connectToWebSocket();
     }
@@ -159,6 +187,8 @@ public class ProfileController {
     private void connectToWebSocket() {
         try {
             String uri = "ws://localhost:8080/ws/chat?userId=" + currentUser.getId();
+            System.out.println("Conectando a WebSocket: " + uri);
+
             webSocketClient = new WebSocketClient(new URI(uri)) {
                 @Override
                 public void onOpen(ServerHandshake handshakedata) {
@@ -183,19 +213,23 @@ public class ProfileController {
 
                 @Override
                 public void onError(Exception ex) {
+                    System.err.println("Error en WebSocket:");
                     ex.printStackTrace();
                 }
             };
+
             webSocketClient.connect();
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            System.err.println("Error en la URI del WebSocket: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error general al conectar WebSocket: " + e.getMessage());
         }
     }
 
+
     private void addMessageToUI(ChatMessage message) {
-        // Añade el mensaje a la lista observable existente
         observableMessages.add(message);
-        preloadUsernames(Collections.singletonList(message));
+        preloadUsernamesForMessages(Collections.singletonList(message));
         messageList.scrollTo(observableMessages.size() - 1);
     }
 
@@ -204,18 +238,20 @@ public class ProfileController {
 
         List<Conversation> conversations = chatService.findByUserId(currentUser.getId());
         chatList.setItems(FXCollections.observableArrayList(conversations));
+        preloadUsernamesForConversations(conversations);
 
-        chatList.setCellFactory(param -> new ListCell<>() {
+        chatList.setCellFactory(param -> new ListCell<Conversation>() {
             @Override
             protected void updateItem(Conversation conversation, boolean empty) {
                 super.updateItem(conversation, empty);
                 if (empty || conversation == null) {
                     setText(null);
+                    setStyle("");
                 } else {
+                    // Determinar el otro usuario en la conversación
                     ObjectId otherUserId = conversation.getUserId1().equals(currentUser.getId()) ?
                             conversation.getUserId2() : conversation.getUserId1();
-                    Usuario otherUser = usuarioRepository.findById(otherUserId).orElse(null);
-                    String otherUserName = otherUser != null ? otherUser.getUsername() : "Usuario desconocido";
+                    String otherUserName = usernameCache.getOrDefault(otherUserId, "Usuario");
                     setText(otherUserName + ": " + conversation.getLastMessage());
                 }
             }
@@ -226,17 +262,27 @@ public class ProfileController {
         currentConversationId = conversationId;
         selectedConversation = chatService.getConversationById(conversationId);
 
-        // Limpia y añade mensajes a la lista observable existente
         observableMessages.clear();
-        observableMessages.addAll(chatService.getMessagesByConversationOrdered(conversationId));
+        List<ChatMessage> messages = chatMessageRepository
+                .findByConversationIdOrderByTimestampAsc(conversationId);
 
-        preloadUsernames(observableMessages);
-        if (!observableMessages.isEmpty()) {
-            messageList.scrollTo(observableMessages.size() - 1);
+        // Asegúrate de que los mensajes se añadan a la lista observable
+        observableMessages.addAll(messages);
+
+        // Precarga los nombres de usuario para estos mensajes
+        preloadUsernamesForMessages(messages);
+
+        // Fuerza una actualización de la vista
+        messageList.setItems(observableMessages);
+        messageList.refresh();
+
+        if (!messages.isEmpty()) {
+            messageList.scrollTo(messages.size() - 1);
         }
     }
 
-    private void preloadUsernames(List<ChatMessage> messages) {
+    // Precargar nombres para mensajes
+    private void preloadUsernamesForMessages(List<ChatMessage> messages) {
         Set<ObjectId> userIds = messages.stream()
                 .map(ChatMessage::getSenderId)
                 .collect(Collectors.toSet());
@@ -246,31 +292,57 @@ public class ProfileController {
         );
     }
 
+    // Precargar nombres para conversaciones
+    private void preloadUsernamesForConversations(List<Conversation> conversations) {
+        Set<ObjectId> userIds = conversations.stream()
+                .flatMap(conv -> Stream.of(conv.getUserId1(), conv.getUserId2()))
+                .collect(Collectors.toSet());
+
+        usuarioRepository.findAllById(userIds).forEach(user ->
+                usernameCache.put(user.getId(), user.getUsername())
+        );
+    }
+
     @FXML
     private void handleSendMessage() {
+        if (currentUser == null) {
+            System.out.println("Usuario actual es nulo. No se puede enviar mensaje.");
+            return;
+        }
+
         String content = messageField.getText().trim();
         if (content.isEmpty() || selectedConversation == null) return;
 
-        ChatMessage newMessage = new ChatMessage();
-        newMessage.setConversationId(selectedConversation.getId());
-        newMessage.setSenderId(currentUser.getId());
-        newMessage.setContent(content);
-        newMessage.setTimestamp(new Date());
+        try {
+            ChatMessage newMessage = new ChatMessage();
+            newMessage.setConversationId(selectedConversation.getId());
+            newMessage.setSenderId(currentUser.getId());
+            newMessage.setContent(content);
+            newMessage.setTimestamp(new Date());
 
-        chatMessageRepository.save(newMessage);
-        messageField.clear();
+            chatMessageRepository.save(newMessage);
+            messageField.clear();
 
-        // Añade el mensaje localmente
-        addMessageToUI(newMessage);
+            addMessageToUI(newMessage);
 
-        if (webSocketClient != null && webSocketClient.isOpen()) {
-            String jsonMessage = gson.toJson(newMessage);
-            webSocketClient.send(jsonMessage);
+            if (webSocketClient != null && webSocketClient.isOpen()) {
+                String jsonMessage = gson.toJson(newMessage);
+                webSocketClient.send(jsonMessage);
+                System.out.println("Mensaje enviado via WebSocket: " + jsonMessage);
+            } else {
+                System.out.println("WebSocket no está disponible. Reintentando conexión...");
+                connectToWebSocket(); // Intenta reconectar
+                if (webSocketClient != null && webSocketClient.isOpen()) {
+                    webSocketClient.send(gson.toJson(newMessage));
+                }
+            }
+
+            selectedConversation.setLastMessage(content);
+            chatService.saveConversation(selectedConversation);
+            loadConversations();
+        } catch (Exception e) {
+            System.err.println("Error al enviar mensaje: " + e.getMessage());
         }
-
-        selectedConversation.setLastMessage(content);
-        chatService.saveConversation(selectedConversation);
-        loadConversations();
     }
 
     private void handleOpenChat(Adopcion adoption) {

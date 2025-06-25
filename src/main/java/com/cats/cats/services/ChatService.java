@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ChatService {
@@ -32,14 +31,15 @@ public class ChatService {
     }
 
     /**
-     * Envía un mensaje en tiempo real a ambos usuarios involucrados en la conversación.
+     * Envía un mensaje en tiempo real a ambos usuarios involucrados en la conversación
+     * y lo persiste en la base de datos.
      */
     public void sendRealTimeMessage(ChatMessage message) {
-        ObjectId senderId = message.getSenderId();
-        ObjectId receiverId = getReceiverId(message);
-
-        webSocketHandler.sendMessageToUser(senderId, message);
-        webSocketHandler.sendMessageToUser(receiverId, message);
+        // Envío por WebSocket
+        webSocketHandler.sendMessageToUser(message.getSenderId(), message);
+        webSocketHandler.sendMessageToUser(getReceiverId(message), message);
+        // Persistencia
+        chatMessageRepository.save(message);
     }
 
     /**
@@ -71,7 +71,7 @@ public class ChatService {
     }
 
     /**
-     * Guarda una conversación existente.
+     * Guarda (o actualiza) una conversación.
      */
     public void saveConversation(Conversation conversation) {
         conversationRepository.save(conversation);
@@ -98,3 +98,4 @@ public class ChatService {
         return conversationRepository.findByUserId1OrUserId2(userId, userId);
     }
 }
+

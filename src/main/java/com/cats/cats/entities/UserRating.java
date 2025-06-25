@@ -53,3 +53,5 @@ public class UserRating {
         this.adoptionId = adoptionId;
     }
 }
+
+

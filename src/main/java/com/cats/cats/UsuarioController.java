@@ -153,7 +153,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private AnchorPane AnchorMain, AnchorMain2, AnchorRegister, anchorweb, anchorweb2, anchorweb3, AnchorAdopt, contentPane,
-             AnchorConditions, AnchorOng, AnchorMenuAdd, imageContainer, AnchorGeneric;
+            AnchorConditions, AnchorOng, AnchorMenuAdd, imageContainer, AnchorGeneric;
 
     @FXML
     private ListView<Usuario> listview;
@@ -163,7 +163,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private TextField textfield1, textusername, textemail, textage, fieldname, fieldadress, fieldpostal, fieldphone, fieldaddbreed, fieldaddage, fieldaddsex, fieldaddcolor, fieldaddwidth, fieldaddheight, fieldaddname, fieldRegisterUsername, fieldRegisterAge, fieldRegisterEmail,
-    fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField;
+            fieldaddong1, fieldaddplace1, searchField, fieldaddphone, fieldAdditionalContact, recoverEmail, recoverAge, breedField;
 
     @FXML
     private PasswordField textpassword, textfield2, accessfield, fieldRegisterPassword, recoverPassword;
@@ -198,7 +198,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private Button register, registeruser, goback, login, adopt, nextpage, previouspage, gomenu, back, back1, confirmation, play1, play2, goToLoginButton,
-             notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, searchButton;
+            notaccept, aceptbutton, ong, accessbutton, menuaddtomenu, submitadd, add1button, add2button, add3button, add4button, adoptButton, returnButton, playVideoButton, searchButton;
 
     @FXML
     private HBox buttonContainer, ratingStars;
@@ -3071,7 +3071,7 @@ public class UsuarioController implements Initializable {
     private void setupClickableCursors() {
         // Lista segura de todos los ImageView clickeables
         List<ImageView> clickableImages = Arrays.asList(
-                 ximage, linkedinimage, gmailimage, spanish, english
+                ximage, linkedinimage, gmailimage, spanish, english
                 // ... agregar todos los ImageView necesarios
         );
 

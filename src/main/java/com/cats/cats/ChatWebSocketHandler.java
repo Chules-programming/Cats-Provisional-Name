@@ -17,8 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler implements ApplicationContextAware {
 
-    private final Map<ObjectId, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private static ApplicationContext context;
+    private final Map<ObjectId, WebSocketSession> sessions = new ConcurrentHashMap<>();
+
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -27,6 +28,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler implements Applic
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
+        // OBTENER USER ID DE LA CONEXIÓN
         ObjectId userId = new ObjectId(session.getAttributes().get("userId").toString());
         sessions.put(userId, session);
     }
@@ -35,11 +37,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler implements Applic
         WebSocketSession session = sessions.get(userId);
         if (session != null && session.isOpen()) {
             try {
+                // ENVIAR MENSAJE A TRAVÉS DEL WEBSOCKET
                 session.sendMessage(new TextMessage(message.toJson()));
             } catch (IOException e) {
-                // Manejar error
+                // Manejar error (opcional: remover sesión inválida)
+                sessions.remove(userId);
             }
         }
+        // NO guardar aquí - ya se guarda en ChatService
     }
 
     @Override
@@ -51,4 +56,5 @@ public class ChatWebSocketHandler extends TextWebSocketHandler implements Applic
     public static ChatWebSocketHandler getInstance() {
         return context.getBean(ChatWebSocketHandler.class);
     }
+
 }

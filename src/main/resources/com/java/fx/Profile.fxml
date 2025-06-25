@@ -5,7 +5,6 @@
 <?import javafx.scene.text.*?>
 <?import javafx.scene.shape.Circle?>
 
-<?import javafx.util.Callback?>
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.ProfileController"
@@ -62,10 +61,14 @@
         </SplitPane>
 
         <!-- Panel derecho: Chat -->
-        <SplitPane orientation="VERTICAL" dividerPositions="0.7">
+        <SplitPane orientation="VERTICAL" dividerPositions="0.85">
             <!-- Lista de mensajes -->
-            <ListView fx:id="messageList" VBox.vgrow="ALWAYS"/>
-            <!-- Entrada de mensajes -->
+            <ListView fx:id="messageList" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label text="Selecciona una conversación para ver los mensajes"
+                           style="-fx-font-size: 14px; -fx-text-fill: gray;"/>
+                </placeholder>
+            </ListView>            <!-- Entrada de mensajes -->
             <VBox spacing="10" style="-fx-padding: 10;">
                 <HBox spacing="10">
                     <TextField fx:id="messageField" HBox.hgrow="ALWAYS"/>

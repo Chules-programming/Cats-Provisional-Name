@@ -20,6 +20,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.bson.types.ObjectId;
 import org.java_websocket.client.WebSocketClient;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,6 +58,8 @@ public class ProfileController {
     @FXML private TableColumn<Adopcion, String> catNameColumn;
     @FXML private TableColumn<Adopcion, String> adopterNameColumn;
     @FXML private TableColumn<Adopcion, Void> actionsColumn;
+    @FXML private Button giveCatButton;
+    @FXML private Button receiveCatButton;
 
     private Usuario currentUser;
     private ResourceBundle resources;
@@ -82,19 +86,15 @@ public class ProfileController {
                     setStyle("");
                     setGraphic(null);
                 } else {
-                    // Crear un contenedor para cada mensaje
                     HBox container = new HBox();
                     container.setSpacing(10);
 
-                    // Etiqueta con el nombre del remitente
                     Label senderLabel = new Label();
                     senderLabel.setStyle("-fx-font-weight: bold;");
 
-                    // Etiqueta con el contenido del mensaje
                     Label contentLabel = new Label(message.getContent());
                     contentLabel.setWrapText(true);
 
-                    // Determinar si es el usuario actual
                     boolean isCurrentUser = message.getSenderId().equals(currentUser.getId());
 
                     if (isCurrentUser) {
@@ -116,12 +116,38 @@ public class ProfileController {
             }
         });
 
-        // Manejo de selección del chat
+        // Listener para selección de conversación
         chatList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 selectedConversation = newVal;
                 loadMessages(newVal.getId());
+
+                Cat cat = catService.getCatById(newVal.getCatId());
+                if (cat != null) {
+                    if (currentUser.getId().equals(cat.getCaregiverId())) {
+                        // Usuario es el cuidador
+                        giveCatButton.setDisable(false);
+                        giveCatButton.setVisible(true);
+                        receiveCatButton.setVisible(false);
+                    } else {
+                        // Usuario es el adoptante
+                        receiveCatButton.setDisable(false);
+                        receiveCatButton.setVisible(true);
+                        giveCatButton.setVisible(false);
+                    }
+                } else {
+                    giveCatButton.setVisible(false);
+                    receiveCatButton.setVisible(false);
+                }
             }
+        });
+
+        // Desactivar ambos botones al inicio
+        Platform.runLater(() -> {
+            giveCatButton.setDisable(true);
+            giveCatButton.setVisible(false);
+            receiveCatButton.setDisable(true);
+            receiveCatButton.setVisible(false);
         });
 
         // Configuración de columnas en la tabla de adopciones
@@ -135,7 +161,6 @@ public class ProfileController {
             return new SimpleStringProperty(user != null ? user.getUsername() : "Unknown");
         });
 
-        // Configuración de acciones (Confirmar/Rechazar)
         actionsColumn.setCellFactory(param -> new TableCell<>() {
             private final Button confirmButton = new Button("Confirmar");
             private final Button rejectButton = new Button("Rechazar");
@@ -168,6 +193,52 @@ public class ProfileController {
             }
         });
     }
+
+    @FXML
+    private void handleReceiveCat() {
+        if (selectedConversation == null) {
+            showAlert("Selecciona una conversación primero");
+            return;
+        }
+
+        // Obtener el cuidador (X)
+        Cat cat = catService.getCatById(selectedConversation.getCatId());
+        if (cat == null) return;
+
+        ObjectId caregiverId = cat.getCaregiverId();
+
+        // Crear diálogo de calificación
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle("Calificar Adopción");
+        dialog.setHeaderText("¿Cómo calificas la adopción con " +
+                usernameCache.getOrDefault(caregiverId, "el cuidador") + "?");
+
+        ToggleGroup group = new ToggleGroup();
+        VBox vbox = new VBox(10);
+        for (int i = 1; i <= 5; i++) {
+            RadioButton rb = new RadioButton(i + " estrella" + (i > 1 ? "s" : ""));
+            rb.setToggleGroup(group);
+            rb.setUserData(i);
+            vbox.getChildren().add(rb);
+        }
+
+        dialog.getDialogPane().setContent(vbox);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK && group.getSelectedToggle() != null) {
+                return (Integer) group.getSelectedToggle().getUserData();
+            }
+            return null;
+        });
+
+        Optional<Integer> result = dialog.showAndWait();
+        result.ifPresent(rating -> {
+            saveRating(caregiverId, rating);
+            showAlert("¡Calificación guardada! Gracias por tu feedback");
+        });
+    }
+
 
 
     public void setCurrentUser(Usuario currentUser) {
@@ -438,6 +509,87 @@ public class ProfileController {
 
     public void setResources(ResourceBundle resources) {
         this.resources = resources;
+    }
+
+    @FXML
+    private void handleRateAdoption() {
+        if (selectedConversation == null) {
+            showAlert("Selecciona una conversación primero");
+            return;
+        }
+
+        // Obtener el otro usuario de la conversación
+        ObjectId otherUserId = selectedConversation.getUserId1().equals(currentUser.getId()) ?
+                selectedConversation.getUserId2() : selectedConversation.getUserId1();
+
+        // Crear diálogo de calificación
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle("Calificar Adopción");
+        dialog.setHeaderText("¿Cómo calificas la adopción con " +
+                usernameCache.getOrDefault(otherUserId, "el usuario") + "?");
+
+        // Crear opciones de calificación (1-5 estrellas)
+        ToggleGroup group = new ToggleGroup();
+        VBox vbox = new VBox(10);
+        for (int i = 1; i <= 5; i++) {
+            RadioButton rb = new RadioButton(i + " estrella" + (i > 1 ? "s" : ""));
+            rb.setToggleGroup(group);
+            rb.setUserData(i);
+            vbox.getChildren().add(rb);
+        }
+
+        // Configurar botones
+        dialog.getDialogPane().setContent(vbox);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // Procesar resultado
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK && group.getSelectedToggle() != null) {
+                return (Integer) group.getSelectedToggle().getUserData();
+            }
+            return null;
+        });
+
+        // Mostrar diálogo y guardar calificación
+        Optional<Integer> result = dialog.showAndWait();
+        result.ifPresent(rating -> {
+            saveRating(otherUserId, rating);
+            showAlert("¡Calificación guardada! Gracias por tu feedback");
+        });
+    }
+    private void saveRating(ObjectId ratedUserId, int rating) {
+        Review review = new Review();
+        review.setUserId(ratedUserId); // Usuario calificado
+        review.setReviewerId(currentUser.getId()); // Usuario que califica
+        review.setRating(rating);
+        review.setDate(LocalDate.now());
+        // Guardar en la base de datos
+        reviewService.save(review);
+
+        // Actualizar calificación promedio del usuario
+        double newAverage = reviewService.getAverageRatingByUserId(ratedUserId);
+        System.out.println("Nueva calificación promedio para " + ratedUserId + ": " + newAverage);
+        if (currentUser.getId().equals(ratedUserId)) {
+            updateRatingDisplay();
+        }
+    }
+
+    private void updateRatingDisplay() {
+        double averageRating = reviewService.getAverageRatingByUserId(currentUser.getId());
+        ratingStars.getChildren().clear();
+        for (int i = 0; i < 5; i++) {
+            Label star = new Label(i < averageRating ? "★" : "☆");
+            star.setStyle("-fx-text-fill: " + (i < averageRating ? "gold" : "gray") + "; -fx-font-size: 20px;");
+            ratingStars.getChildren().add(star);
+        }
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Información");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
 

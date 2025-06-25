@@ -15,6 +15,7 @@ public class Review {
     private int rating;
     private String comment;
     private LocalDate date;
+    private ObjectId reviewerId;
 
     // Getters y setters
     public ObjectId getId() { return id; }
@@ -29,4 +30,12 @@ public class Review {
     public void setComment(String comment) { this.comment = comment; }
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
+
+    public ObjectId getReviewerId() {
+        return reviewerId;
+    }
+
+    public void setReviewerId(ObjectId reviewerId) {
+        this.reviewerId = reviewerId;
+    }
 }

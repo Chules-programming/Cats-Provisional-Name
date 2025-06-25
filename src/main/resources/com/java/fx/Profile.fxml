@@ -26,7 +26,7 @@
                         <Circle radius="50" fill="WHITE" stroke="BLACK" strokeWidth="2"/>
                         <ImageView fx:id="profileImage" fitWidth="100" fitHeight="100" preserveRatio="true">
                             <image>
-                                <Image url="/assets/profile_icon.png" />
+                                <Image url="/assets/profile_icon.png"/>
                             </image>
                         </ImageView>
                     </StackPane>
@@ -68,11 +68,15 @@
                     <Label text="Selecciona una conversación para ver los mensajes"
                            style="-fx-font-size: 14px; -fx-text-fill: gray;"/>
                 </placeholder>
-            </ListView>            <!-- Entrada de mensajes -->
+            </ListView>
+
+            <!-- Entrada de mensajes y botones -->
             <VBox spacing="10" style="-fx-padding: 10;">
                 <HBox spacing="10">
                     <TextField fx:id="messageField" HBox.hgrow="ALWAYS"/>
                     <Button text="Enviar" onAction="#handleSendMessage"/>
+                    <Button fx:id="giveCatButton" text="Dar Gato" onAction="#handleRateAdoption" disable="true" visible="false"/>
+                    <Button fx:id="receiveCatButton" text="Recibir Gato" onAction="#handleReceiveCat" disable="true" visible="false"/>
                 </HBox>
             </VBox>
         </SplitPane>
@@ -82,4 +86,7 @@
     <Button text="Volver" onAction="#handleGoBack"
             AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
 </AnchorPane>
+
+
+
 

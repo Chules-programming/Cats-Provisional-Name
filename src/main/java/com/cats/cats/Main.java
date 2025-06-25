@@ -3,6 +3,8 @@ package com.cats.cats;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,18 +20,32 @@ import java.util.concurrent.CountDownLatch;
 
 @SpringBootApplication
 public class Main extends Application {
+
 	static ConfigurableApplicationContext context;
 	private static CountDownLatch springLatch = new CountDownLatch(1);
 	public static Locale currentLocale = Locale.getDefault();
 
+	// ✅ Propiedad reactiva para modo invitado
+	private static final SimpleBooleanProperty isGuest = new SimpleBooleanProperty(false);
+
+	public static boolean isGuest() {
+		return isGuest.get();
+	}
+
+	public static void setGuest(boolean value) {
+		isGuest.set(value);
+	}
+
+	public static BooleanProperty isGuestProperty() {
+		return isGuest;
+	}
+
 	private HostServices appHostServices;
 
 	public static void main(String[] args) {
-		// Fuerza español genérico al inicio
-		Locale.setDefault(new Locale("es"));
+		Locale.setDefault(new Locale("es")); // Forzar español por defecto
 		System.out.println("🔷 Starting application...");
 
-		// Iniciar contexto de Spring en otro hilo
 		new Thread(() -> {
 			context = SpringApplication.run(Main.class, args);
 			springLatch.countDown();
@@ -43,7 +59,6 @@ public class Main extends Application {
 			throw new RuntimeException("Spring initialization interrupted", e);
 		}
 
-		// Lanzar JavaFX
 		launch(args);
 	}
 
@@ -64,16 +79,10 @@ public class Main extends Application {
 
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Cats Application");
-
-			// 1. Establecer dimensiones mínimas
 			primaryStage.setMinWidth(600);
 			primaryStage.setMinHeight(700);
-
-			// 2. Establecer tamaño inicial
 			primaryStage.setWidth(600);
 			primaryStage.setHeight(700);
-
-			// 3. Centrar la ventana
 			primaryStage.centerOnScreen();
 
 			primaryStage.show();
@@ -84,7 +93,6 @@ public class Main extends Application {
 		}
 	}
 
-
 	@Override
 	public void stop() {
 		if (context != null) {
@@ -93,13 +101,11 @@ public class Main extends Application {
 		Platform.exit();
 	}
 
-	// Bean para ResourceBundle
 	@Bean
 	public ResourceBundle resourceBundle() {
 		return ResourceBundle.getBundle("Messages", getCurrentLocale());
 	}
 
-	// Método estático para acceder al ResourceBundle
 	public static ResourceBundle getResourceBundle() {
 		return context.getBean(ResourceBundle.class);
 	}
@@ -110,7 +116,6 @@ public class Main extends Application {
 
 	public static void setCurrentLocale(Locale locale) {
 		currentLocale = locale;
-		// Forzamos que el locale por defecto de Java cambie también
 		Locale.setDefault(locale);
 		ResourceBundle.clearCache();
 		printBundleInfo();
@@ -122,5 +127,6 @@ public class Main extends Application {
 		System.out.println("Bundle locale: " + bundle.getLocale());
 	}
 }
+
 
 

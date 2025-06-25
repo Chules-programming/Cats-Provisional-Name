@@ -3,6 +3,7 @@ package com.cats.cats;
 import com.cats.cats.entities.Cat;
 import com.cats.cats.services.CatService;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -111,17 +112,28 @@ public class CatDetailController {
     }
 
     private void handleAdopt() {
+        if (Main.isGuest()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle(resources.getString("restriction.title"));
+            alert.setHeaderText(null);
+            alert.setContentText(resources.getString("restriction.message"));
+            alert.showAndWait();
+            return;
+        }
+
         try {
             Stage currentStage = (Stage) adoptButton.getScene().getWindow();
             currentStage.close();
 
-            //la que tengo debajo posible linea a eliminar
+            // Obtener el controlador UsuarioController desde el contexto de Spring
             UsuarioController usuarioController = Main.context.getBean(UsuarioController.class);
+            usuarioController.setCurrentCat(currentCat);
             usuarioController.openAdoptionScreen(currentCat);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+
 
     private void loadCatVideo() {
         if (currentCat.getVideoID() != null && !currentCat.getVideoID().isEmpty()) {

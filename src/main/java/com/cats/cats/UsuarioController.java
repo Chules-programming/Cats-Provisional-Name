@@ -14,6 +14,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import javafx.application.HostServices;
+import javafx.beans.binding.Bindings;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -705,6 +706,10 @@ public class UsuarioController implements Initializable {
     // Método para manejar el botón de sugerencias
     @FXML
     private void handleSuggestions(MouseEvent event) throws IOException {
+        if (Main.isGuest()) {
+            showGuestRestrictionAlert();
+            return;
+        }
         setCurrentFxmlPath("/com/java/fx/Suggest.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Suggest.fxml"));
         loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
@@ -1182,6 +1187,12 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleAdopt(MouseEvent event) throws IOException {
+        // Verificar si es usuario invitado
+        if (Main.isGuest()) {
+            showGuestRestrictionAlert();
+            return;
+        }
+
         // Detener cualquier sonido si se está reproduciendo
         if (mediaPlayer != null) {
             mediaPlayer.stop();
@@ -1212,8 +1223,6 @@ public class UsuarioController implements Initializable {
         stage.setMinWidth(600);
         stage.setMinHeight(700);
     }
-
-
 
     @FXML
     private void onCatImageClicked(MouseEvent event) {
@@ -1898,6 +1907,10 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleONG(MouseEvent event) {
+        if (Main.isGuest()) {
+            showGuestRestrictionAlert();
+            return;
+        }
         try {
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
@@ -2215,8 +2228,7 @@ public class UsuarioController implements Initializable {
 
     public void openAdoptionScreen(Cat selectedCat) {
         try {
-            setCurrentCat(selectedCat); // Guardar el gato seleccionado
-
+            setCurrentCat(selectedCat);
             setCurrentFxmlPath("/com/java/fx/adoptweb.fxml");
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/java/fx/adoptweb.fxml"),
@@ -2226,9 +2238,7 @@ public class UsuarioController implements Initializable {
             Parent root = loader.load();
 
             UsuarioController controller = loader.getController();
-            controller.setCurrentCat(selectedCat); // Pasar el gato al controlador
-
-            // Añade esta línea para preseleccionar el gato
+            controller.setCurrentCat(selectedCat);
             controller.preselectCatInChoiceBox(selectedCat.getName());
 
             Stage stage = new Stage();
@@ -2461,8 +2471,7 @@ public class UsuarioController implements Initializable {
                 this.resources = resources;
             } else {
                 // Fallback si no viene del FXMLLoader
-                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                this.resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale(), classLoader);
+                this.resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale());
             }
 
             System.out.println("Locale actual: " + Main.getCurrentLocale());
@@ -2475,7 +2484,6 @@ public class UsuarioController implements Initializable {
             if (AnchorMain != null && currentFxmlPath == null) {
                 currentFxmlPath = "/com/java/fx/main.fxml";
             }
-
 
             // 4. Reiniciar la paginación
             currentPage = 0;
@@ -2506,13 +2514,14 @@ public class UsuarioController implements Initializable {
                 safeLoadImage(linkedinimage, "LinkedIn.jpg", true);
                 safeLoadImage(gmailimage, "gmail.jpg", true);
             }
-            //Checkear si hay algo duplicao
+
+            // 11. Validación de duplicado
             if (errorDuplicateName != null) {
                 errorDuplicateName.setVisible(false);
-                errorDuplicateName.setFont(Font.font(7)); // Tamaño consistente
+                errorDuplicateName.setFont(Font.font(7));
             }
 
-            // 11. Inicializar opciones en ChoiceBoxes con traducciones
+            // 12. Inicializar opciones en ChoiceBoxes con traducciones
             ObservableList<String> friendlyOptions = FXCollections.observableArrayList(
                     this.resources.getString("friendly.yes"),
                     this.resources.getString("friendly.no"),
@@ -2522,7 +2531,7 @@ public class UsuarioController implements Initializable {
             if (choiceadd1 != null) choiceadd1.setItems(friendlyOptions);
             if (choiceadd2 != null) choiceadd2.setItems(friendlyOptions);
 
-            // 12. Configurar tooltips para campos adicionales
+            // 13. Configurar tooltips
             if (fieldaddong1 != null) {
                 Tooltip.install(fieldaddong1, new Tooltip(this.resources.getString("tooltip.ongname")));
             }
@@ -2530,49 +2539,34 @@ public class UsuarioController implements Initializable {
                 Tooltip.install(fieldaddplace1, new Tooltip(this.resources.getString("tooltip.catplace")));
             }
 
-            // 13. Cargar datos de gatos
+            // 14. Cargar datos de gatos
             loadCats();
 
-            // 14. Ejecutar tareas diferidas en UI thread
+            // 15. Comportamiento UI en el hilo de la aplicación
             Platform.runLater(() -> {
                 if (catsGrid != null) {
-                    loadCatsIntoView(); // Cargar gatos al inicializar
+                    loadCatsIntoView(); // Solo una vez
                 }
-                // Configuración SOLO para elementos visibles
-                if (previouspage != null && previouspage.isVisible()) {
-                    previouspage.setMinWidth(100);
-                }
-                if (nextpage != null && nextpage.isVisible()) {
-                    nextpage.setMinWidth(100);
-                }
-                if (adopt != null) {
-                    adopt.setMinWidth(80);
-                }
-                if (searchButton != null) {
-                    searchButton.setMinWidth(80);
-                }
+                if (previouspage != null && previouspage.isVisible()) previouspage.setMinWidth(100);
+                if (nextpage != null && nextpage.isVisible()) nextpage.setMinWidth(100);
+                if (adopt != null) adopt.setMinWidth(80);
+                if (searchButton != null) searchButton.setMinWidth(80);
                 if (searchField != null) {
                     searchField.setMinWidth(120);
                     HBox.setHgrow(searchField, Priority.ALWAYS);
                 }
-
-                // Configuración especial para "Ir a log in"
                 if (goToLoginButton != null && goToLoginButton.isVisible()) {
                     goToLoginButton.setMinWidth(100);
                 }
 
-                // Actualizar vista
                 updateCatStatusDisplays();
-                if (catsGrid != null) {
-                    loadCatsIntoView();
-                }
                 updatePaginationButtons();
             });
 
-            // 15. Inicializar conexión a base de datos
+            // 16. Inicializar conexión a base de datos
             mongoDatabase = getMongoDatabase();
 
-            // 16. Asegurar que AnchorAdopt sea redimensionable al 100%
+            // 17. Redimensionar AnchorAdopt al 100%
             Platform.runLater(() -> {
                 if (AnchorAdopt != null) {
                     AnchorPane.setTopAnchor(AnchorAdopt, 0.0);
@@ -2582,17 +2576,17 @@ public class UsuarioController implements Initializable {
                 }
             });
 
+            // 18. Binding de visibilidad del guestLabel al modo invitado
+
         } catch (Exception e) {
             System.err.println("Error durante la inicialización: " + e.getMessage());
             e.printStackTrace();
-            // Fallback si falla la carga con locale
             this.resources = ResourceBundle.getBundle("Messages");
         }
 
-        // Validación en tiempo real para la descripción
+        // 19. Validación de descripción en tiempo real
         if (areaadd != null) {
             areaadd.textProperty().addListener((observable, oldValue, newValue) -> {
-                // Validar longitud máxima
                 if (newValue.length() > MAX_DESCRIPTION_CHARS) {
                     Platform.runLater(() -> {
                         areaadd.setText(oldValue);
@@ -2605,7 +2599,6 @@ public class UsuarioController implements Initializable {
                     return;
                 }
 
-                // Validar número de líneas
                 int lineCount = newValue.split("\n").length;
                 if (lineCount > MAX_DESCRIPTION_LINES) {
                     Platform.runLater(() -> {
@@ -2619,51 +2612,37 @@ public class UsuarioController implements Initializable {
                     return;
                 }
 
-                // Si pasa las validaciones, ocultar el error
                 errordescription.setVisible(false);
 
-                // ——— AÑADIDO: contador y cambio de color ———
                 if (descriptionCounter != null) {
                     descriptionCounter.setText(
                             newValue.length() + "/" + MAX_DESCRIPTION_CHARS +
                                     " | Lines: " + lineCount + "/" + MAX_DESCRIPTION_LINES
                     );
-
-                    // Cambiar color si se exceden los límites
-                    if (newValue.length() > MAX_DESCRIPTION_CHARS || lineCount > MAX_DESCRIPTION_LINES) {
-                        descriptionCounter.setTextFill(Color.RED);
-                    } else {
-                        descriptionCounter.setTextFill(Color.BLACK);
-                    }
+                    descriptionCounter.setTextFill(
+                            (newValue.length() > MAX_DESCRIPTION_CHARS || lineCount > MAX_DESCRIPTION_LINES) ?
+                                    Color.RED : Color.BLACK
+                    );
                 }
-                // ————————————————————————————————
             });
         }
-        if (suggestionMessage != null) {
-            suggestionMessage.setVisible(false);
-        }
+
+        // 20. Validaciones para otras áreas de texto
+        if (suggestionMessage != null) suggestionMessage.setVisible(false);
+
         if (suggestionTextArea != null) {
-            suggestionTextArea.textProperty().addListener((observable, oldValue, newValue) -> {
-                validateTextArea(
-                        suggestionTextArea,
-                        suggestionCounter,
-                        MAX_SUGGESTION_CHARS,
-                        MAX_SUGGESTION_LINES,
-                        oldValue
-                );
+            suggestionTextArea.textProperty().addListener((obs, oldVal, newVal) -> {
+                validateTextArea(suggestionTextArea, suggestionCounter, MAX_SUGGESTION_CHARS, MAX_SUGGESTION_LINES, oldVal);
             });
         }
+
         if (reviewComment != null) {
-            reviewComment.textProperty().addListener((observable, oldValue, newValue) -> {
-                validateTextArea(
-                        reviewComment,
-                        reviewCounter,
-                        MAX_REVIEW_CHARS,
-                        MAX_REVIEW_LINES,
-                        oldValue
-                );
+            reviewComment.textProperty().addListener((obs, oldVal, newVal) -> {
+                validateTextArea(reviewComment, reviewCounter, MAX_REVIEW_CHARS, MAX_REVIEW_LINES, oldVal);
             });
         }
+
+        // 21. Configurar columnas de catsGrid al 50%
         if (catsGrid != null) {
             ColumnConstraints col1 = new ColumnConstraints();
             col1.setPercentWidth(50);
@@ -2672,6 +2651,7 @@ public class UsuarioController implements Initializable {
             catsGrid.getColumnConstraints().addAll(col1, col2);
         }
     }
+
 
     // Método reusable para validación
     private void validateTextArea(TextArea textArea, Label counter,
@@ -3471,6 +3451,10 @@ public class UsuarioController implements Initializable {
     }
     @FXML
     private void handleChooseForYou(MouseEvent event) {
+        if (Main.isGuest()) {
+            showGuestRestrictionAlert();
+            return;
+        }
         try {
             setCurrentFxmlPath("/com/java/fx/chooseforyou.fxml");
             FXMLLoader loader = new FXMLLoader(
@@ -3622,6 +3606,12 @@ public class UsuarioController implements Initializable {
     // UsuarioController.java
     @FXML
     private void handleOpenProfile(MouseEvent event) throws IOException {
+        // Verificar si es usuario invitado
+        if (Main.isGuest()) {
+            showGuestRestrictionAlert();
+            return;
+        }
+
         setCurrentFxmlPath("/com/java/fx/Profile.fxml");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/java/fx/Profile.fxml"));
         loader.setResources(ResourceBundle.getBundle("Messages", Main.getCurrentLocale()));
@@ -3635,5 +3625,31 @@ public class UsuarioController implements Initializable {
 
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.getScene().setRoot(root);
+    }
+
+    @FXML
+    private void handleGuestAccess(MouseEvent event) throws IOException {
+        // Activar modo invitado
+        Main.setGuest(true);
+        this.currentUser = null; // Limpiar usuario actual
+
+        setCurrentFxmlPath("/com/java/fx/web2.fxml");
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/java/fx/web2.fxml"),
+                ResourceBundle.getBundle("Messages", Main.getCurrentLocale())
+        );
+        loader.setControllerFactory(Main.context::getBean);
+        Parent root = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+    }
+
+    private void showGuestRestrictionAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(resources.getString("restriction.title"));
+        alert.setHeaderText(null);
+        alert.setContentText(resources.getString("restriction.message"));
+        alert.showAndWait();
     }
 }

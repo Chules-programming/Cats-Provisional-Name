@@ -3,8 +3,8 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-
 <?import javafx.scene.image.Image?>
+
 <AnchorPane  fx:id="AnchorMain"
              xmlns="http://javafx.com/javafx/23.0.1"
              xmlns:fx="http://javafx.com/fxml/1"
@@ -54,6 +54,10 @@
       <HBox spacing="20" alignment="CENTER">
          <Button fx:id="register" text="%register" onMouseClicked="#cargarSigFXML" prefWidth="100"/>
          <Button fx:id="login" text="%login" onMouseClicked="#handleLogin" prefWidth="100"/>
+         <Button fx:id="guestAccessButton" text="%guest.access"
+                 onMouseClicked="#handleGuestAccess"
+                 styleClass="modern-button"
+                 prefWidth="180"/>
       </HBox>
 
       <!-- Nuevo botón para recuperar contraseña -->
@@ -71,4 +75,5 @@
       </VBox>
    </VBox>
 </AnchorPane>
+
 

@@ -3176,9 +3176,14 @@ public class UsuarioController implements Initializable {
     private VBox createCatCard(Cat cat) {
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
-        card.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8;"
-                + "-fx-background-color: #f9f9f9; -fx-padding: 15;"
-                + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);");
+        card.setStyle(
+                "-fx-border-color: #e0e0e0; " +
+                        "-fx-border-width: 1; " +
+                        "-fx-border-radius: 8; " +
+                        "-fx-background-color: #f9f9f9; " +
+                        "-fx-padding: 15; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);"
+        );
         card.setPrefWidth(280);
         card.setMaxWidth(280);
 
@@ -3197,23 +3202,32 @@ public class UsuarioController implements Initializable {
 
         catImage.setOnMouseClicked(ev -> handleCatClick(ev, cat));
 
-        Label nameLabel = new Label(cat.getName());
-        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        // Nombre del gato
+        String catName = cat.getName() != null ? cat.getName() : "No name";
+        Label nameLabel = new Label(catName);
+        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #000000;");
 
-        Label breedLabel = new Label(resources.getString("breed.label") + ": " + cat.getBreed());
+        // Raza
+        String breedText = resources.getString("breed.label") + ": " +
+                (cat.getBreed() != null ? cat.getBreed() : "No breed");
+        Label breedLabel = new Label(breedText);
+        breedLabel.setStyle("-fx-text-fill: #000000;");
 
-        Label statusLabel = new Label(resources.getString("status.label") + ": "
-                + (cat.isAdopted()
-                ? resources.getString("status.adopted")
-                : resources.getString("status.available")));
-        statusLabel.setTextFill(cat.isAdopted() ? Color.RED : Color.GREEN);
+        // Estado con estilo CSS explícito
+        String statusText = resources.getString("status.label") + ": " +
+                (cat.isAdopted() ?
+                        resources.getString("status.adopted") :
+                        resources.getString("status.available"));
+
+        Label statusLabel = new Label(statusText);
+        String colorStyle = cat.isAdopted() ?
+                "-fx-text-fill: #FF0000;" :  // Rojo
+                "-fx-text-fill: #00AA00;";  // Verde
+        statusLabel.setStyle(colorStyle);
 
         card.getChildren().addAll(catImage, nameLabel, breedLabel, statusLabel);
         return card;
     }
-
-
-
 
 
 

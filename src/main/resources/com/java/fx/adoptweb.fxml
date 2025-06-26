@@ -4,6 +4,8 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane fx:id="AnchorAdopt" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.UsuarioController"
@@ -22,6 +24,13 @@
          <Label fx:id="found" text="%found" />
          <Label fx:id="information" text="%information" />
       </VBox>
+
+      <!-- Imagen decorativa centrada -->
+      <ImageView fitHeight="150" fitWidth="150" preserveRatio="true">
+         <image>
+            <Image url="@/assets/cat_adopt_me.png" />
+         </image>
+      </ImageView>
 
       <!-- Formulario con posicionamiento absoluto relativo -->
       <AnchorPane prefWidth="550.0" prefHeight="300.0">

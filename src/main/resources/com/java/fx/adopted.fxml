@@ -5,14 +5,18 @@
 <AnchorPane fx:id="anchorAdopted" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.UsuarioController"
-            stylesheets="@styles.css">
+            stylesheets="@styles.css"
+            style="-fx-background-image: url('/assets/Banner2.jpg');
+                   -fx-background-size: cover;
+                   -fx-background-position: center;">
 
     <BorderPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
-                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
+                style="-fx-background-color: transparent;">
 
         <!-- Top: Botón de volver -->
         <top>
-            <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
+            <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: rgba(240,240,240,0.7);">
                 <Button onMouseClicked="#handleGoCatSection"
                         text="%back.to.available"
                         styleClass="modern-button"
@@ -20,18 +24,28 @@
             </HBox>
         </top>
 
-        <!-- Center: Lista de gatos adoptados dentro de un AnchorPane -->
+        <!-- Center: Lista de gatos adoptados centrada con fondo transparente -->
         <center>
             <ScrollPane fitToWidth="true" fitToHeight="true"
-                        hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                        hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        style="-fx-background: transparent; -fx-background-color: transparent;">
                 <content>
-                    <AnchorPane style="-fx-background-color: white; -fx-padding: 20;">
-                        <TilePane fx:id="adoptedCatsContainer"
-                                  prefColumns="2"
-                                  hgap="20" vgap="20"
-                                  AnchorPane.topAnchor="0"
-                                  AnchorPane.leftAnchor="0"
-                                  AnchorPane.rightAnchor="0"/>
+                    <AnchorPane style="-fx-background-color: transparent;">
+                        <HBox alignment="CENTER"
+                              AnchorPane.topAnchor="0"
+                              AnchorPane.bottomAnchor="0"
+                              AnchorPane.leftAnchor="0"
+                              AnchorPane.rightAnchor="0"
+                              style="-fx-background-color: transparent;">
+                            <StackPane alignment="CENTER" style="-fx-background-color: transparent;">
+                                <TilePane fx:id="adoptedCatsContainer"
+                                          prefColumns="2"
+                                          hgap="20" vgap="20"
+                                          maxWidth="600"
+                                          style="-fx-background-color: transparent;"/>
+                            </StackPane>
+                            <Region HBox.hgrow="ALWAYS" minWidth="50" prefWidth="50" maxWidth="50"/>
+                        </HBox>
                     </AnchorPane>
                 </content>
             </ScrollPane>

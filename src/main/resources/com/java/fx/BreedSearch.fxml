@@ -4,14 +4,31 @@
 
 <AnchorPane fx:id="anchorBreedSearch" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cats.cats.UsuarioController">
+            fx:controller="com.cats.cats.UsuarioController"
+            style="-fx-background-image: url('/assets/Banner2.jpg');
+                   -fx-background-size: cover;
+                   -fx-background-position: center;">
 
     <ScrollPane fx:id="scrol" fitToWidth="true" fitToHeight="true"
                 AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
-                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="60">
+                AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="60"
+                style="-fx-background: transparent; -fx-background-color: transparent;">
         <content>
-            <VBox fx:id="searchResultsContainer" spacing="20"
-                  style="-fx-padding: 20; -fx-background-color: white;"/>
+            <AnchorPane style="-fx-background-color: transparent;">
+                <HBox alignment="CENTER" style="-fx-background-color: transparent;"
+                      AnchorPane.topAnchor="0"
+                      AnchorPane.bottomAnchor="0"
+                      AnchorPane.leftAnchor="0"
+                      AnchorPane.rightAnchor="0">
+                    <StackPane alignment="CENTER" style="-fx-background-color: transparent;">
+                        <VBox fx:id="searchResultsContainer" spacing="20"
+                              alignment="CENTER"
+                              maxWidth="600"
+                              style="-fx-padding: 20; -fx-background-color: transparent;"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS" minWidth="50" prefWidth="50" maxWidth="50"/>
+                </HBox>
+            </AnchorPane>
         </content>
     </ScrollPane>
 

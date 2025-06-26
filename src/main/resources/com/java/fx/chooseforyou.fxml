@@ -8,53 +8,84 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.cats.cats.UsuarioController"
             prefHeight="500.0" prefWidth="600.0"
-            style="-fx-padding: 20;">
+            style="-fx-background-image: url('/assets/Banner2.jpg');
+                   -fx-background-size: cover;
+                   -fx-background-position: center;">
 
-    <VBox spacing="15" alignment="TOP_CENTER">
-        <Label text="%chooseForYou.title" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
-        <Label text="%chooseForYou.subtitle" style="-fx-font-size: 14;"/>
+    <!-- Contenedor principal centrado -->
+    <StackPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+               AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
+               alignment="CENTER">
 
-        <!-- Tamaño preferido -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="%chooseForYou.size" style="-fx-min-width: 250;"/>
-            <ComboBox fx:id="sizeComboBox" style="-fx-min-width: 200;"/>
-        </HBox>
+        <!-- Panel del formulario con fondo blanco y sombra -->
+        <VBox alignment="CENTER" spacing="15"
+              style="-fx-background-color: white;
+                     -fx-background-radius: 10;
+                     -fx-padding: 30;
+                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);"
+              maxWidth="600">
 
-        <!-- Raza preferida -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="%chooseForYou.breed" style="-fx-min-width: 250;"/>
-            <TextField fx:id="breedField" style="-fx-min-width: 200;"/>
-        </HBox>
+            <Label text="%chooseForYou.title"
+                   style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #333;"/>
 
-        <!-- Origen preferido -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="%chooseForYou.origin" style="-fx-min-width: 250;"/>
-            <ComboBox fx:id="originComboBox" style="-fx-min-width: 200;"/>
-        </HBox>
+            <Label text="%chooseForYou.subtitle"
+                   style="-fx-font-size: 16; -fx-text-fill: #666; -fx-wrap-text: true;"
+                   maxWidth="500"/>
 
-        <!-- Acepta heridas/discapacidades -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="%chooseForYou.acceptDisabled" style="-fx-min-width: 250;"/>
-            <CheckBox fx:id="acceptsDisabledCheckBox"/>
-        </HBox>
+            <GridPane hgap="10" vgap="15"
+                      style="-fx-padding: 20 0 20 0;">
+                <columnConstraints>
+                    <ColumnConstraints prefWidth="200" halignment="RIGHT"/>
+                    <ColumnConstraints prefWidth="250" halignment="LEFT"/>
+                </columnConstraints>
 
-        <!-- Edad preferida -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="%chooseForYou.age" style="-fx-min-width: 250;"/>
-            <ComboBox fx:id="ageComboBox" style="-fx-min-width: 200;"/>
-        </HBox>
+                <!-- Tamaño preferido -->
+                <Label text="%chooseForYou.size" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                       style="-fx-font-size: 14;"/>
+                <ComboBox fx:id="sizeComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                          style="-fx-min-width: 200; -fx-pref-height: 35;"/>
 
-        <!-- Botones -->
-        <HBox spacing="20" style="-fx-padding: 20 0 0 0;">
-            <Button fx:id="submitPreferencesButton"
-                    text="%submit"
-                    onAction="#handleSubmitPreferences"
-                    styleClass="modern-button"/>
+                <!-- Raza preferida -->
+                <Label text="%chooseForYou.breed" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                       style="-fx-font-size: 14;"/>
+                <TextField fx:id="breedField" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                           style="-fx-min-width: 200; -fx-pref-height: 35;"/>
 
-            <Button fx:id="cancelPreferencesButton"
-                    text="%cancel"
-                    onAction="#handleCancelPreferences"
-                    styleClass="modern-button"/>
-        </HBox>
-    </VBox>
+                <!-- Origen preferido -->
+                <Label text="%chooseForYou.origin" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                       style="-fx-font-size: 14;"/>
+                <ComboBox fx:id="originComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                          style="-fx-min-width: 200; -fx-pref-height: 35;"/>
+
+                <!-- Acepta heridas/discapacidades -->
+                <Label text="%chooseForYou.acceptDisabled" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                       style="-fx-font-size: 14;"/>
+                <CheckBox fx:id="acceptsDisabledCheckBox" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                          style="-fx-padding: 8 0 0 0;"/>
+
+                <!-- Edad preferida -->
+                <Label text="%chooseForYou.age" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                       style="-fx-font-size: 14;"/>
+                <ComboBox fx:id="ageComboBox" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                          style="-fx-min-width: 200; -fx-pref-height: 35;"/>
+            </GridPane>
+
+            <!-- Botones -->
+            <HBox spacing="20" alignment="CENTER">
+                <Button fx:id="submitPreferencesButton"
+                        text="%submit"
+                        onAction="#handleSubmitPreferences"
+                        styleClass="modern-button"
+                        minWidth="120" minHeight="40"
+                        style="-fx-font-size: 16px;"/>
+
+                <Button fx:id="cancelPreferencesButton"
+                        text="%cancel"
+                        onAction="#handleCancelPreferences"
+                        styleClass="modern-button"
+                        minWidth="120" minHeight="40"
+                        style="-fx-font-size: 16px;"/>
+            </HBox>
+        </VBox>
+    </StackPane>
 </AnchorPane>

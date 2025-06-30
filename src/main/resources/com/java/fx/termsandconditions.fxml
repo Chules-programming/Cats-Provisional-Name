@@ -9,7 +9,15 @@
    <VBox alignment="CENTER" spacing="20"
          AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20"
          AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="20">
-      <Label fx:id="theconditions2" text="%theconditions2" wrapText="true" prefWidth="500"/>
+
+      <!-- Título de términos y condiciones -->
+      <Label text="%terms.and.conditions" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+
+      <!-- Área de texto con scroll para los términos -->
+      <ScrollPane fitToWidth="true" prefViewportHeight="300" prefWidth="500">
+         <TextArea fx:id="termsTextArea" editable="false" focusTraversable="false"
+                   style="-fx-background-color: transparent; -fx-border-color: transparent;"/>
+      </ScrollPane>
 
       <HBox alignment="CENTER" spacing="20">
          <Button fx:id="notaccept" text="%notaccept" onMouseClicked="#handleMenu" prefWidth="100"/>

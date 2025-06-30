@@ -126,6 +126,9 @@ public class Main extends Application {
 		ResourceBundle bundle = ResourceBundle.getBundle("Messages", currentLocale);
 		System.out.println("Bundle locale: " + bundle.getLocale());
 	}
+	public static void resetGuestState() {
+		isGuest.set(false);
+	}
 }
 
 

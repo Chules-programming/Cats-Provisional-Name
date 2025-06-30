@@ -21,6 +21,8 @@
 		<javafx.version>21.0.7</javafx.version>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
+		<!-- Configuración multi-plataforma para JavaFX -->
+		<javafx.platform>win</javafx.platform> <!-- Cambiar a 'linux' o 'mac' según necesidad -->
 	</properties>
 
 	<dependencies>
@@ -38,52 +40,53 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- JavaFX -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-controls</artifactId>
-			<version>${javafx.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-fxml</artifactId>
-			<version>${javafx.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-media</artifactId>
-			<version>${javafx.version}</version>
-		</dependency>
-		<!-- Nueva dependencia agregada para SwingFXUtils -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-swing</artifactId>
-			<version>${javafx.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
+		<!-- JavaFX - Especificamos clasificador para plataforma -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-fxml</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-media</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-swing</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+
+		<!-- Otras dependencias -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.10.1</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.java-websocket</groupId>
 			<artifactId>Java-WebSocket</artifactId>
 			<version>1.5.3</version>
-		</dependency>
-
-		<!-- Dependencias adicionales para manejo de imágenes -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-graphics</artifactId>
-			<version>${javafx.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -92,35 +95,39 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
-					<include>**/*.fxml</include>
-					<include>**/*.png</include>
-					<include>**/*.jpg</include>
-					<include>**/*.jpeg</include>
-					<include>**/*.png</include>
-					<include>**/*.mp4</include>
-					<include>**/*.properties</include>
+					<include>**/*</include> <!-- Incluye todos los recursos -->
 				</includes>
 			</resource>
 		</resources>
 
 		<plugins>
-			<!-- JavaFX Plugin (opcional si ejecutas por línea de comandos) -->
-			<plugin>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-maven-plugin</artifactId>
-				<version>0.0.8</version>
-				<configuration>
-					<mainClass>com.cats.cats.Main</mainClass>
-				</configuration>
-			</plugin>
-
-			<!-- Spring Boot Plugin -->
+			<!-- Plugin Spring Boot -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>3.4.5</version>
 				<configuration>
 					<mainClass>com.cats.cats.Main</mainClass>
+					<requiresUnpack>
+						<!-- Desempaqueta dependencias nativas de JavaFX -->
+						<dependency>
+							<groupId>org.openjfx</groupId>
+							<artifactId>javafx-graphics</artifactId>
+						</dependency>
+						<dependency>
+							<groupId>org.openjfx</groupId>
+							<artifactId>javafx-media</artifactId>
+						</dependency>
+						<dependency>
+							<groupId>org.openjfx</groupId>
+							<artifactId>javafx-controls</artifactId>
+						</dependency>
+					</requiresUnpack>
+					<jvmArguments>
+						<!-- Configuración esencial para JavaFX en JAR -->
+						--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED
+						--add-opens=javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED
+					</jvmArguments>
 				</configuration>
 				<executions>
 					<execution>
@@ -130,6 +137,78 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Plugin para copiar recursos correctamente -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>**/*.fxml</include>
+										<include>**/*.css</include>
+										<include>**/*.png</include>
+										<include>**/*.jpg</include>
+										<include>**/*.jpeg</include>
+										<include>**/*.gif</include>
+										<include>**/*.mp4</include>
+										<include>**/*.mp3</include>
+										<include>**/*.properties</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+
+	<!-- Perfiles para diferentes plataformas -->
+	<profiles>
+		<profile>
+			<id>windows</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<properties>
+				<javafx.platform>win</javafx.platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>linux</id>
+			<activation>
+				<os>
+					<family>linux</family>
+				</os>
+			</activation>
+			<properties>
+				<javafx.platform>linux</javafx.platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>mac</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<properties>
+				<javafx.platform>mac</javafx.platform>
+			</properties>
+		</profile>
+	</profiles>
 </project>

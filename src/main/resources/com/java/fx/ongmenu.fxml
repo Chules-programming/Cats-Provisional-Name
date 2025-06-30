@@ -34,10 +34,10 @@
          </VBox>
 
          <VBox alignment="CENTER" spacing="5">
-            <ImageView fx:id="linkedinimage" fitWidth="38" fitHeight="43" pickOnBounds="true" preserveRatio="true"
-                       onMouseClicked="#handleLinkedin">
+            <ImageView fx:id="githubimage" fitWidth="38" fitHeight="43" pickOnBounds="true" preserveRatio="true"
+                       onMouseClicked="#handleGitHub">
                <image>
-                  <Image url="/assets/LinkedIn.jpg" />
+                  <Image url="/assets/GitHub.png" />
                </image>
             </ImageView>
             <Label fx:id="label7ong"/>

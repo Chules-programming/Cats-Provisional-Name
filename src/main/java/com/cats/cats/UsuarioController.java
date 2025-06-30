@@ -177,7 +177,7 @@ public class UsuarioController implements Initializable {
     }
 
     @FXML
-    private TextArea areaadd, reviewComment, suggestionTextArea;
+    private TextArea areaadd, reviewComment, suggestionTextArea, termsTextArea;
 
     @FXML
     private Label welcome, username, password, registeredusers, addusername, addemail, addage, addpassword, statusLabel,
@@ -214,7 +214,7 @@ public class UsuarioController implements Initializable {
     private ResourceBundle resources;
 
     @FXML
-    private ImageView ximage, linkedinimage, gmailimage, addimage1, addimage2, addimage3, catImage1, catImage2, catImage3, spanish, english, profileIcon;
+    private ImageView ximage, githubimage, gmailimage, addimage1, addimage2, addimage3, catImage1, catImage2, catImage3, spanish, english, profileIcon;
 
     @FXML
     private ScrollPane scro, scrol;
@@ -981,7 +981,9 @@ public class UsuarioController implements Initializable {
     @FXML
     public void initialize() {
         this.resources = ResourceBundle.getBundle("Messages", Main.getCurrentLocale());
-
+        String termsContent = resources.getString("terms.and.conditions.content");
+        termsContent = termsContent.replace("\\n", System.lineSeparator());
+        termsTextArea.setText(termsContent);
     }
 
     private void loadCats() {
@@ -1122,6 +1124,8 @@ public class UsuarioController implements Initializable {
                     && u.getPassword().equals(enteredPassword)) {
 
                 currentUser = u;
+                Main.setGuest(false);
+                Main.resetGuestState();
                 setCurrentFxmlPath("/com/java/fx/web2.fxml");
 
                 FXMLLoader loader = new FXMLLoader(
@@ -2043,12 +2047,12 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleTwitter(MouseEvent event) {
-        openURL("https://x.com/home");
+        openURL("https://x.com/CatchACatWithMe");
     }
 
     @FXML
-    private void handleLinkedin(MouseEvent event) {
-        openURL("https://www.linkedin.com/feed/");
+    private void handleGitHub(MouseEvent event) {
+        openURL("https://github.com/Chules-programming");
     }
 
     @FXML
@@ -2511,7 +2515,7 @@ public class UsuarioController implements Initializable {
             // 10. Cargar imágenes sociales si el panel está visible
             if (AnchorOng != null && AnchorOng.isVisible()) {
                 safeLoadImage(ximage, "twitter.jpg", true);
-                safeLoadImage(linkedinimage, "LinkedIn.jpg", true);
+                safeLoadImage(githubimage, "GitHub.png", true);
                 safeLoadImage(gmailimage, "gmail.jpg", true);
             }
 
@@ -3051,7 +3055,7 @@ public class UsuarioController implements Initializable {
     private void setupClickableCursors() {
         // Lista segura de todos los ImageView clickeables
         List<ImageView> clickableImages = Arrays.asList(
-                ximage, linkedinimage, gmailimage, spanish, english
+                ximage, githubimage, gmailimage, spanish, english
                 // ... agregar todos los ImageView necesarios
         );
 

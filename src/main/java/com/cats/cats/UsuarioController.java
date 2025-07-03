@@ -3,6 +3,9 @@ package com.cats.cats;
 
 
 import com.cats.cats.entities.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import com.cats.cats.repository.*;
 import com.cats.cats.services.AdopcionService;
 import com.cats.cats.services.CatService;
@@ -58,6 +61,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -100,16 +104,20 @@ public class UsuarioController implements Initializable {
     private CatService catService;
     @Autowired
     private CatRepository catRepository;
+
     @Autowired
     public void setUsuarioService(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
+
     @Autowired
     private AdoptionPreferencesRepository preferencesRepository;
+
     @Autowired
     public void setCatService(CatService catService) {
         this.catService = catService;
     }
+
     @Autowired
     private ReviewService reviewService;
     @Autowired
@@ -133,6 +141,7 @@ public class UsuarioController implements Initializable {
 
     private static final int MAX_REVIEW_CHARS = 400;
     private static final int MAX_REVIEW_LINES = 10;
+
     private void safeSetText(Labeled component, String key, ResourceBundle bundle) {
         if (component == null) return;
 
@@ -143,11 +152,13 @@ public class UsuarioController implements Initializable {
             component.setText("[" + key + "]");
         }
     }
+
     private HostServices hostServices;
 
     public void setHostServices(HostServices hostServices) {
         this.hostServices = hostServices;
     }
+
     private static final int MAX_DESCRIPTION_CHARS = 100;
     private static final int MAX_DESCRIPTION_LINES = 2;
 
@@ -171,6 +182,7 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private GridPane catsGrid;
+
     @FXML
     public void setCatsGrid(GridPane catsGrid) {
         this.catsGrid = catsGrid;
@@ -214,7 +226,7 @@ public class UsuarioController implements Initializable {
     private ResourceBundle resources;
 
     @FXML
-    private ImageView ximage, githubimage, gmailimage, addimage1, addimage2, addimage3, catImage1, catImage2, catImage3, spanish, english, profileIcon;
+    private ImageView ximage, githubimage, gmailimage, addimage1, addimage2, addimage3, catImage1, catImage2, catImage3, spanish, english, profileIcon, profileImage;
 
     @FXML
     private ScrollPane scro, scrol;
@@ -238,6 +250,7 @@ public class UsuarioController implements Initializable {
     private MongoDatabase mongoDatabase;
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB en bytes
     private static final long MAX_VIDEO_SIZE = 10 * 1024 * 1024; //10MB en bytes
+
     public void show() {
         if (catsGrid != null) {
             loadCatsIntoView();
@@ -245,7 +258,6 @@ public class UsuarioController implements Initializable {
     }
 
     private FileChooser fileChooser = new FileChooser();
-
 
 
     private MongoDatabase getMongoDatabase() {
@@ -362,14 +374,15 @@ public class UsuarioController implements Initializable {
                 if (widthLabel != null) widthLabel.setText("Width: " + currentCat.getWidth() + " cm");
                 if (colorLabel != null) colorLabel.setText("Color: " + currentCat.getColor());
                 if (sexLabel != null) sexLabel.setText("Sex: " + currentCat.getSex());
-                if (friendlyKidsLabel != null) friendlyKidsLabel.setText("Friendly with kids: " + currentCat.getFriendlyWithKids());
-                if (friendlyAnimalsLabel != null) friendlyAnimalsLabel.setText("Friendly with animals: " + currentCat.getFriendlyWithAnimals());
+                if (friendlyKidsLabel != null)
+                    friendlyKidsLabel.setText("Friendly with kids: " + currentCat.getFriendlyWithKids());
+                if (friendlyAnimalsLabel != null)
+                    friendlyAnimalsLabel.setText("Friendly with animals: " + currentCat.getFriendlyWithAnimals());
                 if (statusLabel != null) {
                     statusLabel.setText("Status: " + (currentCat.isAdopted() ? "Adopted" : "Not adopted"));
                     statusLabel.setTextFill(currentCat.isAdopted() ? Color.RED : Color.GREEN);
                     bornDateLabel.setText("Born: " + currentCat.getBornDate());
                 }
-
 
 
                 // Descripción
@@ -870,10 +883,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
-
-
-
     // Ejemplo de uso cuando seleccionas un gato
     @FXML
     private void handleCatSelection(MouseEvent event, Cat cat) {
@@ -890,6 +899,7 @@ public class UsuarioController implements Initializable {
             }
         }
     }
+
     @FXML
     private void handleRegisterUser(MouseEvent event) {
         String username = fieldRegisterUsername.getText();
@@ -1047,8 +1057,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
-
     //Datos de registro
     @FXML
     private void AddData(MouseEvent event) {
@@ -1165,7 +1173,6 @@ public class UsuarioController implements Initializable {
             warning.setVisible(true);
         }
     }
-
 
 
     @FXML
@@ -1464,7 +1471,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
     @FXML
     private void handleSubmitButtonAction(ActionEvent event) {
         successMessage.setVisible(false);
@@ -1623,7 +1629,6 @@ public class UsuarioController implements Initializable {
     private void handleBackFromSearch(MouseEvent event) throws IOException {
         handleGoToWeb2(event);
     }
-
 
 
     private void hideAllErrorMessages() {
@@ -1854,8 +1859,6 @@ public class UsuarioController implements Initializable {
 
         updateCatStatusDisplays();
     }
-
-
 
 
     @FXML
@@ -2218,7 +2221,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
     private ObjectId getCaregiverUserId(Cat cat) {
         if (cat == null || cat.getOngName() == null) {
             return null;
@@ -2264,7 +2266,6 @@ public class UsuarioController implements Initializable {
             selection.setValue(catName);
         }
     }
-
 
 
     private void handleCatClick(MouseEvent event, Cat cat) {
@@ -2654,6 +2655,16 @@ public class UsuarioController implements Initializable {
             col2.setPercentWidth(50);
             catsGrid.getColumnConstraints().addAll(col1, col2);
         }
+        if (currentUser != null && currentUser.getProfileImagePath() != null) {
+            try {
+                Image image = new Image(
+                        getClass().getResourceAsStream(currentUser.getProfileImagePath())
+                );
+                profileIcon.setImage(image);
+            } catch (Exception e) {
+                System.err.println("Error cargando imagen de perfil: " + e.getMessage());
+            }
+        }
     }
 
 
@@ -2688,8 +2699,6 @@ public class UsuarioController implements Initializable {
             }
         }
     }
-
-
 
 
     private void updateUITexts(ResourceBundle bundle) {
@@ -2888,13 +2897,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
-
-
-
-
-
-
     private void setupImageClickHandlers() {
         setClickHandler(catImage1, e -> {
             if (currentCat != null) {
@@ -2984,7 +2986,6 @@ public class UsuarioController implements Initializable {
     private void loadRegisterViewResources() {
         // No necesita cargar imágenes específicas
     }
-
 
 
     private void loadConditionsViewResources() {
@@ -3234,7 +3235,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
     private VBox createCatBox(Cat cat) {
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
@@ -3287,7 +3287,6 @@ public class UsuarioController implements Initializable {
         card.getChildren().addAll(imageView, nameLabel, breedLabel, statusLabel);
         return card;
     }
-
 
 
     private Node createCatPane(Cat cat) {
@@ -3415,7 +3414,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
     private void updatePaginationButtons() {
         // Obtener solo gatos disponibles (no adoptados)
         List<Cat> availableCats = catRepository.findByAdoptedFalse();
@@ -3453,8 +3451,6 @@ public class UsuarioController implements Initializable {
     }
 
 
-
-
     // Método auxiliar para determinar la vista FXML basada en la raza
     private String determineFxmlPathForBreed(String breed) {
         switch (breed.toLowerCase()) {
@@ -3467,6 +3463,7 @@ public class UsuarioController implements Initializable {
                 return "/com/java/fx/Generic.fxml"; // Vista genérica si no hay coincidencia
         }
     }
+
     @FXML
     private void handleChooseForYou(MouseEvent event) {
         if (Main.isGuest()) {
@@ -3669,5 +3666,78 @@ public class UsuarioController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(resources.getString("restriction.message"));
         alert.showAndWait();
+    }
+
+    @FXML
+    public void handleDonateButton() {
+        if (hostServices != null) {
+            hostServices.showDocument("https://www.paypal.me/chules23");
+        } else {
+            // Fallback opcional si hostServices no está disponible
+            System.err.println("HostServices no disponible. No se puede abrir el navegador.");
+        }
+    }
+
+    public void refreshProfileImage() {
+        Platform.runLater(() -> {
+            try {
+                if (currentUser != null) {
+                    currentUser = usuarioRepository.findById(currentUser.getId()).orElse(currentUser);
+                }
+
+                if (currentUser != null && currentUser.getProfileImagePath() != null) {
+                    String imagePath = currentUser.getProfileImagePath();
+                    System.out.println("Actualizando imagen desde ruta: " + imagePath);
+
+                    // Verificar si el archivo existe
+                    Path path = Paths.get(imagePath);
+                    if (Files.exists(path)) {
+                        try (InputStream is = Files.newInputStream(path)) {
+                            profileIcon.setImage(new Image(is));
+                            return;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error actualizando imagen: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            loadDefaultProfileImage();
+        });
+    }
+
+
+    private void loadDefaultProfileImage() {
+        try {
+            // 1. Intentar cargar desde directorio persistente
+            Path defaultImagePath = Paths.get(System.getProperty("user.home"))
+                    .resolve(".catsapp")
+                    .resolve("assets/profile_icon.png");
+
+            if (Files.exists(defaultImagePath)) {
+                try (InputStream is = Files.newInputStream(defaultImagePath)) {
+                    profileIcon.setImage(new Image(is));
+                    return;
+                }
+            }
+
+            // 2. Intentar cargar desde recursos
+            try (InputStream defaultStream = getClass().getResourceAsStream("/assets/profile_icon.png")) {
+                if (defaultStream != null) {
+                    profileIcon.setImage(new Image(defaultStream));
+                    return;
+                }
+            }
+
+            // 3. Si todo falla, usar una imagen vacía
+            System.err.println("No se encontró la imagen por defecto");
+            profileIcon.setImage(null);
+
+        } catch (Exception e) {
+            System.err.println("Error cargando imagen por defecto: " + e.getMessage());
+            e.printStackTrace();
+            profileIcon.setImage(null);
+        }
     }
 }

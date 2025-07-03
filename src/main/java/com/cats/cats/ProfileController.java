@@ -19,8 +19,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.bson.types.ObjectId;
 import org.java_websocket.client.WebSocketClient;
@@ -28,9 +31,16 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,8 +61,7 @@ public class ProfileController {
     @FXML private ListView<Conversation> chatList;
     @FXML private ListView<ChatMessage> messageList;
     @FXML private TextField messageField;
-    @FXML private Label profileUsername;
-    @FXML private Label userRole;
+    @FXML private Label profileUsername, userRole, changePhotoLabel;
     @FXML private HBox ratingStars;
     @FXML private TableView<Adopcion> adoptionTable;
     @FXML private TableColumn<Adopcion, String> catNameColumn;
@@ -60,6 +69,7 @@ public class ProfileController {
     @FXML private TableColumn<Adopcion, Void> actionsColumn;
     @FXML private Button giveCatButton;
     @FXML private Button receiveCatButton;
+    @FXML private ImageView profileImage;
 
     private Usuario currentUser;
     private ResourceBundle resources;
@@ -192,6 +202,7 @@ public class ProfileController {
                 }
             }
         });
+
     }
 
     @FXML
@@ -242,18 +253,87 @@ public class ProfileController {
 
 
     public void setCurrentUser(Usuario currentUser) {
-        this.currentUser = currentUser;
-        usernameCache.put(currentUser.getId(), currentUser.getUsername());
+        try {
+            this.currentUser = usuarioRepository.findById(currentUser.getId()).orElse(currentUser);
+            usernameCache.put(currentUser.getId(), currentUser.getUsername());
 
-        // Cierra cualquier conexión WebSocket existente antes de crear una nueva
-        if (webSocketClient != null) {
-            webSocketClient.close();
-            webSocketClient = null;
+            if (webSocketClient != null) {
+                webSocketClient.close();
+                webSocketClient = null;
+            }
+
+            // Cargar imagen de perfil de forma robusta
+            loadProfileImage();
+
+            // Inicializar componentes
+            loadConversations();
+            connectToWebSocket();
+        } catch (Exception e) {
+            System.err.println("Error en setCurrentUser: " + e.getMessage());
+            e.printStackTrace();
+            // Cargar imagen por defecto si hay error
+            loadDefaultProfileImage();
         }
-
-        loadConversations();
-        connectToWebSocket();
     }
+
+    private void loadProfileImage() {
+        if (currentUser != null && currentUser.getProfileImagePath() != null) {
+            try {
+                String imagePath = currentUser.getProfileImagePath();
+                System.out.println("Cargando imagen de perfil desde: " + imagePath);
+
+                // Verificar si la ruta es válida
+                if (Files.exists(Paths.get(imagePath))) {
+                    // Usar Image con constructor que acepta InputStream
+                    Path path = Paths.get(imagePath);
+                    try (InputStream is = Files.newInputStream(path)) {
+                        profileImage.setImage(new Image(is));
+                        return;
+                    }
+                }
+                System.out.println("La imagen no existe en: " + imagePath);
+            } catch (Exception e) {
+                System.err.println("Error cargando imagen: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        // Cargar imagen por defecto si no se encontró
+        loadDefaultProfileImage();
+    }
+
+    private void loadDefaultProfileImage() {
+        try {
+            // 1. Intentar cargar desde directorio persistente
+            Path defaultImagePath = Paths.get(System.getProperty("user.home"))
+                    .resolve(".catsapp")
+                    .resolve("assets/profile_icon.png");
+
+            if (Files.exists(defaultImagePath)) {
+                try (InputStream is = Files.newInputStream(defaultImagePath)) {
+                    profileImage.setImage(new Image(is));
+                    return;
+                }
+            }
+
+            // 2. Intentar cargar desde recursos
+            try (InputStream defaultStream = getClass().getResourceAsStream("/assets/profile_icon.png")) {
+                if (defaultStream != null) {
+                    profileImage.setImage(new Image(defaultStream));
+                    return;
+                }
+            }
+
+            // 3. Si todo falla, usar una imagen vacía
+            System.err.println("No se encontró la imagen por defecto");
+            profileImage.setImage(null);
+
+        } catch (Exception e) {
+            System.err.println("Error cargando imagen por defecto: " + e.getMessage());
+            e.printStackTrace();
+            profileImage.setImage(null);
+        }
+    }
+
 
     private void connectToWebSocket() {
         try {
@@ -505,6 +585,10 @@ public class ProfileController {
         Parent root = loader.load();
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.getScene().setRoot(root);
+
+        // Notificar al controlador principal que actualice la imagen
+        UsuarioController usuarioController = loader.getController();
+        usuarioController.refreshProfileImage();
     }
 
     public void setResources(ResourceBundle resources) {
@@ -590,6 +674,74 @@ public class ProfileController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    @FXML
+    private void handleChangeProfileImage() {
+        // Crear y configurar el FileChooser
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar imagen de perfil");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        // Obtener la ventana actual
+        Stage stage = (Stage) profileImage.getScene().getWindow();
+        File selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile != null) {
+            try {
+                // Directorio persistente en el home del usuario
+                Path userHome = Paths.get(System.getProperty("user.home"));
+                Path appDir = userHome.resolve(".catsapp");
+                Path imagesDir = appDir.resolve("profile_images");
+
+                if (!Files.exists(imagesDir)) {
+                    Files.createDirectories(imagesDir);
+                }
+
+                // Generar nombre único para el archivo
+                String fileName = "profile_" + currentUser.getId() + "_" +
+                        System.currentTimeMillis() +
+                        getFileExtension(selectedFile.getName());
+
+                // Copiar el archivo
+                Path destination = imagesDir.resolve(fileName);
+                Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+                // Actualizar usuario
+                currentUser.setProfileImagePath(destination.toString());
+                usuarioRepository.save(currentUser);
+
+                // Cargar la nueva imagen
+                try (InputStream is = Files.newInputStream(destination)) {
+                    profileImage.setImage(new Image(is));
+                }
+
+            } catch (IOException e) {
+                System.err.println("Error al cambiar la imagen: " + e.getMessage());
+                e.printStackTrace();
+                showAlert("Error al cambiar la imagen: " + e.getMessage());
+            }
+        }
+    }
+
+
+    @FXML
+    private void handleMouseEnterProfileImage() {
+        changePhotoLabel.setVisible(true);
+    }
+
+    @FXML
+    private void handleMouseExitProfileImage() {
+        changePhotoLabel.setVisible(false);
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            return fileName.substring(dotIndex);
+        }
+        return ".png"; // Extensión por defecto
     }
 }
 

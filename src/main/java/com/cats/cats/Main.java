@@ -14,6 +14,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
@@ -25,7 +30,6 @@ public class Main extends Application {
 	private static CountDownLatch springLatch = new CountDownLatch(1);
 	public static Locale currentLocale = Locale.getDefault();
 
-	// ✅ Propiedad reactiva para modo invitado
 	private static final SimpleBooleanProperty isGuest = new SimpleBooleanProperty(false);
 
 	public static boolean isGuest() {
@@ -43,8 +47,44 @@ public class Main extends Application {
 	private HostServices appHostServices;
 
 	public static void main(String[] args) {
-		Locale.setDefault(new Locale("es")); // Forzar español por defecto
+		Locale.setDefault(new Locale("es"));
 		System.out.println("🔷 Starting application...");
+
+		// Crear directorios persistentes y copiar imagen por defecto
+		try {
+			Path userHomeDir = Paths.get(System.getProperty("user.home"));
+			Path appDir = userHomeDir.resolve(".catsapp");
+			Path assetsDir = appDir.resolve("assets");
+			Path profileImagesDir = appDir.resolve("profile_images");
+
+			// Crear directorios si no existen
+			if (!Files.exists(assetsDir)) {
+				Files.createDirectories(assetsDir);
+				System.out.println("📁 Directorio assets creado: " + assetsDir.toAbsolutePath());
+			}
+			if (!Files.exists(profileImagesDir)) {
+				Files.createDirectories(profileImagesDir);
+				System.out.println("📁 Directorio profile_images creado: " + profileImagesDir.toAbsolutePath());
+			}
+
+			// Copiar imagen por defecto si no existe
+			Path defaultImageDest = assetsDir.resolve("profile_icon.png");
+			if (!Files.exists(defaultImageDest)) {
+				try (InputStream defaultStream = Main.class.getResourceAsStream("/assets/profile_icon.png")) {
+					if (defaultStream != null) {
+						Files.copy(defaultStream, defaultImageDest);
+						System.out.println("✅ Imagen por defecto copiada a: " + defaultImageDest.toAbsolutePath());
+					} else {
+						System.err.println("❌ No se encontró la imagen por defecto en los recursos");
+					}
+				}
+			} else {
+				System.out.println("ℹ️ Imagen por defecto ya existe en: " + defaultImageDest.toAbsolutePath());
+			}
+		} catch (IOException e) {
+			System.err.println("❌ Error creando directorios: " + e.getMessage());
+			e.printStackTrace();
+		}
 
 		new Thread(() -> {
 			context = SpringApplication.run(Main.class, args);
@@ -126,10 +166,8 @@ public class Main extends Application {
 		ResourceBundle bundle = ResourceBundle.getBundle("Messages", currentLocale);
 		System.out.println("Bundle locale: " + bundle.getLocale());
 	}
+
 	public static void resetGuestState() {
 		isGuest.set(false);
 	}
 }
-
-
-

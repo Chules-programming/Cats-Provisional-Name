@@ -2,15 +2,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.cats.cats.ProfileController"
             prefHeight="700" prefWidth="900"
-            style="-fx-background-color: #f5f5f5;"
-            resources="@com/cats/cats/Messages">
+            style="-fx-background-color: #f5f5f5;">
 
     <SplitPane dividerPositions="0.3"
                AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
@@ -23,17 +22,33 @@
             <VBox spacing="20" style="-fx-padding: 15;">
                 <!-- Encabezado del perfil -->
                 <HBox spacing="20" alignment="CENTER_LEFT">
-                    <StackPane>
+                    <!-- Contenedor clicable para cambiar imagen -->
+                    <StackPane onMouseClicked="#handleChangeProfileImage"
+                               onMouseEntered="#handleMouseEnterProfileImage"
+                               onMouseExited="#handleMouseExitProfileImage"
+                               minWidth="100" minHeight="100"
+                               style="-fx-cursor: hand;">
                         <Circle radius="50" fill="WHITE" stroke="BLACK" strokeWidth="2"/>
-                        <ImageView fx:id="profileImage" fitWidth="100" fitHeight="100" preserveRatio="true">
+                        <ImageView fx:id="profileImage"
+                                   fitWidth="100" fitHeight="100"
+                                   preserveRatio="true">
+                            <!-- Imagen por defecto -->
                             <image>
                                 <Image url="/assets/profile_icon.png"/>
                             </image>
                         </ImageView>
+                        <Label fx:id="changePhotoLabel"
+                               text="%button.change_photo"
+                               alignment="CENTER"
+                               style="-fx-text-fill: white; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.5); -fx-padding: 5px;"
+                               minWidth="100" minHeight="100"
+                               visible="false"/>
                     </StackPane>
 
+                    <!-- Información de usuario -->
                     <VBox alignment="CENTER_LEFT" spacing="5">
-                        <Label fx:id="profileUsername" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        <Label fx:id="profileUsername"
+                               style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
                         <HBox spacing="10" alignment="CENTER_LEFT">
                             <Label fx:id="userRole" style="-fx-font-size: 16px;"/>
                             <HBox fx:id="ratingStars" spacing="3" alignment="CENTER_LEFT"/>
@@ -43,7 +58,8 @@
 
                 <!-- Solicitudes de adopción -->
                 <VBox spacing="10" VBox.vgrow="ALWAYS">
-                    <Label text="%adoption.requests" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <Label text="%adoption.requests"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
                     <TableView fx:id="adoptionTable" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="catNameColumn" text="%cat"/>
@@ -56,7 +72,8 @@
 
             <!-- Sección inferior: Lista de conversaciones -->
             <VBox spacing="10" style="-fx-padding: 10;">
-                <Label text="%chat.title" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Label text="%chat.title"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
                 <ListView fx:id="chatList" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>
@@ -76,8 +93,12 @@
                 <HBox spacing="10">
                     <TextField fx:id="messageField" HBox.hgrow="ALWAYS"/>
                     <Button text="%send.button" onAction="#handleSendMessage"/>
-                    <Button fx:id="giveCatButton" text="%button.transfer" onAction="#handleRateAdoption" disable="true" visible="false"/>
-                    <Button fx:id="receiveCatButton" text="%button.receive" onAction="#handleReceiveCat" disable="true" visible="false"/>
+                    <Button fx:id="giveCatButton" text="%button.transfer"
+                            onAction="#handleRateAdoption"
+                            disable="true" visible="false"/>
+                    <Button fx:id="receiveCatButton" text="%button.receive"
+                            onAction="#handleReceiveCat"
+                            disable="true" visible="false"/>
                 </HBox>
             </VBox>
         </SplitPane>
@@ -87,3 +108,4 @@
     <Button text="%back.button" onAction="#handleGoBack"
             AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
 </AnchorPane>
+

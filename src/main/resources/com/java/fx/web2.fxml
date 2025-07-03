@@ -33,7 +33,9 @@
             <HBox alignment="CENTER"
                   style="-fx-padding: 10; -fx-background-color: rgba(240,240,240,0.7);"
                   spacing="10">
-                <Button fx:id="ongButton" text="%ong"
+
+                <Button fx:id="ongButton"
+                        text="%ong"
                         onMouseClicked="#handleONG"
                         styleClass="modern-button"
                         minWidth="80"/>
@@ -52,7 +54,8 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Label fx:id="guestLabel" text="%guest.mode"
+                <Label fx:id="guestLabel"
+                       text="%guest.mode"
                        style="-fx-text-fill: red; -fx-font-weight: bold; -fx-padding: 0 10 0 0;"
                        visible="false"/>
 
@@ -62,11 +65,15 @@
                         styleClass="modern-button"
                         minWidth="120"/>
 
-                <StackPane onMouseClicked="#handleOpenProfile">
+                <!-- Icono de perfil clicable -->
+                <StackPane onMouseClicked="#handleOpenProfile"
+                           pickOnBounds="true">
                     <Circle radius="20" fill="WHITE" stroke="BLACK" strokeWidth="1"/>
-                    <ImageView fx:id="profileIcon" fitWidth="40" fitHeight="40" preserveRatio="true" pickOnBounds="true">
+                    <ImageView fx:id="profileIcon"
+                               fitWidth="40" fitHeight="40"
+                               preserveRatio="true">
                         <image>
-                            <Image url="/assets/profile_icon.png" />
+                            <Image url="/assets/profile_icon.png"/>
                         </image>
                     </ImageView>
                 </StackPane>
@@ -87,7 +94,8 @@
                               AnchorPane.leftAnchor="0"
                               AnchorPane.rightAnchor="0"
                               style="-fx-background-color: transparent;">
-                            <StackPane alignment="CENTER" style="-fx-background-color: transparent;">
+                            <StackPane alignment="CENTER"
+                                       style="-fx-background-color: transparent;">
                                 <GridPane fx:id="catsGrid"
                                           hgap="20"
                                           vgap="20"
@@ -102,7 +110,8 @@
                                     </columnConstraints>
                                 </GridPane>
                             </StackPane>
-                            <Region HBox.hgrow="ALWAYS" minWidth="50" prefWidth="50" maxWidth="50"/>
+                            <Region HBox.hgrow="ALWAYS"
+                                    minWidth="50" prefWidth="50" maxWidth="50"/>
                         </HBox>
                     </AnchorPane>
                 </content>
@@ -121,8 +130,9 @@
                         styleClass="modern-button-icon"
                         minWidth="60" minHeight="60">
                     <graphic>
-                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true">
-                            <Image url="/assets/left.png" />
+                        <ImageView fitWidth="40" fitHeight="40"
+                                   preserveRatio="true">
+                            <Image url="/assets/left.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -160,8 +170,9 @@
                         styleClass="modern-button-icon"
                         minWidth="60" minHeight="60">
                     <graphic>
-                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true">
-                            <Image url="/assets/right.png" />
+                        <ImageView fitWidth="40" fitHeight="40"
+                                   preserveRatio="true">
+                            <Image url="/assets/right.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -169,3 +180,4 @@
         </bottom>
     </BorderPane>
 </AnchorPane>
+

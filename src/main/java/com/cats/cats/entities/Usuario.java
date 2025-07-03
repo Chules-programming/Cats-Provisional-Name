@@ -1,9 +1,10 @@
 package com.cats.cats.entities;
 
-
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.nio.file.Paths;
 
 @Document(collection = "usuarios")
 public class Usuario {
@@ -12,12 +13,13 @@ public class Usuario {
     private ObjectId id;
 
     private String username;
-
     private String password;
-
     private String email;
-
     private int age;
+    private String profileImagePath = Paths.get(System.getProperty("user.home"))
+            .resolve(".catsapp")
+            .resolve("assets/profile_icon.png")
+            .toString();
 
     public ObjectId getId() {
         return id;
@@ -59,7 +61,17 @@ public class Usuario {
         this.age = age;
     }
 
-    public String toString(){
+    public String getProfileImagePath() {
+        return profileImagePath;
+    }
+
+    public void setProfileImagePath(String profileImagePath) {
+        this.profileImagePath = profileImagePath;
+    }
+
+    @Override
+    public String toString() {
         return "Username: " + username;
     }
 }
+

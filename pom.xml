@@ -23,6 +23,8 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<!-- Configuración multi-plataforma para JavaFX -->
 		<javafx.platform>win</javafx.platform> <!-- Cambiar a 'linux' o 'mac' según necesidad -->
+		<!-- Versión de MongoDB compatible con Spring Boot 3.4.5 -->
+		<mongodb.driver.version>4.11.1</mongodb.driver.version>
 	</properties>
 
 	<dependencies>
@@ -43,6 +45,18 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<!-- MongoDB Driver - Versión explícita compatible -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-core</artifactId>
+			<version>${mongodb.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>${mongodb.driver.version}</version>
 		</dependency>
 
 		<!-- JavaFX - Especificamos clasificador para plataforma -->

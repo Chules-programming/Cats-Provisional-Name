@@ -1,5 +1,9 @@
 package com.cats.cats;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -9,10 +13,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,6 +140,8 @@ public class Main extends Application {
 			Platform.exit();
 		}
 	}
+	@Autowired
+	private Environment environment;
 
 	@Override
 	public void stop() {
@@ -169,5 +179,19 @@ public class Main extends Application {
 
 	public static void resetGuestState() {
 		isGuest.set(false);
+	}
+
+	@Configuration
+	public class MongoConfig {
+
+		@Bean
+		public GridFSBucket gridFSBucket(MongoDatabaseFactory factory) {
+			return GridFSBuckets.create(factory.getMongoDatabase());
+		}
+
+		@Bean
+		public GridFSBucket gridFSVideosBucket(MongoDatabaseFactory factory) {
+			return GridFSBuckets.create(factory.getMongoDatabase(), "videos");
+		}
 	}
 }

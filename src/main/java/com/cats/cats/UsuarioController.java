@@ -75,6 +75,7 @@ import java.util.function.Consumer;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -128,6 +129,10 @@ public class UsuarioController implements Initializable {
     private ProfileController profileController;
     @Autowired
     private AdopcionController adopcionController;
+    @Autowired
+    private GridFSBucket gridFSBucket;
+    @Autowired
+    private GridFSBucket gridFSVideosBucket;
 
     private Usuario currentUser;
     private Map<String, ObjectId> catNameToIdMap = new HashMap<>();
@@ -260,9 +265,12 @@ public class UsuarioController implements Initializable {
     private FileChooser fileChooser = new FileChooser();
 
 
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
+
     private MongoDatabase getMongoDatabase() {
-        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-        return mongoClient.getDatabase("test"); //Name of the database
+        MongoClient mongoClient = MongoClients.create(mongoUri);
+        return mongoClient.getDatabase("test");
     }
 
     private File selectedImageFile;
@@ -275,27 +283,26 @@ public class UsuarioController implements Initializable {
         this.currentFxmlPath = path;
     }
 
-    public void displayCatImage(String imageId) {
+    private void displayCatImage(String imageId) {
         try {
-            String imageUrl = "http://localhost:8080/api/usuario/image/" + imageId;
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(imageUrl))
-                    .GET()
-                    .build();
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-
-            if (response.statusCode() == 200) {
-                Platform.runLater(() -> {
-                    Image image = new Image(new ByteArrayInputStream(response.body()));
-                    ImageView imageView = new ImageView(image);  // Usar el constructor correcto
-                    imageView.setFitWidth(300);
-                    imageView.setPreserveRatio(true);
-                    imageContainer.getChildren().clear();
-                    imageContainer.getChildren().add(imageView);
-                });
+            GridFSFile gridFSFile = gridFSBucket.find(Filters.eq("_id", new ObjectId(imageId))).first();
+            if (gridFSFile == null) {
+                System.err.println("❌ Image not found: " + imageId);
+                return;
             }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gridFSBucket.downloadToStream(gridFSFile.getObjectId(), outputStream);
+            byte[] imageData = outputStream.toByteArray();
+
+            Platform.runLater(() -> {
+                Image image = new Image(new ByteArrayInputStream(imageData));
+                ImageView imageView = new ImageView(image);
+                imageView.setFitWidth(300);
+                imageView.setPreserveRatio(true);
+                imageContainer.getChildren().clear();
+                imageContainer.getChildren().add(imageView);
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -326,32 +333,25 @@ public class UsuarioController implements Initializable {
 
     private void displayCatVideo(String videoId) {
         try {
-            String videoUrl = "http://localhost:8080/api/usuario/video/" + videoId;
+            GridFSFile gridFSFile = gridFSVideosBucket.find(Filters.eq("_id", new ObjectId(videoId))).first();
+            if (gridFSFile == null) {
+                System.err.println("❌ Video not found: " + videoId);
+                return;
+            }
 
-            // Crear un archivo temporal para el video
             File tempFile = File.createTempFile("video_", ".mp4");
             tempFile.deleteOnExit();
 
-            // Descargar el video desde el endpoint
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(videoUrl))
-                    .GET()
-                    .build();
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-
-            if (response.statusCode() == 200) {
-                Files.write(tempFile.toPath(), response.body());
-
-                // Mostrar el video
-                Platform.runLater(() -> {
-                    Media media = new Media(tempFile.toURI().toString());
-                    MediaPlayer player = new MediaPlayer(media);
-                    addvideo1.setMediaPlayer(player);
-                    player.play();
-                });
+            try (FileOutputStream streamToDownloadTo = new FileOutputStream(tempFile)) {
+                gridFSVideosBucket.downloadToStream(gridFSFile.getObjectId(), streamToDownloadTo);
             }
+
+            Platform.runLater(() -> {
+                Media media = new Media(tempFile.toURI().toString());
+                MediaPlayer player = new MediaPlayer(media);
+                addvideo1.setMediaPlayer(player);
+                player.play();
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1680,35 +1680,18 @@ public class UsuarioController implements Initializable {
         if (errorDuplicateName != null) errorDuplicateName.setVisible(false);
     }
 
-    private String saveImageToDatabase(javafx.scene.image.Image image, File originalFile) {
+    private String saveImageToDatabase(Image image, File originalFile) {
         if (image == null || originalFile == null) return null;
 
-        try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-            // 1. Obtener el bucket de GridFS
-            MongoDatabase database = mongoClient.getDatabase("test");
-            GridFSBucket gridFSBucket = GridFSBuckets.create(database, "cats_images"); // ✅ Crear el bucket aquí
-
-            // 2. Convertir Image de JavaFX a BufferedImage
+        try {
             BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(bImage, getFileExtension(originalFile.getName()), baos);
             byte[] imageData = baos.toByteArray();
 
-            // 3. Crear miniatura (opcional)
-            BufferedImage thumbnail = createThumbnail(bImage, 100, 100);
-            ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
-            ImageIO.write(thumbnail, "jpg", thumbOutput);
-            String thumbnailBase64 = Base64.getEncoder().encodeToString(thumbOutput.toByteArray());
-
-            // 4. Subir a GridFS
-            Document metadata = new Document("contentType", "image/" + getFileExtension(originalFile.getName()))
-                    .append("uploadDate", new Date())
-                    .append("thumbnail", thumbnailBase64);
-
             ObjectId fileId = gridFSBucket.uploadFromStream(
                     originalFile.getName(),
-                    new ByteArrayInputStream(imageData),
-                    new GridFSUploadOptions().metadata(metadata)
+                    new ByteArrayInputStream(imageData)
             );
 
             return fileId.toString();
@@ -1743,55 +1726,32 @@ public class UsuarioController implements Initializable {
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
     }
 
-    public Image getImageFromDatabase(String imageId) {
+    private Image getImageFromDatabase(String imageId) {
         try {
-            String imageUrl = "http://localhost:8080/api/usuario/image/" + imageId;
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(imageUrl))
-                    .GET()
-                    .build();
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-
-            if (response.statusCode() == 200) {
-                return new Image(new ByteArrayInputStream(response.body()));
-            }
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gridFSBucket.downloadToStream(new ObjectId(imageId), outputStream);
+            return new Image(new ByteArrayInputStream(outputStream.toByteArray()));
         } catch (Exception e) {
             e.printStackTrace();
+            return getDefaultCatImage();
         }
-        return getDefaultCatImage();
     }
 
 
     private String saveVideoToDatabase(Media media) {
         if (media == null) return null;
 
-        try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-            // Obtener el bucket de GridFS para videos
-            MongoDatabase database = mongoClient.getDatabase("test");
-            GridFSBucket gridFSBucket = GridFSBuckets.create(database, "cats_videos"); // Bucket separado para videos
-
-            // Obtener el archivo de video desde la URL del Media
+        try {
             URL mediaUrl = new URL(media.getSource());
             try (InputStream videoStream = mediaUrl.openStream()) {
-                // Configurar metadata
-                Document metadata = new Document()
-                        .append("contentType", "video/mp4")
-                        .append("uploadDate", new Date());
-
-                // Subir el video a GridFS
-                ObjectId fileId = gridFSBucket.uploadFromStream(
+                ObjectId fileId = gridFSVideosBucket.uploadFromStream(
                         "cat_video_" + System.currentTimeMillis() + ".mp4",
-                        videoStream,
-                        new GridFSUploadOptions().metadata(metadata)
+                        videoStream
                 );
-
                 return fileId.toString();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            showErrorAlert("Error saving video: " + e.getMessage());
             return null;
         }
     }

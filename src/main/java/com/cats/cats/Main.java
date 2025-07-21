@@ -38,6 +38,9 @@ public class Main extends Application {
 	private static CountDownLatch springLatch = new CountDownLatch(1);
 	public static Locale currentLocale = Locale.getDefault();
 
+	// Variable para almacenar la URL base
+	private static String serverBaseUrl = "https://catchacat.duckdns.org";
+
 	private static final SimpleBooleanProperty isGuest = new SimpleBooleanProperty(false);
 
 	public static boolean isGuest() {
@@ -55,8 +58,17 @@ public class Main extends Application {
 	private HostServices appHostServices;
 
 	public static void main(String[] args) {
+		// Procesar argumentos para obtener la URL base
+		for (String arg : args) {
+			if (arg.startsWith("--server.base.url=")) {
+				serverBaseUrl = arg.split("=")[1];
+				System.out.println("🔧 Parámetro recibido: --server.base.url=" + serverBaseUrl);
+			}
+		}
+
 		Locale.setDefault(new Locale("es"));
 		System.out.println("🔷 Starting application...");
+		System.out.println("🌐 URL base inicial: " + serverBaseUrl);
 
 		// Crear directorios persistentes y copiar imagen por defecto
 		try {
@@ -125,6 +137,9 @@ public class Main extends Application {
 			UsuarioController controller = loader.getController();
 			controller.setHostServices(this.appHostServices);
 
+			// Configurar la URL base en el controlador
+			controller.setServerBaseUrl(serverBaseUrl);
+
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Cats Application");
 			primaryStage.setMinWidth(600);
@@ -140,6 +155,7 @@ public class Main extends Application {
 			Platform.exit();
 		}
 	}
+
 	@Autowired
 	private Environment environment;
 
@@ -179,19 +195,5 @@ public class Main extends Application {
 
 	public static void resetGuestState() {
 		isGuest.set(false);
-	}
-
-	@Configuration
-	public class MongoConfig {
-
-		@Bean
-		public GridFSBucket gridFSBucket(MongoDatabaseFactory factory) {
-			return GridFSBuckets.create(factory.getMongoDatabase());
-		}
-
-		@Bean
-		public GridFSBucket gridFSVideosBucket(MongoDatabaseFactory factory) {
-			return GridFSBuckets.create(factory.getMongoDatabase(), "videos");
-		}
 	}
 }

@@ -36,6 +36,10 @@ import javafx.fxml.FXMLLoader;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
+import com.mongodb.client.gridfs.GridFSFindIterable;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
+import java.io.ByteArrayOutputStream;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -63,7 +67,10 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -84,6 +91,9 @@ import org.springframework.web.bind.annotation.*;
 import javafx.scene.Cursor;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.net.URL;
 import java.util.*;
 import java.util.Map;
@@ -130,9 +140,103 @@ public class UsuarioController implements Initializable {
     @Autowired
     private AdopcionController adopcionController;
     @Autowired
+    @Qualifier("gridFSImagesBucket")
     private GridFSBucket gridFSBucket;
     @Autowired
+    @Qualifier("gridFSVideosBucket")
     private GridFSBucket gridFSVideosBucket;
+
+    @GetMapping("/image/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String id) {
+        // 🔍 Solicitando imagen ID para debugging
+        System.out.println("🔍 Solicitando imagen ID: " + id);
+
+        // 1. Validar formato del ID
+        if (!ObjectId.isValid(id)) {
+            System.err.println("❌ ID de imagen inválido: " + id);
+            return ResponseEntity.badRequest().body("ID inválido".getBytes());
+        }
+
+        try {
+            // 2. Recuperar el archivo de GridFS
+            GridFSFile file = gridFSBucket.find(Filters.eq("_id", new ObjectId(id))).first();
+            if (file == null) {
+                System.err.println("❌ Imagen no encontrada para ID: " + id);
+                return ResponseEntity.notFound().build();
+            }
+
+            // 3. Descargar el contenido
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gridFSBucket.downloadToStream(file.getObjectId(), outputStream);
+
+            // 4. Determinar tipo de contenido basado en metadatos o extensión
+            String contentType = file.getMetadata() != null && file.getMetadata().getString("contentType") != null
+                    ? file.getMetadata().getString("contentType")
+                    : determineContentType(file.getFilename());
+
+            System.out.println("✅ Imagen encontrada - Tamaño: " + outputStream.size() + " bytes");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(outputStream.toByteArray());
+
+        } catch (Exception e) {
+            System.err.println("🚨 Error al recuperar imagen: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    private String determineContentType(String filename) {
+        if (filename == null) return "image/jpeg";
+
+        String lowerName = filename.toLowerCase();
+        if (lowerName.endsWith(".png")) return "image/png";
+        if (lowerName.endsWith(".gif")) return "image/gif";
+        if (lowerName.endsWith(".bmp")) return "image/bmp";
+        if (lowerName.endsWith(".webp")) return "image/webp";
+        return "image/jpeg";
+    }
+    @GetMapping("/status")
+    public ResponseEntity<String> getStatus() {
+        return ResponseEntity.ok("✅ Servidor activo | URL base: " + serverBaseUrl);
+    }
+
+    @GetMapping("/video/{id}")
+    public ResponseEntity<byte[]> getVideo(@PathVariable String id) {
+        String videoUrl = serverBaseUrl + "/api/usuario/video/" + id;
+        System.out.println("🔗 URL de video generada: " + videoUrl);
+
+        try (MongoClient mongoClient = MongoClients.create(mongoUri)) {
+            GridFSBucket gridFSBucket = GridFSBuckets.create(mongoClient.getDatabase("test"), "cats_videos");
+
+            System.out.println("🔍 Solicitando video ID: " + id);
+
+            // Validar formato del ID
+            if (!ObjectId.isValid(id)) {
+                System.err.println("❌ ID de video inválido: " + id);
+                return ResponseEntity.badRequest().body("ID inválido".getBytes());
+            }
+
+            GridFSFile file = gridFSBucket.find(Filters.eq("_id", new ObjectId(id))).first();
+            if (file == null) {
+                System.err.println("❌ Video no encontrado: " + id);
+                return ResponseEntity.notFound().build();
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gridFSBucket.downloadToStream(file.getObjectId(), outputStream);
+            byte[] videoBytes = outputStream.toByteArray();
+
+            System.out.println("✅ Video encontrado - Tamaño: " + videoBytes.length + " bytes");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("video/mp4"))
+                    .body(videoBytes);
+        } catch (Exception e) {
+            System.err.println("🚨 Error al recuperar video: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
     private Usuario currentUser;
     private Map<String, ObjectId> catNameToIdMap = new HashMap<>();
@@ -255,7 +359,7 @@ public class UsuarioController implements Initializable {
     private MongoDatabase mongoDatabase;
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB en bytes
     private static final long MAX_VIDEO_SIZE = 10 * 1024 * 1024; //10MB en bytes
-
+    private String serverBaseUrl = "https://catchacat.duckdns.org";
     public void show() {
         if (catsGrid != null) {
             loadCatsIntoView();
@@ -366,41 +470,38 @@ public class UsuarioController implements Initializable {
 
         Platform.runLater(() -> {
             try {
-                // Actualizar todos los campos
-                if (catNameLabel != null) catNameLabel.setText(currentCat.getName());
-                if (breedLabel != null) breedLabel.setText("Breed: " + currentCat.getBreed());
-                if (ageLabel != null) ageLabel.setText("Age: " + currentCat.getAge());
-                if (heightLabel != null) heightLabel.setText("Height: " + currentCat.getHeight() + " cm");
-                if (widthLabel != null) widthLabel.setText("Width: " + currentCat.getWidth() + " cm");
-                if (colorLabel != null) colorLabel.setText("Color: " + currentCat.getColor());
-                if (sexLabel != null) sexLabel.setText("Sex: " + currentCat.getSex());
-                if (friendlyKidsLabel != null)
-                    friendlyKidsLabel.setText("Friendly with kids: " + currentCat.getFriendlyWithKids());
-                if (friendlyAnimalsLabel != null)
-                    friendlyAnimalsLabel.setText("Friendly with animals: " + currentCat.getFriendlyWithAnimals());
-                if (statusLabel != null) {
-                    statusLabel.setText("Status: " + (currentCat.isAdopted() ? "Adopted" : "Not adopted"));
-                    statusLabel.setTextFill(currentCat.isAdopted() ? Color.RED : Color.GREEN);
-                    bornDateLabel.setText("Born: " + currentCat.getBornDate());
-                }
+                // Textos básicos
+                catNameLabel.setText(currentCat.getName());
+                breedLabel.setText("Breed: " + currentCat.getBreed());
+                ageLabel.setText("Age: " + currentCat.getAge());
+                heightLabel.setText("Height: " + currentCat.getHeight() + " cm");
+                widthLabel.setText("Width: " + currentCat.getWidth() + " cm");
+                colorLabel.setText("Color: " + currentCat.getColor());
+                sexLabel.setText("Sex: " + currentCat.getSex());
+                friendlyKidsLabel.setText("Friendly with kids: " + currentCat.getFriendlyWithKids());
+                friendlyAnimalsLabel.setText("Friendly with animals: " + currentCat.getFriendlyWithAnimals());
 
+                // Estado y fecha de nacimiento
+                statusLabel.setText("Status: " + (currentCat.isAdopted() ? "Adopted" : "Not adopted"));
+                statusLabel.setTextFill(currentCat.isAdopted() ? Color.RED : Color.GREEN);
+                bornDateLabel.setText("Born: " + currentCat.getBornDate());
 
-                // Descripción
-                if (personality1Label != null && personality2Label != null) {
-                    String[] descParts = splitDescription(currentCat.getDescription());
-                    personality1Label.setText(descParts[0]);
-                    personality2Label.setText(descParts.length > 1 ? descParts[1] : "");
-                }
+                // Descripción en dos partes
+                String desc = currentCat.getDescription() != null ? currentCat.getDescription() : "";
+                String[] parts = desc.split("(\\r?\\n|;)", 2);
+                personality1Label.setText(parts.length > 0 ? parts[0] : "");
+                personality2Label.setText(parts.length > 1 ? parts[1] : "");
 
-                // Cargar imágenes
+                // Cargar multimedia
                 loadCatImages(currentCat);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                showErrorAlert("Error updating cat details: " + e.getMessage());
+                showErrorAlert("Error updating cat details:\n" + e.getMessage());
             }
         });
     }
+
 
     private String[] splitDescription(String description) {
         // Dividir cada 150 caracteres manteniendo palabras completas
@@ -422,51 +523,98 @@ public class UsuarioController implements Initializable {
         if (cat == null || catImage1 == null || catImage2 == null || catImage3 == null) return;
 
         // Limpiar imágenes anteriores
-        catImage1.setImage(null);
-        catImage2.setImage(null);
-        catImage3.setImage(null);
+        Platform.runLater(() -> {
+            catImage1.setImage(null);
+            catImage2.setImage(null);
+            catImage3.setImage(null);
+        });
 
-        // Cargar imágenes en paralelo
+        // Ejecutar en hilo separado
         CompletableFuture.runAsync(() -> {
             try {
-                // Imagen 1
-                if (cat.getImageId1() != null && !cat.getImageId1().isEmpty()) {
-                    Image image1 = getImageFromDatabase(cat.getImageId1());
-                    Platform.runLater(() -> {
-                        catImage1.setImage(image1 != null ? image1 : getDefaultCatImage());
-                        catImage1.setFitWidth(200);
-                        catImage1.setPreserveRatio(true);
-                        catImage1.setOnMouseClicked(e -> loadImage(cat.getImageId1(), catImage1));
-                    });
-                }
+                // Cargar imágenes en paralelo
+                CompletableFuture<Void> image1Future = CompletableFuture.runAsync(() ->
+                        loadImageToView(cat.getImageId1(), catImage1));
 
-                // Imagen 2
-                if (cat.getImageId2() != null && !cat.getImageId2().isEmpty()) {
-                    Image image2 = getImageFromDatabase(cat.getImageId2());
-                    Platform.runLater(() -> {
-                        catImage2.setImage(image2 != null ? image2 : getDefaultCatImage());
-                        catImage2.setFitWidth(200);
-                        catImage2.setPreserveRatio(true);
-                        catImage2.setOnMouseClicked(e -> loadImage(cat.getImageId2(), catImage2));
-                    });
-                }
+                CompletableFuture<Void> image2Future = CompletableFuture.runAsync(() ->
+                        loadImageToView(cat.getImageId2(), catImage2));
 
-                // Imagen 3
-                if (cat.getImageId3() != null && !cat.getImageId3().isEmpty()) {
-                    Image image3 = getImageFromDatabase(cat.getImageId3());
-                    Platform.runLater(() -> {
-                        catImage3.setImage(image3 != null ? image3 : getDefaultCatImage());
-                        catImage3.setFitWidth(200);
-                        catImage3.setPreserveRatio(true);
-                        catImage3.setOnMouseClicked(e -> loadImage(cat.getImageId3(), catImage3));
-                    });
-                }
+                CompletableFuture<Void> image3Future = CompletableFuture.runAsync(() ->
+                        loadImageToView(cat.getImageId3(), catImage3));
+
+                // Esperar a que todas se completen
+                CompletableFuture.allOf(image1Future, image2Future, image3Future).join();
 
             } catch (Exception e) {
-                Platform.runLater(() -> showErrorAlert("Error loading cat images: " + e.getMessage()));
+                Platform.runLater(() ->
+                        showErrorAlert("Error loading cat images: " + e.getMessage()));
             }
         });
     }
+    private void loadImageToView(String imageId, ImageView imageView) {
+        if (imageId == null) {
+            imageView.setImage(getDefaultCatImage());
+            return;
+        }
+
+        String imageUrl = serverBaseUrl + "/api/usuario/image/" + imageId;
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                HttpClient client = createUnsecureHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(imageUrl))
+                        .GET()
+                        .build();
+
+                HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+                if (response.statusCode() == 200) {
+                    byte[] imageData = response.body();
+                    Image image = new Image(new ByteArrayInputStream(imageData));
+                    Platform.runLater(() -> {
+                        imageView.setImage(image);
+                        imageView.setFitWidth(200);
+                        imageView.setPreserveRatio(true);
+                    });
+                } else {
+                    Platform.runLater(() -> imageView.setImage(getDefaultCatImage()));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> imageView.setImage(getDefaultCatImage()));
+            }
+        });
+    }
+
+    /**
+     * Carga una imagen desde la base de datos (o servidor) y la enlaza al ImageView
+     * correspondiente, aplicando tamaño, ratio y comportamiento al hacer clic.
+     */
+    private void loadAndBind(String imageId, ImageView imageView) {
+        if (imageId == null || imageId.isEmpty()) {
+            // Nada que hacer: dejamos la vista con la imagen por defecto
+            Platform.runLater(() -> imageView.setImage(getDefaultCatImage()));
+            return;
+        }
+
+        // 1. Obtención de la imagen (puede lanzar excepción)
+        Image img = getImageFromDatabase(imageId);
+
+        // 2. Actualización de la UI en el hilo JavaFX
+        Platform.runLater(() -> {
+            // 2.1 Asignar imagen real o por defecto si es null
+            imageView.setImage(img != null ? img : getDefaultCatImage());
+
+            // 2.2 Ajustes de tamaño y proporción
+            imageView.setFitWidth(200);
+            imageView.setPreserveRatio(true);
+
+            // 2.3 Permitir recargar al hacer clic
+            imageView.setOnMouseClicked(event -> loadImage(imageId, imageView));
+        });
+    }
+
 
 
     private void setupButtons(Cat cat) {
@@ -528,7 +676,7 @@ public class UsuarioController implements Initializable {
 
         CompletableFuture.runAsync(() -> {
             try {
-                String videoUrl = "http://localhost:8080/api/usuario/video/" + videoId;
+                String videoUrl = serverBaseUrl + "/api/usuario/video/" + videoId;
 
                 // Crear archivo temporal
                 File tempFile = File.createTempFile("video_", ".mp4");
@@ -859,7 +1007,7 @@ public class UsuarioController implements Initializable {
 
     public void loadImage(String fileId, ImageView imageView) {
         try {
-            String imageUrl = "http://localhost:8080/api/usuario/image/" + fileId;
+            String imageUrl = serverBaseUrl + "/api/usuario/image/" + fileId;
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(imageUrl))
                     .GET()
@@ -1473,8 +1621,9 @@ public class UsuarioController implements Initializable {
 
     @FXML
     private void handleSubmitButtonAction(ActionEvent event) {
+        // Ocultar mensajes de éxito y errores anteriores
         successMessage.setVisible(false);
-        hideAllErrorMessages(); // Ocultar mensajes de error anteriores
+        hideAllErrorMessages();
 
         // Validación de nombre obligatorio
         String catName = fieldaddname.getText().trim();
@@ -1491,9 +1640,12 @@ public class UsuarioController implements Initializable {
         }
 
         // Validar el resto del formulario
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            return;
+        }
 
         try {
+            // Crear nuevo objeto Cat
             Cat nuevoGato = new Cat();
             nuevoGato.setAdopted(false);
             nuevoGato.setName(catName);
@@ -1501,8 +1653,16 @@ public class UsuarioController implements Initializable {
             nuevoGato.setAge(fieldaddage.getText().trim());
             nuevoGato.setSex(fieldaddsex.getText().trim());
             nuevoGato.setColor(fieldaddcolor.getText().trim());
-            nuevoGato.setHeight(Double.parseDouble(fieldaddheight.getText().trim()));
-            nuevoGato.setWidth(Double.parseDouble(fieldaddwidth.getText().trim()));
+
+            // Parsear valores numéricos con manejo de errores
+            try {
+                nuevoGato.setHeight(Double.parseDouble(fieldaddheight.getText().trim()));
+                nuevoGato.setWidth(Double.parseDouble(fieldaddwidth.getText().trim()));
+            } catch (NumberFormatException e) {
+                showErrorAlert("Valores numéricos inválidos en altura/ancho");
+                return;
+            }
+
             nuevoGato.setFriendlyWithKids(choiceadd1.getValue());
             nuevoGato.setFriendlyWithAnimals(choiceadd2.getValue());
             nuevoGato.setDescription(areaadd.getText().trim());
@@ -1510,48 +1670,46 @@ public class UsuarioController implements Initializable {
             nuevoGato.setCatLocation(fieldaddplace1.getText().trim());
             nuevoGato.setCaregiverId(currentUser.getId());
             nuevoGato.setOngPhone(fieldaddphone.getText().trim());
-            nuevoGato.setCaregiverId(currentUser.getId());
+
+            // Formatear fecha de nacimiento
             if (fieldaddBornDate.getValue() != null) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 nuevoGato.setBornDate(fieldaddBornDate.getValue().format(formatter));
             }
 
-            // Guardar imágenes
-            String imageId1 = saveImageToDatabase(addimage1.getImage(), selectedImageFile1);
-            String imageId2 = saveImageToDatabase(addimage2.getImage(), selectedImageFile2);
-            String imageId3 = saveImageToDatabase(addimage3.getImage(), selectedImageFile3);
+            // Guardar imágenes y obtener IDs
+            String imageId1 = saveImageToDatabase(selectedImageFile1);
+            String imageId2 = saveImageToDatabase(selectedImageFile2);
+            String imageId3 = saveImageToDatabase(selectedImageFile3);
 
             nuevoGato.setImageId1(imageId1);
             nuevoGato.setImageId2(imageId2);
             nuevoGato.setImageId3(imageId3);
 
             // Guardar video si existe
-            if (addvideo1.getMediaPlayer() != null && addvideo1.getMediaPlayer().getMedia() != null) {
-                String videoId = saveVideoToDatabase(addvideo1.getMediaPlayer().getMedia());
-                nuevoGato.setVideoID(videoId);
-            }
-            // Validar nombre primero
-            if (!validateCatName()) {
-                return; // Detener si hay errores en el nombre
-            }
+            if (addvideo1.getMediaPlayer() != null &&
+                    addvideo1.getMediaPlayer().getMedia() != null) {
 
-            // Validar el resto del formulario
-            if (!validateForm()) {
-                return;
+                String videoId = saveVideoToDatabase(
+                        new File(addvideo1.getMediaPlayer().getMedia().getSource().replace("file:/", ""))
+                );
+                nuevoGato.setVideoID(videoId);
             }
 
             // Guardar gato en la base de datos
             catService.save(nuevoGato);
 
-            // Actualizar vistas necesarias
+            // Actualizar vistas
             loadCatsIntoView();
             updateCatStatusDisplays();
 
             // Mostrar mensaje de éxito y limpiar formulario
+            successMessage.setText(resources.getString("cat.added.success"));
+            successMessage.setTextFill(Color.GREEN);
             successMessage.setVisible(true);
             clearForm();
 
-            // Navegar a web2.fxml
+            // Navegar a la vista principal
             setCurrentFxmlPath("/com/java/fx/web2.fxml");
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/java/fx/web2.fxml"),
@@ -1569,7 +1727,7 @@ public class UsuarioController implements Initializable {
 
         } catch (Exception e) {
             e.printStackTrace();
-            showErrorAlert("Error saving the cat: " + e.getMessage());
+            showErrorAlert("Error guardando el gato: " + e.getMessage());
         }
     }
 
@@ -1680,20 +1838,21 @@ public class UsuarioController implements Initializable {
         if (errorDuplicateName != null) errorDuplicateName.setVisible(false);
     }
 
-    private String saveImageToDatabase(Image image, File originalFile) {
-        if (image == null || originalFile == null) return null;
+    private String saveImageToDatabase(File imageFile) {
+        if (imageFile == null) return null;
 
-        try {
-            BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bImage, getFileExtension(originalFile.getName()), baos);
-            byte[] imageData = baos.toByteArray();
+        try (InputStream stream = new FileInputStream(imageFile)) {
+            // Detectar tipo MIME automáticamente
+            String contentType = Files.probeContentType(imageFile.toPath());
+
+            GridFSUploadOptions options = new GridFSUploadOptions()
+                    .metadata(new Document("contentType", contentType));
 
             ObjectId fileId = gridFSBucket.uploadFromStream(
-                    originalFile.getName(),
-                    new ByteArrayInputStream(imageData)
+                    imageFile.getName(),
+                    stream,
+                    options
             );
-
             return fileId.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -1738,18 +1897,19 @@ public class UsuarioController implements Initializable {
     }
 
 
-    private String saveVideoToDatabase(Media media) {
-        if (media == null) return null;
+    private String saveVideoToDatabase(File videoFile) {
+        if (videoFile == null) return null;
 
-        try {
-            URL mediaUrl = new URL(media.getSource());
-            try (InputStream videoStream = mediaUrl.openStream()) {
-                ObjectId fileId = gridFSVideosBucket.uploadFromStream(
-                        "cat_video_" + System.currentTimeMillis() + ".mp4",
-                        videoStream
-                );
-                return fileId.toString();
-            }
+        try (InputStream stream = new FileInputStream(videoFile)) {
+            GridFSUploadOptions options = new GridFSUploadOptions()
+                    .metadata(new Document("contentType", "video/mp4"));
+
+            ObjectId fileId = gridFSVideosBucket.uploadFromStream(
+                    videoFile.getName(),
+                    stream,
+                    options
+            );
+            return fileId.toString();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -2338,30 +2498,6 @@ public class UsuarioController implements Initializable {
         return new ResponseEntity<>(usuarioService.getUsuarios(), HttpStatus.OK);
     }
 
-    @GetMapping("/image/{id}")
-    public ResponseEntity<byte[]> getImage(@PathVariable String id) {
-        try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-            GridFSBucket gridFSBucket = GridFSBuckets.create(mongoClient.getDatabase("test"), "cats_images");
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            gridFSBucket.downloadToStream(new ObjectId(id), outputStream);
-
-            byte[] imageBytes = outputStream.toByteArray();
-
-            // Determinar el tipo de contenido basado en la metadata
-            GridFSFile file = gridFSBucket.find(new Document("_id", new ObjectId(id))).first();
-            String contentType = "image/jpeg"; // valor por defecto
-            if (file != null && file.getMetadata() != null) {
-                contentType = file.getMetadata().getString("contentType");
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .body(imageBytes);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
 
 
     @GetMapping("/images")
@@ -2389,30 +2525,6 @@ public class UsuarioController implements Initializable {
         }
     }
 
-    @GetMapping("/video/{id}")
-    public ResponseEntity<byte[]> getVideo(@PathVariable String id) {
-        try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-            GridFSBucket gridFSBucket = GridFSBuckets.create(mongoClient.getDatabase("test"), "cats_videos");
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            gridFSBucket.downloadToStream(new ObjectId(id), outputStream);
-
-            byte[] videoData = outputStream.toByteArray();
-
-            // Obtener metadata para el tipo de contenido
-            GridFSFile file = gridFSBucket.find(new Document("_id", new ObjectId(id))).first();
-            String contentType = "video/mp4"; // valor por defecto
-            if (file != null && file.getMetadata() != null) {
-                contentType = file.getMetadata().getString("contentType");
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .body(videoData);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
 
 
     @PutMapping("/{id}")
@@ -2429,7 +2541,7 @@ public class UsuarioController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("Locale actual del sistema: " + Locale.getDefault());
-
+        determineServerIp();
         try {
             // 1. Usar el bundle proporcionado por FXMLLoader si está disponible
             if (resources != null) {
@@ -3138,7 +3250,7 @@ public class UsuarioController implements Initializable {
         }
     }
 
-    private VBox createCatCard(Cat cat) {
+    private Node createCatCard(Cat cat) {
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
         card.setStyle(
@@ -3158,40 +3270,80 @@ public class UsuarioController implements Initializable {
         catImage.setPreserveRatio(true);
         catImage.setCursor(Cursor.HAND);
 
-        if (cat.getImageId1() != null) {
-            Image image = getImageFromDatabase(cat.getImageId1());
-            catImage.setImage(image != null ? image : getDefaultCatImage());
+        // 1. Verificar si tenemos un ID válido
+        if (cat.getImageId1() != null && !cat.getImageId1().isEmpty()) {
+            String imageUrl = serverBaseUrl + "/api/usuario/image/" + cat.getImageId1();
+            System.out.println("Cargando imagen para " + cat.getName() + ": " + imageUrl);
+
+            // 2. Crear imagen con carga asíncrona
+            Image image = new Image(imageUrl, true);
+
+            // 3. Listener para manejar carga exitosa
+            image.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() == 1.0) {
+                    if (!image.isError()) {
+                        Platform.runLater(() -> catImage.setImage(image));
+                    } else {
+                        handleImageError(catImage, cat.getName(), image.getException());
+                    }
+                }
+            });
+
+            // 4. Listener para manejar errores inmediatos
+            image.errorProperty().addListener((obs, wasError, isError) -> {
+                if (isError) {
+                    handleImageError(catImage, cat.getName(), image.getException());
+                }
+            });
         } else {
+            // 5. Usar imagen predeterminada si no hay ID
             catImage.setImage(getDefaultCatImage());
         }
 
+        // Hacer la imagen clickable
         catImage.setOnMouseClicked(ev -> handleCatClick(ev, cat));
 
         // Nombre del gato
-        String catName = cat.getName() != null ? cat.getName() : "No name";
+        String catName = cat.getName() != null ? cat.getName() : resources.getString("cat.no_name");
         Label nameLabel = new Label(catName);
-        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #000000;");
+        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(250);
 
         // Raza
-        String breedText = resources.getString("breed.label") + ": " +
-                (cat.getBreed() != null ? cat.getBreed() : "No breed");
-        Label breedLabel = new Label(breedText);
-        breedLabel.setStyle("-fx-text-fill: #000000;");
+        String breed = cat.getBreed() != null ? cat.getBreed() : resources.getString("cat.no_breed");
+        Label breedLabel = new Label(resources.getString("breed.label") + ": " + breed);
+        breedLabel.setStyle("-fx-text-fill: #555;");
+        breedLabel.setWrapText(true);
+        breedLabel.setMaxWidth(250);
 
-        // Estado con estilo CSS explícito
+        // Estado con estilo dinámico
+        boolean isAdopted = cat.isAdopted();
         String statusText = resources.getString("status.label") + ": " +
-                (cat.isAdopted() ?
+                (isAdopted ?
                         resources.getString("status.adopted") :
                         resources.getString("status.available"));
 
         Label statusLabel = new Label(statusText);
-        String colorStyle = cat.isAdopted() ?
-                "-fx-text-fill: #FF0000;" :  // Rojo
-                "-fx-text-fill: #00AA00;";  // Verde
-        statusLabel.setStyle(colorStyle);
+        statusLabel.setStyle(isAdopted ?
+                "-fx-text-fill: #e74c3c;" :   // Rojo para adoptado
+                "-fx-text-fill: #2ecc71;");   // Verde para disponible
+        statusLabel.setWrapText(true);
+        statusLabel.setMaxWidth(250);
 
+        // Agregar todos los componentes al card
         card.getChildren().addAll(catImage, nameLabel, breedLabel, statusLabel);
+
         return card;
+    }
+
+    private void handleImageError(ImageView imageView, String catName, Throwable exception) {
+        System.err.println("Error cargando imagen para " + catName + ": " +
+                (exception != null ? exception.getMessage() : "Error desconocido"));
+        Platform.runLater(() -> {
+            imageView.setImage(getDefaultCatImage());
+            imageView.setStyle("-fx-border-color: red; -fx-border-width: 1;");
+        });
     }
 
 
@@ -3699,5 +3851,140 @@ public class UsuarioController implements Initializable {
             e.printStackTrace();
             profileIcon.setImage(null);
         }
+    }
+    private Image loadImageFromUrl(String imageUrl) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(imageUrl))
+                    .GET()
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+            if (response.statusCode() == 200) {
+                return new Image(new ByteArrayInputStream(response.body()));
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading image from URL: " + e.getMessage());
+        }
+        return getDefaultCatImage();
+    }
+    private MediaPlayer createMediaPlayer(String videoUrl) {
+        try {
+            Media media = new Media(videoUrl);
+            MediaPlayer player = new MediaPlayer(media);
+            player.setOnError(() ->
+                    System.err.println("Media error: " + player.getError().getMessage())
+            );
+            return player;
+        } catch (Exception e) {
+            System.err.println("Error creating media player: " + e.getMessage());
+        }
+        return null;
+    }
+    private void determineServerIp() {
+        // 1. Usar URL de ngrok si está disponible
+        String ngrokUrl = System.getenv("NGROK_URL");
+
+        if (ngrokUrl != null && !ngrokUrl.isEmpty()) {
+            serverBaseUrl = ngrokUrl;
+            System.out.println("✅ Usando túnel Ngrok configurado: " + serverBaseUrl);
+        } else {
+            // 2. Usar URL de ngrok por defecto (actualízala cuando cambie)
+            serverBaseUrl = "https://catchacat.duckdns.org";
+            System.out.println("⚠️ Usando URL Ngrok manual: " + serverBaseUrl);
+        }
+
+        // 3. Eliminar barra diagonal final si existe
+        if (serverBaseUrl.endsWith("/")) {
+            serverBaseUrl = serverBaseUrl.substring(0, serverBaseUrl.length() - 1);
+        }
+
+        // 4. Verificar accesibilidad
+        verifyServerAccessibility();
+    }
+
+    private void verifyServerAccessibility() {
+        new Thread(() -> {
+            try {
+                String testUrl = serverBaseUrl + "/api/usuario/status";
+                System.out.println("🔍 Verificando conexión con: " + testUrl);
+
+                // Crear cliente HTTP
+                HttpClient client = createUnsecureHttpClient();
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(testUrl))
+                        .GET()
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = client.send(
+                        request,
+                        HttpResponse.BodyHandlers.ofString()
+                );
+
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Servidor accesible: " + response.body());
+                } else {
+                    System.err.println("⚠️ Error en la respuesta: " + response.statusCode());
+                }
+            } catch (Exception e) {
+                System.err.println("🚨 Error de conexión: " + e.getMessage());
+                System.err.println("⚠️ Usando URL base: " + serverBaseUrl);
+            }
+        }).start();
+    }
+
+    public String getServerBaseUrl() {
+        return serverBaseUrl;
+    }
+
+    public void checkImageExistence(String imageId) {
+        try (MongoClient mongoClient = MongoClients.create(mongoUri)) {
+            GridFSBucket gridFSBucket = GridFSBuckets.create(mongoClient.getDatabase("test"), "cats_images");
+            GridFSFile file = gridFSBucket.find(Filters.eq("_id", new ObjectId(imageId))).first();
+
+            if (file != null) {
+                System.out.println("✅ Imagen encontrada: " + file.getFilename());
+                System.out.println("   Tamaño: " + file.getLength() + " bytes");
+                System.out.println("   Subida: " + file.getUploadDate());
+            } else {
+                System.err.println("❌ Imagen NO encontrada: " + imageId);
+            }
+        } catch (Exception e) {
+            System.err.println("🚨 Error verificando imagen: " + e.getMessage());
+        }
+    }
+    public void someMethod() {
+        // Ejemplo de uso
+        if (currentCat != null) {
+            checkImageExistence(currentCat.getImageId1());
+        }
+    }
+    private HttpClient createUnsecureHttpClient() throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                }
+        };
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustAllCerts, new SecureRandom());
+
+        return HttpClient.newBuilder()
+                .sslContext(sslContext)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+    }
+    public void setServerBaseUrl(String url) {
+        this.serverBaseUrl = url;
+        System.out.println("✅ URL base actualizada: " + this.serverBaseUrl);
+
+        // Verificar conexión inmediatamente
+        verifyServerAccessibility();
     }
 }

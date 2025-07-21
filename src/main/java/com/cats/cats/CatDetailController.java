@@ -2,6 +2,7 @@ package com.cats.cats;
 
 import com.cats.cats.entities.Cat;
 import com.cats.cats.services.CatService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -14,6 +15,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -31,11 +33,12 @@ public class CatDetailController {
     @FXML private Button returnButton, adoptButton;
     @FXML private StackPane videoContainer;
 
-    @Autowired private CatService catService;
     @Autowired private UsuarioController usuarioController;
+    @Autowired private ApplicationContext applicationContext;
     private ResourceBundle resources;
 
     private Cat currentCat;
+    private CatService catService;
     private MediaPlayer mediaPlayer;
     private final Image playImage = new Image(getClass().getResourceAsStream("/assets/reproduce.png"));
     private final Image pauseImage = new Image(getClass().getResourceAsStream("/assets/pause.png"));
@@ -43,6 +46,10 @@ public class CatDetailController {
 
     public void setCurrentCat(Cat cat) {
         this.currentCat = cat;
+
+        // Inicializa el servicio usando el contexto
+        this.catService = applicationContext.getBean(CatService.class);
+
         updateCatDetails();
     }
 
@@ -87,26 +94,25 @@ public class CatDetailController {
         loadCatVideo();
         setupButtons();
     }
+
     public void stopVideo() {
-        MediaPlayer player = catVideo.getMediaPlayer();
-        if (player != null) {
-            player.stop();
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
         }
     }
-
 
     private void setupButtons() {
         adoptButton.setText(resources.getString("cat.adopt.button") + " " + currentCat.getName());
 
         // Modificar manejador de botón Volver
         returnButton.setOnAction(e -> {
-            stopVideo(); // Detener el video
-            returnButton.getScene().getWindow().hide(); // Cerrar ventana
+            stopVideo();
+            returnButton.getScene().getWindow().hide();
         });
 
         // Modificar manejador de botón Adoptar
         adoptButton.setOnAction(e -> {
-            stopVideo(); // Detener el video
+            stopVideo();
             handleAdopt();
         });
     }
@@ -134,36 +140,45 @@ public class CatDetailController {
         }
     }
 
-
     private void loadCatVideo() {
-        if (currentCat.getVideoID() != null && !currentCat.getVideoID().isEmpty()) {
-            try {
-                String videoUrl = "http://localhost:8080/api/usuario/video/" + currentCat.getVideoID();
-                Media media = new Media(videoUrl);
-                mediaPlayer = new MediaPlayer(media);
-                catVideo.setMediaPlayer(mediaPlayer);
+        if (currentCat.getVideoID() == null || currentCat.getVideoID().isEmpty()) {
+            return;
+        }
 
-                // Configurar listeners para cambios de estado
-                mediaPlayer.statusProperty().addListener((obs, oldStatus, newStatus) -> {
-                    if (newStatus == MediaPlayer.Status.PLAYING) {
-                        playPauseOverlay.setImage(pauseImage);
-                        playPauseOverlay.setVisible(false); // Ocultar durante reproducción
-                    } else {
-                        playPauseOverlay.setImage(playImage);
-                        playPauseOverlay.setVisible(true);
-                    }
-                });
+        try {
+            // Usar el servicio directamente en lugar de UsuarioController
+            String videoUrl = usuarioController.getServerBaseUrl() + "/api/usuario/video/" + currentCat.getVideoID();
+            Media media = new Media(videoUrl);
+            mediaPlayer = new MediaPlayer(media);
+            catVideo.setMediaPlayer(mediaPlayer);
 
-                // Resetear al final del video
-                mediaPlayer.setOnEndOfMedia(() -> {
-                    mediaPlayer.stop();
-                    playPauseOverlay.setImage(playImage);
-                    playPauseOverlay.setVisible(true);
-                });
+            setupVideoControls();
+        } catch (Exception e) {
+            System.err.println("Error loading video: " + e.getMessage());
+        }
+    }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+
+    private void setupVideoControls() {
+        // 1. Comportamiento del overlay
+        playPauseOverlay.setOnMouseClicked(e -> togglePlayPause());
+
+        // 2. Comportamiento al pasar el ratón
+        videoContainer.setOnMouseEntered(e -> playPauseOverlay.setVisible(true));
+        videoContainer.setOnMouseExited(e -> {
+            if (mediaPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
+                playPauseOverlay.setVisible(false);
             }
+        });
+    }
+
+    private void togglePlayPause() {
+        if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            mediaPlayer.pause();
+            playPauseOverlay.setImage(playImage);
+        } else {
+            mediaPlayer.play();
+            playPauseOverlay.setImage(pauseImage);
         }
     }
 
@@ -180,9 +195,34 @@ public class CatDetailController {
     }
 
     private void setCatImage(String imageId, ImageView imageView) {
-        if (imageId != null && !imageId.isEmpty()) {
-            Image image = catService.getImageFromDatabase(imageId);
-            imageView.setImage(image != null ? image : getDefaultCatImage());
+        if (imageId == null) {
+            imageView.setImage(getDefaultCatImage());
+            return;
+        }
+
+        try {
+            String imageUrl = usuarioController.getServerBaseUrl() + "/api/usuario/image/" + imageId;
+            Image image = new Image(imageUrl, true);
+
+            // Mostrar imagen de carga inmediatamente
+            imageView.setImage(new Image(getClass().getResourceAsStream("/assets/loading.gif")));
+
+            image.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() == 1.0 && !image.isError()) {
+                    Platform.runLater(() -> imageView.setImage(image));
+                }
+            });
+
+            image.errorProperty().addListener((obs, wasError, isError) -> {
+                if (isError) {
+                    Platform.runLater(() -> {
+                        imageView.setImage(getDefaultCatImage());
+                        imageView.setStyle("-fx-border-color: red;");
+                    });
+                }
+            });
+        } catch (Exception e) {
+            imageView.setImage(getDefaultCatImage());
         }
     }
 
@@ -211,34 +251,9 @@ public class CatDetailController {
 
     @FXML
     private void initialize() {
+        // Inicialización básica del overlay
         playPauseOverlay.setImage(playImage);
         playPauseOverlay.setVisible(true);
-
-        videoContainer.setOnMouseEntered(e -> showVideoControls());
-        videoContainer.setOnMouseExited(e -> hideVideoControls());
-        playPauseOverlay.setOnMouseClicked(e -> togglePlayPause());
-    }
-    private void showVideoControls() {
-        if (mediaPlayer != null) {
-            playPauseOverlay.setVisible(true);
-        }
-    }
-
-    private void hideVideoControls() {
-        if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-            playPauseOverlay.setVisible(false);
-        }
-    }
-
-    private void togglePlayPause() {
-        if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-            mediaPlayer.pause();
-            playPauseOverlay.setImage(playImage);
-        } else {
-            mediaPlayer.play();
-            playPauseOverlay.setImage(pauseImage);
-            hideVideoControls(); // Ocultar después de reproducir
-        }
     }
 }
 

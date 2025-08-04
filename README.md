@@ -1,29 +1,29 @@
-# 😻 Catch a Cat With Me - Plataforma de Adopción Felina
+# 😻 Catch a Cat With Me – Cat Adoption Platform
 
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.4-green.svg)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.java.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green.svg)](https://www.mongodb.com/)
-[![License](https://img.shields.io/badge/Licencia-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.4-green.svg)](https://spring.io/projects/spring-boot)  
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.java.com/)  
+[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green.svg)](https://www.mongodb.com/)  
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 <div align="center">
-  <img src="https://img.youtube.com/vi/uNihlwdW0tc/maxresdefault.jpg" alt="Demo de la aplicación" width="80%">
+  <img src="https://img.youtube.com/vi/uNihlwdW0tc/maxresdefault.jpg" alt="App demo screenshot" width="80%">
   <br>
-  <a href="https://youtu.be/uNihlwdW0tc">▶️ Ver demostración en video</a>
+  <a href="https://youtu.be/uNihlwdW0tc">▶️ Watch the demo video</a>
 </div>
 
-Conectamos adoptantes con cuidadores felinos para crear hogares llenos de ronroneos. ¡Tu próximo compañero felino te espera!
+We connect adopters with feline caregivers to create homes full of purrs. Your next feline companion is waiting!
 
-## ✨ Funcionalidades Destacadas
+## ✨ Key Features
 
-| Módulo           | Características                                                                 |
-|------------------|---------------------------------------------------------------------------------|
-| **🐱 Gatos**     | Catálogo interactivo • Búsqueda inteligente • Filtros avanzados • Galería multimedia |
-| **🤝 Adopciones**| Proceso guiado • Validación en tiempo real • Seguimiento de solicitudes • Certificado digital |
-| **💬 Chat**      | Comunicación en tiempo real • Notificaciones push • Historial de conversaciones |
-| **⭐ Reseñas**   | Sistema de calificaciones • Comentarios verificados • Perfil de reputación      |
-| **👤 Usuarios**  | Gestión de perfiles • Roles de acceso • Autenticación segura • Preferencias    |
+| Module         | Features                                                                                 |
+|----------------|------------------------------------------------------------------------------------------|
+| **🐱 Cats**    | Interactive catalog • Smart search • Advanced filters • Multimedia gallery               |
+| **🤝 Adoptions**| Guided process • Real-time validation • Request tracking • Digital certificate            |
+| **💬 Chat**    | Real-time communication • Push notifications • Conversation history                       |
+| **⭐ Reviews** | Rating system • Verified comments • Reputation profiles                                  |
+| **👤 Users**   | Profile management • Access roles • Secure authentication • Preferences                   |
 
-## 🛠 Stack Tecnológico
+## 🛠 Tech Stack
 
 **Backend**
 ```mermaid
@@ -32,3 +32,4 @@ graph LR
     A --> C[Spring Data MongoDB]
     A --> D[WebSockets/STOMP]
     A --> E[JWT Authentication]
+
